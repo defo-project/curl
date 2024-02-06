@@ -1,3 +1,11 @@
+curl (8.6.0-2) unstable; urgency=medium
+
+  * d/p/sendf_ignore_response_body_to_head.patch: New upstream patch to fix a
+    compat issue (closes: #1063342)
+  * d/control: Switch from pkg-config to pkgconf
+
+ -- Samuel Henrique <samueloph@debian.org>  Tue, 06 Feb 2024 20:52:46 +0000
+
 curl (8.6.0-1) unstable; urgency=medium
 
   [ Samuel Henrique ]
