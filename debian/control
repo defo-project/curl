@@ -119,7 +119,7 @@ Suggests: libcurl4-doc,
  librtmp-dev,
  libssh2-1-dev,
  libssl-dev,
- pkg-config,
+ pkgconf,
  zlib1g-dev
 Multi-Arch: same
 Description: development files and documentation for libcurl (OpenSSL flavour)
@@ -157,7 +157,7 @@ Suggests: libcurl4-doc,
  libldap2-dev,
  librtmp-dev,
  libssh2-1-dev,
- pkg-config,
+ pkgconf,
  zlib1g-dev
 Multi-Arch: same
 Description: development files and documentation for libcurl (GnuTLS flavour)
