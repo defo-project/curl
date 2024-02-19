@@ -1,3 +1,10 @@
+curl (8.6.0-3) unstable; urgency=medium
+
+  * d/p/vtls_revert_receive_max_buffer_add_test_case.patch: New patch to fix
+    tls regression (closes: #1063462)
+
+ -- Samuel Henrique <samueloph@debian.org>  Mon, 19 Feb 2024 22:16:17 +0000
+
 curl (8.6.0-2) unstable; urgency=medium
 
   * d/p/sendf_ignore_response_body_to_head.patch: New upstream patch to fix a
