@@ -1,3 +1,10 @@
+curl (8.6.0-3.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Rename libraries for 64-bit time_t transition.  Closes: #1061992
+
+ -- Steve Langasek <vorlon@debian.org>  Sat, 02 Mar 2024 07:11:53 +0000
+
 curl (8.6.0-3) unstable; urgency=medium
 
   * d/p/vtls_revert_receive_max_buffer_add_test_case.patch: New patch to fix
