@@ -1,3 +1,10 @@
+curl (8.6.0-3.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix wrong X-Time64-Compat for libcurl4t64.  Closes: #1065315.
+
+ -- Steve Langasek <vorlon@debian.org>  Sat, 02 Mar 2024 18:43:58 +0000
+
 curl (8.6.0-3.1) unstable; urgency=medium
 
   * Non-maintainer upload.

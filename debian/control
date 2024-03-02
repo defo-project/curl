@@ -56,7 +56,7 @@ Description: command line tool for transferring data with URL syntax
 
 Package: libcurl4t64
 Provides: ${t64:Provides}
-X-Time64-Compat: libcurl3-gnutls
+X-Time64-Compat: libcurl4
 Breaks: libcurl4 (<< ${source:Version})
 Architecture: any
 Section: libs
