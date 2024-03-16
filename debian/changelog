@@ -1,3 +1,16 @@
+curl (8.6.0-4) unstable; urgency=medium
+
+  [ Carlos Henrique Lima Melara ]
+  * d/libcurl*.links: use substitution variables instead of executable files
+
+  [ Simon McVittie ]
+  * d/control: Add a build-profile that disables LDAP support
+    (closes: #1066981)
+  * Temporarily disable LDAP support on 32-bit non-x86 (closes: #1066982)
+  * Temporarily disable build-time tests on 32-bit non-x86
+
+ -- Samuel Henrique <samueloph@debian.org>  Sat, 16 Mar 2024 17:17:57 +0000
+
 curl (8.6.0-3.2) unstable; urgency=medium
 
   * Non-maintainer upload.
