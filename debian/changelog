@@ -1,8 +1,11 @@
-curl (8.7.1-1) UNRELEASED; urgency=medium
+curl (8.7.1-1) unstable; urgency=medium
 
   * New upstream version 8.7.1
+    - Fix CVE-2024-2004: Usage of disabled protocol
+    - Fix CVE-2024-2398: HTTP/2 push headers memory-leak
+  * d/patches: Drop patches present on this release
 
- -- Samuel Henrique <samueloph@debian.org>  Wed, 27 Mar 2024 18:03:12 +0000
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 27 Mar 2024 19:02:14 +0000
 
 curl (8.6.0-4) unstable; urgency=medium
 
