@@ -1,3 +1,9 @@
+curl (8.7.1-1) UNRELEASED; urgency=medium
+
+  * New upstream version 8.7.1
+
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 27 Mar 2024 18:03:12 +0000
+
 curl (8.6.0-4) unstable; urgency=medium
 
   [ Carlos Henrique Lima Melara ]
