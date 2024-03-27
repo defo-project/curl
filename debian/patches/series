@@ -1,13 +1,8 @@
 # Packaging patches.
 04_workaround_as_needed_bug.patch
-08_enable-zsh.patch
 build-Divide-mit-krb5-gssapi-link-flags-between-LDFLAGS-a.patch
 11_omit-directories-from-config.patch
 Remove-curl-s-LDFLAGS-from-curl-config-static-libs.patch
-
-# Post 8.6.0 patches.
-sendf_ignore_response_body_to_head.patch
-vtls_revert_receive_max_buffer_add_test_case.patch
 
 # Do not add patches below.
 # Used to generate packages for the other crypto libraries.
