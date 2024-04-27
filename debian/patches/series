@@ -10,6 +10,7 @@ make-manpages-reproducible.patch
 fix-regression-on-chunked-post.patch
 test1901_verify_chunked_POST_from_callback_with_CURLOPT_POSTFIELDSIZ.patch
 fix-regression-in-curlinfo.patch
+curl-8_7_1-h2-ngtcp2-write-error-handling.diff
 
 # Do not add patches below.
 # Used to generate packages for the other crypto libraries.
