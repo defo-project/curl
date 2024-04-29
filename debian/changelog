@@ -1,3 +1,12 @@
+curl (8.7.1-5) unstable; urgency=high
+
+  * d/p/content_encoding_brotli_and_others...patch: New patch to fix an
+    encoding regression. Thank you to Jeroen Ooms and the curl developers
+    (Daniel Stenberg and Stefan Eissing) for reporting and pointing out the
+    fix.
+
+ -- Samuel Henrique <samueloph@debian.org>  Mon, 29 Apr 2024 18:28:54 +0100
+
 curl (8.7.1-4) unstable; urgency=medium
 
   * d/p/curl-8_7_1-h2-ngtcp2-write-error-handling.diff: New patch to address
