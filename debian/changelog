@@ -1,3 +1,10 @@
+curl (8.8.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 8.8.0
+  * Revert "Temporarily disable LDAP support on 32-bit non-x86"
+
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 22 May 2024 18:14:36 +0100
+
 curl (8.7.1-5) unstable; urgency=high
 
   * d/p/content_encoding_brotli_and_others...patch: New patch to fix an
