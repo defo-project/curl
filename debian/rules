@@ -72,6 +72,7 @@ ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
 	./buildconf && \
 	cp ../../ltmain.sh . && \
 	dh_auto_configure ${CONFIGURE_ARGS} --with-openssl \
+	        --enable-ech \
 		--without-ngtcp2 \
 		--without-nghttp3
 endif
@@ -109,6 +110,9 @@ TESTS_FAILS_ON_IPV6_ONLY_MACHINES ?= $(addprefix ~, 300 301 303 304 306 309 310 
 
 TESTS_GENERAL_PARAMETERS += $(TESTS_FAILS_ON_IPV6_ONLY_MACHINES)
 
+# ignore ECH symbol
+TESTS_GENERAL_PARAMETERS += ~1014 ~1705
+
 override_dh_auto_test:
 ifeq ($(filter nocheck,$(DEB_BUILD_PROFILES)),)
 ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
@@ -136,11 +140,11 @@ ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
 endif
 	find debian/tmp* -name '*.la' -delete
 ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
-	dh_install -plibcurl4t64 -plibcurl4-openssl-dev -plibcurl4-doc \
+	dh_install -pcurl -plibcurl4t64 -plibcurl4-openssl-dev -plibcurl4-doc \
 		--sourcedir=debian/tmp
 endif
 ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
-	dh_install -pcurl -plibcurl3t64-gnutls -plibcurl4-gnutls-dev	\
+	dh_install -plibcurl3t64-gnutls -plibcurl4-gnutls-dev	\
 		--sourcedir=debian/tmp-gnutls
 endif
 # Modify curl-config to make it architecture-independent:
@@ -181,7 +185,7 @@ endif
 	rm -rfv debian/tmp/usr/share/aclocal/*
 
 override_dh_installchangelogs:
-	dh_installchangelogs CHANGES
+	dh_installchangelogs CHANGES.md
 
 override_dh_compress:
 	dh_compress -X.pdf
