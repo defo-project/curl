@@ -6,6 +6,7 @@ Remove-curl-s-LDFLAGS-from-curl-config-static-libs.patch
 
 # Post 8.8.0 patches.
 docs_makefile_am_make_curl_config_1_install.patch
+fix-x509asn1-fallback-to-dotted-OID-representation.patch
 
 # Do not add patches below.
 # Used to generate packages for the other crypto libraries.

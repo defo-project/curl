@@ -1,0 +1,30 @@
+From 9aa1d412b814a40868558da51a6ab28ce1384a58 Mon Sep 17 00:00:00 2001
+From: Bo Anderson <mail@boanderson.me>
+Date: Sun, 2 Jun 2024 14:18:20 +0100
+Subject: [PATCH] x509asn1: fallback to dotted OID representation
+
+Reported-by: Luke Hamburg
+Fixes #13845
+Closes #13858
+
+Origin: upstream, https://github.com/curl/curl/commit/9aa1d412b814a40868558da51a6ab28ce1384a58
+Bug: https://github.com/curl/curl/issues/13845
+Bug-Debian: https://bugs.debian.org/1075796
+Last-Update: 2024-07-05
+---
+ lib/vtls/x509asn1.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/vtls/x509asn1.c b/lib/vtls/x509asn1.c
+index 4564ea958aea2d..150dfd21de4589 100644
+--- a/lib/vtls/x509asn1.c
++++ b/lib/vtls/x509asn1.c
+@@ -469,7 +469,7 @@ static CURLcode OID2str(struct dynbuf *store,
+         if(op)
+           result = Curl_dyn_add(store, op->textoid);
+         else
+-          result = CURLE_BAD_FUNCTION_ARGUMENT;
++          result = Curl_dyn_add(store, Curl_dyn_ptr(&buf));
+         Curl_dyn_free(&buf);
+       }
+     }
