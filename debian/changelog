@@ -1,3 +1,17 @@
+curl (8.8.0-3) unstable; urgency=medium
+
+  [ Carlos Henrique Lima Melara ]
+  * d/p/fix-x509asn1-fallback-to-dotted-OID-representation.patch: add patch
+    (Closes: #1075796)
+  * d/p/11_omit-directories-from-config.patch: update to remove new issue
+    (Closes: #1075802)
+  * d/p/04_workaround_as_needed_bug.patch: drop patch, not needed anymore
+
+  [ Samuel Henrique ]
+  * Update wcurl to 2024-07-07
+
+ -- Samuel Henrique <samueloph@debian.org>  Sun, 07 Jul 2024 00:42:42 +0100
+
 curl (8.8.0-2) unstable; urgency=medium
 
   * curl.NEWS: Announce switch to GnuTLS, HTTP3 support and wcurl
