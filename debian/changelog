@@ -1,3 +1,18 @@
+curl (8.8.0-4) unstable; urgency=medium
+
+  [ Adrian Bunk ]
+  * Revert "Temporarily disable build-time tests on 32-bit non-x86"
+  * Don't use python3-impacket on non-Rust architectures that lack
+    python-cryptography
+
+  [ Lev Lazinskiy ]
+  * Use SALSA_CI_DPKG_BUILDPACKAGE_ARGS in pipeline
+
+  [ Samuel Henrique ]
+  * Update wcurl to 2024.07.10
+
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 10 Jul 2024 22:36:04 +0100
+
 curl (8.8.0-3) unstable; urgency=medium
 
   [ Carlos Henrique Lima Melara ]
