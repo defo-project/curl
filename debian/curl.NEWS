@@ -20,9 +20,13 @@ curl (8.8.0-2) unstable; urgency=medium
       - Download multiple URLs in parallel;
       - Follow redirects;
       - Automatically choose a filename as output;
+      - Avoid overwriting files;
       - Perform retries;
-      - Resume from broken/interrupted downloads.
-      - Set the downloaded file timestamp to the value provided by the server, if available;
+      - Set the downloaded file timestamp to the value provided by the server,
+        if available;
+      - Default to the protocol used as https if the URL doesn't contain any;
+      - Disable curl's URL globbing parser so {} and [] characters in URLs are
+        not treated specially.
 
     A manpage is provided as well, check wcurl(1).
 
