@@ -1,3 +1,21 @@
+curl (8.9.0-1) unstable; urgency=medium
+
+  [ Samuel Henrique ]
+  * debian/curl.NEWS: Update wcurl description.
+
+  [ Carlos Henrique Lima Melara ]
+  * New upstream version 8.9.0. (Closes: #1076996)
+    - fix CVE-2024-6197: freeing stack buffer in utf8asn1str.
+    - fix CVE-2024-6874: macidn punycode buffer overread.
+  * debian/copyright: drop copyright from removed file.
+  * debian/patches/: drop merged patches and refresh patches against new
+    upstream release.
+      - docs_makefile_am_make_curl_config_1_install.patch: drop.
+      - fix-x509asn1-fallback-to-dotted-OID-representation.patch: drop.
+  * debian/gbp.conf: add upstream-branch definition.
+
+ -- Carlos Henrique Lima Melara <charlesmelara@riseup.net>  Thu, 25 Jul 2024 22:14:54 +0900
+
 curl (8.8.0-4) unstable; urgency=medium
 
   [ Adrian Bunk ]
