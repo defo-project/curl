@@ -33,7 +33,7 @@ index 80ccc59..750000e 100644
  
  # This might hold -Werror
 diff --git a/lib/Makefile.am b/lib/Makefile.am
-index 96afc59..7708220 100644
+index 413fcd4..caf447b 100644
 --- a/lib/Makefile.am
 +++ b/lib/Makefile.am
 @@ -30,7 +30,7 @@ EXTRA_DIST = Makefile.mk config-win32.h config-win32ce.h config-plan9.h \
@@ -135,10 +135,10 @@ index ae978a4..bce5633 100644
    global: curl_*;
    local: *;
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 3bf57d3..e0aaa48 100644
+index 4ce83c9..a0b3fd3 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -72,9 +72,9 @@ CFLAGS += @CURL_CFLAG_EXTRAS@
+@@ -68,9 +68,9 @@ CFLAGS += @CURL_CFLAG_EXTRAS@
  LIBS = $(BLANK_AT_MAKETIME)
  
  if USE_EXPLICIT_LIB_DEPS
@@ -167,10 +167,10 @@ index 8fdc190..ddc9be4 100644
  
  # This might hold -Werror
 diff --git a/tests/http/clients/Makefile.in b/tests/http/clients/Makefile.in
-index 70ef7b3..3cf9cf0 100644
+index 9eb45a0..2a8f8d9 100644
 --- a/tests/http/clients/Makefile.in
 +++ b/tests/http/clients/Makefile.in
-@@ -179,9 +179,9 @@ h2_download_SOURCES = h2-download.c
+@@ -178,9 +178,9 @@ h2_download_SOURCES = h2-download.c
  h2_download_OBJECTS = h2-download.$(OBJEXT)
  h2_download_LDADD = $(LDADD)
  @USE_EXPLICIT_LIB_DEPS_FALSE@h2_download_DEPENDENCIES =  \
@@ -182,7 +182,7 @@ index 70ef7b3..3cf9cf0 100644
  AM_V_lt = $(am__v_lt_@AM_V@)
  am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
  am__v_lt_0 = --silent
-@@ -190,51 +190,51 @@ h2_pausing_SOURCES = h2-pausing.c
+@@ -189,51 +189,51 @@ h2_pausing_SOURCES = h2-pausing.c
  h2_pausing_OBJECTS = h2-pausing.$(OBJEXT)
  h2_pausing_LDADD = $(LDADD)
  @USE_EXPLICIT_LIB_DEPS_FALSE@h2_pausing_DEPENDENCIES =  \
@@ -248,7 +248,7 @@ index 70ef7b3..3cf9cf0 100644
  AM_V_P = $(am__v_P_@AM_V@)
  am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
  am__v_P_0 = false
-@@ -547,10 +547,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/lib \
+@@ -548,10 +548,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/lib \
  	-I$(top_srcdir)/lib -DCURL_DISABLE_DEPRECATION \
  	-DCURL_NO_OLDIES $(am__append_1)
  LIBDIR = $(top_builddir)/lib
@@ -262,7 +262,7 @@ index 70ef7b3..3cf9cf0 100644
  CS_0 = @echo "  RUN     " $@;
  CS_1 = 
 diff --git a/tests/libtest/Makefile.am b/tests/libtest/Makefile.am
-index 8ae972a..9a1f49d 100644
+index eed916e..78918da 100644
 --- a/tests/libtest/Makefile.am
 +++ b/tests/libtest/Makefile.am
 @@ -49,11 +49,11 @@ CLEANFILES = lib1521.c

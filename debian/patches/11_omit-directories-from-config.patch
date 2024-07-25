@@ -18,11 +18,11 @@ necessary (and may be harmful in multi-arch environments.)
  1 file changed, 3 insertions(+), 14 deletions(-)
 
 diff --git a/curl-config.in b/curl-config.in
-index 085bb1e..016dc3e 100644
+index 5d40bc3..5d43548 100644
 --- a/curl-config.in
 +++ b/curl-config.in
-@@ -24,11 +24,8 @@
- ###########################################################################
+@@ -26,11 +26,8 @@
+ # shellcheck disable=SC2006
  
  prefix="@prefix@"
 -# Used in @libdir@
@@ -33,7 +33,7 @@ index 085bb1e..016dc3e 100644
  cppflag_curl_staticlib=@CPPFLAG_CURL_STATICLIB@
  
  usage()
-@@ -145,19 +142,11 @@ while test "$#" -gt 0; do
+@@ -147,19 +144,11 @@ while test "$#" -gt 0; do
      else
        CPPFLAG_CURL_STATICLIB=""
      fi
@@ -55,7 +55,7 @@ index 085bb1e..016dc3e 100644
      if test "X@ENABLE_SHARED@" = "Xno"; then
        echo "${CURLLIBDIR}-lcurl @LIBCURL_LIBS@"
      else
-@@ -171,7 +160,7 @@ while test "$#" -gt 0; do
+@@ -173,7 +162,7 @@ while test "$#" -gt 0; do
  
    --static-libs)
      if test "X@ENABLE_STATIC@" != "Xno" ; then
