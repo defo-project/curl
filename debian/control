@@ -122,16 +122,21 @@ Provides: libcurl-dev,
  libcurl3-dev
 Conflicts: libcurl4-gnutls-dev, libssl1.0-dev
 Depends: ${misc:Depends}, libcurl4t64 (= ${binary:Version})
+Recommends: libbrotli-dev,
+ libidn2-dev,
+ libnghttp2-dev,
+ libpsl-dev,
+ librtmp-dev,
+ libssh2-1-dev,
+ libssl-dev,
+ libzstd-dev,
+ zlib1g-dev,
 Suggests: dpkg-dev,
  libcurl4-doc,
  libidn-dev,
  libkrb5-dev,
  libldap2-dev,
- librtmp-dev,
- libssh2-1-dev,
- libssl-dev,
  pkgconf,
- zlib1g-dev
 Multi-Arch: same
 Description: development files and documentation for libcurl (OpenSSL flavour)
  libcurl is an easy-to-use client-side URL transfer library, supporting DICT,
@@ -161,16 +166,24 @@ Provides: libcurl-dev,
  libcurl4-dev
 Conflicts: libcurl4-openssl-dev
 Depends: ${misc:Depends}, libcurl3t64-gnutls (= ${binary:Version})
+Recommends: libbrotli-dev,
+ libgnutls28-dev,
+ libidn2-dev,
+ libnghttp2-dev,
+ libnghttp3-dev (>= 1.1.0),
+ libngtcp2-crypto-gnutls-dev (>= 1.2.0),
+ libngtcp2-dev (>= 1.2.0),
+ libpsl-dev,
+ librtmp-dev,
+ libssh2-1-dev,
+ libzstd-dev,
+ zlib1g-dev,
 Suggests: dpkg-dev,
  libcurl4-doc,
- libgnutls28-dev,
  libidn-dev,
  libkrb5-dev,
  libldap2-dev,
- librtmp-dev,
- libssh2-1-dev,
  pkgconf,
- zlib1g-dev
 Multi-Arch: same
 Description: development files and documentation for libcurl (GnuTLS flavour)
  libcurl is an easy-to-use client-side URL transfer library, supporting DICT,
