@@ -121,8 +121,9 @@ Provides: libcurl-dev,
  libcurl4-dev,
  libcurl3-dev
 Conflicts: libcurl4-gnutls-dev, libssl1.0-dev
-Depends: ${misc:Depends}, libcurl4t64 (= ${binary:Version})
-Recommends: libbrotli-dev,
+Depends: ${misc:Depends},
+ libbrotli-dev,
+ libcurl4t64 (= ${binary:Version}),
  libidn2-dev,
  libnghttp2-dev,
  libpsl-dev,
@@ -165,8 +166,9 @@ Provides: libcurl-dev,
  libcurl3-gnutls-dev,
  libcurl4-dev
 Conflicts: libcurl4-openssl-dev
-Depends: ${misc:Depends}, libcurl3t64-gnutls (= ${binary:Version})
-Recommends: libbrotli-dev,
+Depends: ${misc:Depends},
+ libbrotli-dev,
+ libcurl3t64-gnutls (= ${binary:Version}),
  libgnutls28-dev,
  libidn2-dev,
  libnghttp2-dev,
