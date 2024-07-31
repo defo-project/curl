@@ -1,3 +1,11 @@
+curl (8.9.1-1) unstable; urgency=medium
+
+  * New upstream version 8.9.1. (Closes: 1077656)
+    - fix CVE-2024-7264: ASN.1 date parser overread.
+  * debian/patch/build-Divide-mit-[...].patch: refresh patch.
+
+ -- Carlos Henrique Lima Melara <charlesmelara@riseup.net>  Wed, 31 Jul 2024 22:12:06 +0900
+
 curl (8.9.0-3) unstable; urgency=medium
 
   * debian/control: make libcurl*-dev packages Depends on -dev packages.
