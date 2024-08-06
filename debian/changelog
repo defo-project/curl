@@ -1,3 +1,11 @@
+curl (8.9.1-2) UNRELEASED; urgency=medium
+
+  * Improve the patch for the gnutls build. Instead of calling quilt
+    during the binary package build, use autotools to do the work we
+    need when calling configure etc. Closes: #1077650
+
+ -- Steve McIntyre <93sam@debian.org>  Mon, 05 Aug 2024 11:45:12 +0100
+
 curl (8.9.1-1) unstable; urgency=medium
 
   * New upstream version 8.9.1. (Closes: 1077656)

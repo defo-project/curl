@@ -49,25 +49,8 @@ endif
 override_dh_auto_configure:
 ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
 	mkdir -p debian/build
-endif
-ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
-	mkdir -p debian/build-gnutls
-endif
-# pop the last patch (gnutls)
-	quilt pop
-ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
-# get the source without gnutls patch
 	tar -cf - --exclude=debian/build* --exclude=.pc . \
 		| tar -xf - -C debian/build
-endif
-# push the last patch which must be gnutls
-	quilt push
-ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
-# get the source with gnutls patch applied
-	tar -cf - --exclude=debian/build* --exclude=.pc . \
-		| tar -xf - -C debian/build-gnutls
-endif
-ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
 	cd debian/build && \
 	./buildconf && \
 	cp ../../ltmain.sh . && \
@@ -76,6 +59,9 @@ ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
 		--without-nghttp3
 endif
 ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
+	mkdir -p debian/build-gnutls
+	tar -cf - --exclude=debian/build* --exclude=.pc . \
+		| tar -xf - -C debian/build-gnutls
 	cd debian/build-gnutls && \
 	./buildconf && \
 	cp ../../ltmain.sh . && \
