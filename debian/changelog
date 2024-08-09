@@ -1,10 +1,18 @@
-curl (8.9.1-2) UNRELEASED; urgency=medium
+curl (8.9.1-2) unstable; urgency=medium
 
+  [ Steve McIntyre ]
   * Improve the patch for the gnutls build. Instead of calling quilt
     during the binary package build, use autotools to do the work we
     need when calling configure etc. Closes: #1077650
 
- -- Steve McIntyre <93sam@debian.org>  Mon, 05 Aug 2024 11:45:12 +0100
+  [ Carlos Henrique Lima Melara ]
+  * debian/control: bump Standards-Version to 4.7.0, no changes needed.
+  * debian/patches/ignore-SIGPIPE-after-init.patch: add new patch from
+    upstream. (Closes: #1077854)
+  * debian/tests/build-using-libcurl*: add tests to check if libcurl headers
+    and pkgconf info are correct.
+
+ -- Carlos Henrique Lima Melara <charlesmelara@riseup.net>  Fri, 09 Aug 2024 19:47:58 -0300
 
 curl (8.9.1-1) unstable; urgency=medium
 
