@@ -1,3 +1,10 @@
+curl (8.13.0-3.1) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * Enable ECH
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Tue, 24 Sep 2024 08:31:33 +0200
+
 curl (8.13.0-3) unstable; urgency=medium
 
   [ Carlos Henrique Lima Melara ]
