@@ -54,6 +54,7 @@ ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
 	autoreconf -fi && \
 	cp ../../ltmain.sh . && \
 	dh_auto_configure ${CONFIGURE_ARGS} --with-openssl \
+		--enable-ech \
 		--with-openssl-quic \
 		--with-nghttp3
 endif
