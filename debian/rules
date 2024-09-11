@@ -167,7 +167,7 @@ endif
 	rm -rfv debian/tmp/usr/share/aclocal/*
 
 override_dh_installchangelogs:
-	dh_installchangelogs CHANGES
+	dh_installchangelogs CHANGES.md
 
 override_dh_compress:
 	dh_compress -X.pdf
