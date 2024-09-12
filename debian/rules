@@ -35,6 +35,7 @@ endif
 
 export DEB_CFLAGS_MAINT_APPEND = -D_DEB_HOST_ARCH=\"$(DEB_HOST_MULTIARCH)\" -DCURL_PATCHSTAMP=\"$(DEB_VERSION)\"
 export DEB_CXXFLAGS_MAINT_APPEND = -D_DEB_HOST_ARCH=\"$(DEB_HOST_MULTIARCH)\" -DCURL_PATCHSTAMP=\"$(DEB_VERSION)\"
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--no-undefined
 
 ifneq ($(filter pkg.curl.openssl-only,$(DEB_BUILD_PROFILES)),)
 	DEB_BUILD_PROFILES += pkg.curl.no-gnutls
