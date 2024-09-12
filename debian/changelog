@@ -1,3 +1,13 @@
+curl (8.10.0-2) unstable; urgency=medium
+
+  [ Simon McVittie ]
+  * d/rules: Do not allow any undefined symbols when linking
+  * ZZZgnutls-build.patch: Resync libraries used for GNUTLS flavour
+    (closes: #1081514, #1081517, #1081533)
+  * ZZZgnutls-build.patch: De-conditionalize libcurlu.la  parameters
+
+ -- Samuel Henrique <samueloph@debian.org>  Thu, 12 Sep 2024 21:35:48 +0100
+
 curl (8.10.0-1) unstable; urgency=medium
 
   * New upstream version 8.10.0
