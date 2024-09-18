@@ -1,8 +1,9 @@
-curl (8.10.1-1) UNRELEASED; urgency=medium
+curl (8.10.1-1) unstable; urgency=medium
 
   * New upstream version 8.10.1
+  * d/p/ZZZgnutls-build.patch: Update patch
 
- -- Samuel Henrique <samueloph@debian.org>  Wed, 18 Sep 2024 07:18:22 +0100
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 18 Sep 2024 07:27:29 +0100
 
 curl (8.10.0-2) unstable; urgency=medium
 
