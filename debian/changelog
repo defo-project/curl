@@ -1,6 +1,9 @@
 curl (8.11.0-1) UNRELEASED; urgency=medium
 
   * New upstream version 8.11.0
+  * Fix CVE-2024-9681: HSTS subdomain overwrites parent cache entry
+  * Update patches for the new release
+  * d/libcurl*.symbols: Remove HIDDEN@HIDDEN 7.16.2
 
  -- Samuel Henrique <samueloph@debian.org>  Wed, 06 Nov 2024 07:59:27 +0000
 
