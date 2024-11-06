@@ -1,3 +1,9 @@
+curl (8.11.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 8.11.0
+
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 06 Nov 2024 07:59:27 +0000
+
 curl (8.10.1-2) unstable; urgency=medium
 
   * d/patches/gtls_add_p12_format_support.patch: New upstream patch for P12
