@@ -14,51 +14,45 @@ header and library directories are architecture-dependent, but will always be
 in the C compiler's default search path, so -I and -L options are not
 necessary (and may be harmful in multi-arch environments.)
 ---
- curl-config.in | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ curl-config.in | 16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
 diff --git a/curl-config.in b/curl-config.in
-index 2dc40ed..491fdff 100644
+index 2dc40ed..5695b2f 100644
 --- a/curl-config.in
 +++ b/curl-config.in
-@@ -30,7 +30,7 @@ prefix='@prefix@'
+@@ -29,8 +29,6 @@ prefix='@prefix@'
+ # Used in 'libdir'
  # shellcheck disable=SC2034
  exec_prefix="@exec_prefix@"
- # shellcheck disable=SC2034
+-# shellcheck disable=SC2034
 -includedir="@includedir@"
-+# includedir="@includedir@"
  cppflag_curl_staticlib='@LIBCURL_PC_CFLAGS@'
  
  usage()
-@@ -147,19 +147,19 @@ while test "$#" -gt 0; do
+@@ -147,19 +145,11 @@ while test "$#" -gt 0; do
      else
        CPPFLAG_CURL_STATICLIB=''
      fi
 -    if test "X@includedir@" = 'X/usr/include'; then
-+    # if test "X@includedir@" = 'X/usr/include'; then
-       echo "${CPPFLAG_CURL_STATICLIB}"
+-      echo "${CPPFLAG_CURL_STATICLIB}"
 -    else
 -      echo "${CPPFLAG_CURL_STATICLIB}-I@includedir@"
 -    fi
-+    # else
-+    #   echo "${CPPFLAG_CURL_STATICLIB}-I@includedir@"
-+    # fi
++    echo "${CPPFLAG_CURL_STATICLIB}"
      ;;
  
    --libs)
 -    if test "X@libdir@" != 'X/usr/lib' -a "X@libdir@" != 'X/usr/lib64'; then
 -      CURLLIBDIR="-L@libdir@ "
 -    else
-+    # if test "X@libdir@" != 'X/usr/lib' -a "X@libdir@" != 'X/usr/lib64'; then
-+    #   CURLLIBDIR="-L@libdir@ "
-+    # else
-       CURLLIBDIR=''
+-      CURLLIBDIR=''
 -    fi
-+    # fi
++    CURLLIBDIR=''
      if test 'X@ENABLE_SHARED@' = 'Xno'; then
        echo "${CURLLIBDIR}-lcurl @LIBCURL_PC_LIBS_PRIVATE@"
      else
-@@ -173,7 +173,7 @@ while test "$#" -gt 0; do
+@@ -173,7 +163,7 @@ while test "$#" -gt 0; do
  
    --static-libs)
      if test 'X@ENABLE_STATIC@' != 'Xno'; then
