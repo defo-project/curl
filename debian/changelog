@@ -1,4 +1,4 @@
-curl (8.11.0-1) UNRELEASED; urgency=medium
+curl (8.11.0-1) unstable; urgency=medium
 
   [ Samuel Henrique ]
   * New upstream version 8.11.0
