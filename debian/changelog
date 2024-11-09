@@ -1,11 +1,25 @@
 curl (8.11.0-1) UNRELEASED; urgency=medium
 
+  [ Samuel Henrique ]
   * New upstream version 8.11.0
   * Fix CVE-2024-9681: HSTS subdomain overwrites parent cache entry
+   (closes: #1086804)
   * Update patches for the new release
+  * d/rules: Drop '--enable-websockets', it's enabled by default now
   * d/libcurl*.symbols: Remove HIDDEN@HIDDEN 7.16.2
+  * Add 5 upstream patches to fix regressions:
+    - cmdline_ech_md_formatting_cleanups.patch
+    - duphandle_also_init_netrc.patch
+    - libssh_when_using_IPv6_numerical_address_add_brackets.patch
+    - netrc_support_large_file_longer_lines_longer_tokens.patch
+    - setopt_fix_CURLOPT_HTTP_CONTENT_DECODING.patch
 
- -- Samuel Henrique <samueloph@debian.org>  Wed, 06 Nov 2024 07:59:27 +0000
+  [ Carlos Henrique Lima Melara ]
+  * d/rules: add sed rule to make curl-config get CPPFLAGS in run-time
+  * d/control: move libldap2-dev to Depends and use newer libldap-dev name
+  * d/control: move libkrb5-dev from Suggests to Depends for -dev packages
+
+ -- Samuel Henrique <samueloph@debian.org>  Sat, 09 Nov 2024 17:34:22 +0000
 
 curl (8.10.1-2) unstable; urgency=medium
 
