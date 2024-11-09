@@ -2,3 +2,10 @@ ZZZgnutls-build.patch
 build-Divide-mit-krb5-gssapi-link-flags-between-LDFLAGS-a.patch
 11_omit-directories-from-config.patch
 Remove-curl-s-LDFLAGS-from-curl-config-static-libs.patch
+
+# Post 8.11.0 patches
+duphandle_also_init_netrc.patch
+setopt_fix_CURLOPT_HTTP_CONTENT_DECODING.patch
+netrc_support_large_file_longer_lines_longer_tokens.patch
+cmdline_ech_md_formatting_cleanups.patch
+libssh_when_using_IPv6_numerical_address_add_brackets.patch
