@@ -1,14 +1,26 @@
 curl (8.11.1-1) UNRELEASED; urgency=medium
 
+  [ Samuel Henrique ]
+  * New upstream version 8.11.1
+    - Fix CVE-2024-11053: netrc and redirect credential leak (closes: #1089682)
+  * Update wcurl to 2024.12.08
+  * d/p/Remove-curl-s-LDFLAGS-from-curl-config-static-libs: Remove patch, not needed anymore
+  * d/p/11_omit-directories-from-config: Update patch
+  * Drop merged patches:
+    - cmdline_ech_md_formatting_cleanups.patch
+    - duphandle_also_init_netrc.patch
+    - libssh_when_using_IPv6_numerical_address_add_brackets.patch
+    - netrc_support_large_file_longer_lines_longer_tokens.patch
+    - setopt_fix_CURLOPT_HTTP_CONTENT_DECODING.patch
+  * Refresh patches:
+    - ZZZgnutls-build.patch
+    - build-Divide-mit-krb5-gssapi-link-flags-between-LDFLAGS-a.patch
+
   [ Carlos Henrique Lima Melara ]
   * d/t/upstream-tests-*: test gnutls backend against installed curl
   * d/t/control: install curl on upstream-tests-gnutls and remove on openssl
 
-  [ Samuel Henrique ]
-  * Update wcurl to 2024.12.08
-  * New upstream version 8.11.1
-
- -- Samuel Henrique <samueloph@debian.org>  Wed, 11 Dec 2024 21:56:14 +0000
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 11 Dec 2024 22:14:45 +0000
 
 curl (8.11.0-1) unstable; urgency=medium
 
