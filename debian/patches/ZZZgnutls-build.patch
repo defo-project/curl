@@ -16,7 +16,7 @@ Last-Update: 2024-11-06
  7 files changed, 87 insertions(+), 17 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index a8bd87e..7d09e3c 100644
+index e3ecf00..b645bb7 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -264,6 +264,16 @@ AS_HELP_STRING([--with-gnutls=PATH],[where to look for GnuTLS, PATH points to th
@@ -36,7 +36,7 @@ index a8bd87e..7d09e3c 100644
  OPT_MBEDTLS=no
  AC_ARG_WITH(mbedtls,dnl
  AS_HELP_STRING([--with-mbedtls=PATH],[where to look for mbedTLS, PATH points to the installation root]),[
-@@ -2670,7 +2680,7 @@ AS_HELP_STRING([--disable-versioned-symbols], [Disable versioned symbols in shar
+@@ -2700,7 +2710,7 @@ AS_HELP_STRING([--disable-versioned-symbols], [Disable versioned symbols in shar
  )
  
  AC_SUBST([CURL_LIBCURL_VERSIONED_SYMBOLS_PREFIX], ["$versioned_symbols_flavour"])
@@ -218,7 +218,7 @@ index 935614c..2bfcba6 100644
  # This might hold -Werror
  CFLAGS += @CURL_CFLAG_EXTRAS@
 diff --git a/tests/http/clients/Makefile.in b/tests/http/clients/Makefile.in
-index 924559a..a3fbe0f 100644
+index 2c3d851..6f92319 100644
 --- a/tests/http/clients/Makefile.in
 +++ b/tests/http/clients/Makefile.in
 @@ -177,7 +177,7 @@ CONFIG_CLEAN_VPATH_FILES =
@@ -274,7 +274,7 @@ index 924559a..a3fbe0f 100644
  AM_V_P = $(am__v_P_@AM_V@)
  am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
  am__v_P_0 = false
-@@ -535,7 +535,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/lib \
+@@ -536,7 +536,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/lib \
  LIBDIR = $(top_builddir)/lib
  
  # Dependencies
