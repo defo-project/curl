@@ -1,3 +1,15 @@
+curl (8.11.1-1) UNRELEASED; urgency=medium
+
+  [ Carlos Henrique Lima Melara ]
+  * d/t/upstream-tests-*: test gnutls backend against installed curl
+  * d/t/control: install curl on upstream-tests-gnutls and remove on openssl
+
+  [ Samuel Henrique ]
+  * Update wcurl to 2024.12.08
+  * New upstream version 8.11.1
+
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 11 Dec 2024 21:56:14 +0000
+
 curl (8.11.0-1) unstable; urgency=medium
 
   [ Samuel Henrique ]
