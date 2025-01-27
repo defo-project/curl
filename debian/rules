@@ -106,13 +106,13 @@ ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
 # OpenSSL tests.
 	cd debian/build && VERBOSE=1 \
 		TFLAGS="$(TESTS_GENERAL_PARAMETERS)" \
-		$(MAKE) test-nonflaky
+		$(MAKE) $(MAKE_EXTRA_FLAGS) test-nonflaky
 endif
 ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
 # GnuTLS tests.
 	cd debian/build-gnutls && VERBOSE=1 \
 		TFLAGS="$(TESTS_GENERAL_PARAMETERS)" \
-		$(MAKE) test-nonflaky
+		$(MAKE) $(MAKE_EXTRA_FLAGS) test-nonflaky
 endif
 endif
 

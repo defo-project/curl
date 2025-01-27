@@ -21,6 +21,10 @@ export VERBOSE=1
 # https://github.com/curl/curl/issues/10682
 export TESTS_FAILS_ON_IPV6_ONLY_MACHINES=""
 
+# Append V=0 to MAKE_EXTRA_FLAGS in d/rules to reduce build verbosity. This
+# helps prevent exceeding the byte limit for logs in salsa ci autopkgtest jobs.
+export MAKE_EXTRA_FLAGS="V=0"
+
 echo "dh_update_autotools_config"
 dh_update_autotools_config > "${AUTOPKGTEST_ARTIFACTS}/event_based_gnutls_autotools_config.log"
 
