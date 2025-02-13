@@ -1,3 +1,13 @@
+curl (8.12.1-1) UNRELEASED; urgency=medium
+
+  * Use valgrind in tests
+  * d/rules: Build OpenSSL with HTTP3 support
+  * d/control: libcurl4-openssl-dev: Depend on libnghttp3-dev
+  * Revert "d/copyright: exclude Windows related stuff from upstream tarball"
+  * New upstream version 8.12.1
+
+ -- Samuel Henrique <samueloph@debian.org>  Thu, 13 Feb 2025 22:17:23 +0000
+
 curl (8.12.0+git20250209.89ed161+ds-1) unstable; urgency=medium
 
   [ Samuel Henrique ]
