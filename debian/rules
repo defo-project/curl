@@ -46,6 +46,7 @@ endif
 # Enable debug support when the debug profile is active.
 ifneq ($(filter pkg.curl.debug,$(DEB_BUILD_PROFILES)),)
     CONFIGURE_ARGS += --enable-debug
+    TESTS_GENERAL_PARAMETERS += feat:debug
 endif
 
 %:
