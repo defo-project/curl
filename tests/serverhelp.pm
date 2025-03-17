@@ -45,6 +45,8 @@ BEGIN {
         server_cmdfilename
         server_inputfilename
         server_outputfilename
+        server_exe
+        server_exe_args
         mainsockf_pidfilename
         mainsockf_logfilename
         datasockf_pidfilename
@@ -59,6 +61,10 @@ BEGIN {
     }
 }
 
+use globalconfig;
+use pathhelp qw(
+    exe_ext
+    );
 
 our $logfile;  # server log file name, for logmsg
 
@@ -227,6 +233,44 @@ sub server_outputfilename {
     my ($logdir, $proto, $ipver, $idnum) = @_;
     my $trailer = '_server.output';
     return "${logdir}/". servername_canon($proto, $ipver, $idnum) ."$trailer";
+}
+
+
+#***************************************************************************
+# Return filename for a server executable
+#
+sub server_exe {
+    my ($name, $ext) = @_;
+    if(!defined $ext) {
+        $ext = 'SRV';
+    }
+    my $cmd;
+    if($ENV{'CURL_TEST_BUNDLES'}) {
+        $cmd = $SRVDIR . "servers" . exe_ext($ext) . " $name";
+    }
+    else {
+        $cmd = $SRVDIR . $name . exe_ext($ext);
+    }
+    return "$cmd";
+}
+
+
+#***************************************************************************
+# Return filename for a server executable as an argument list
+#
+sub server_exe_args {
+    my ($name, $ext) = @_;
+    if(!defined $ext) {
+        $ext = 'SRV';
+    }
+    my @cmd;
+    if($ENV{'CURL_TEST_BUNDLES'}) {
+        @cmd = ($SRVDIR . "servers" . exe_ext($ext), $name);
+    }
+    else {
+        @cmd = ($SRVDIR . $name . exe_ext($ext));
+    }
+    return @cmd;
 }
 
 
