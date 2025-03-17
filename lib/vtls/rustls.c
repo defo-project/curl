@@ -98,6 +98,7 @@ read_cb(void *userdata, uint8_t *buf, uintptr_t len, uintptr_t *out_n)
                                     (char *)buf, len, &result);
   if(nread < 0) {
     nread = 0;
+    /* !checksrc! disable ERRNOVAR 4 */
     if(CURLE_AGAIN == result)
       ret = EAGAIN;
     else
@@ -707,7 +708,7 @@ cr_init_backend(struct Curl_cfilter *cf, struct Curl_easy *data,
 
     if(conn_config->CRLfile) {
       struct dynbuf crl_contents;
-      Curl_dyn_init(&crl_contents, SIZE_MAX);
+      Curl_dyn_init(&crl_contents, DYN_CRLFILE_SIZE);
       if(!read_file_into(conn_config->CRLfile, &crl_contents)) {
         failf(data, "rustls: failed to read revocation list file");
         Curl_dyn_free(&crl_contents);

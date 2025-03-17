@@ -831,6 +831,7 @@ sub checksystemfeatures {
     $feature{"large-time"} = 1;
     $feature{"large-size"} = 1;
     $feature{"sha512-256"} = 1;
+    $feature{"--libcurl"} = 1;
     $feature{"local-http"} = servers::localhttp();
     $feature{"codeset-utf8"} = lc(langinfo(CODESET())) eq "utf-8";
 
@@ -2267,6 +2268,7 @@ while(@ARGV) {
     elsif ($ARGV[0] eq "-bundle") {
         # use test bundles
         $bundle=1;
+        $ENV{'CURL_TEST_BUNDLES'} = 1;
     }
     elsif ($ARGV[0] eq "-d") {
         # have the servers display protocol output

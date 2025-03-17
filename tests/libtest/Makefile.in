@@ -90,17 +90,19 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @USE_CPPFLAG_CURL_STATICLIB_TRUE@am__append_1 = -DCURL_STATICLIB
-@CURL_LT_SHLIB_USE_NO_UNDEFINED_TRUE@am__append_2 = -no-undefined
+@DEBUGBUILD_TRUE@am__append_2 = -DDEBUGBUILD
+@CURLDEBUG_TRUE@am__append_3 = -DCURLDEBUG
+@CURL_LT_SHLIB_USE_NO_UNDEFINED_TRUE@am__append_4 = -no-undefined
 
 # Build a stub gssapi implementation for testing
-@BUILD_STUB_GSS_TRUE@am__append_3 = libstubgss.la
+@BUILD_STUB_GSS_TRUE@am__append_5 = libstubgss.la
 @BUILD_STUB_GSS_FALSE@libstubgss_la_DEPENDENCIES =
 @USE_TEST_BUNDLES_FALSE@noinst_PROGRAMS = $(am__EXEEXT_1)
 @USE_TEST_BUNDLES_TRUE@noinst_PROGRAMS = libtests$(EXEEXT)
-@USE_TEST_BUNDLES_TRUE@am__append_4 = libtest_bundle.c
+@USE_TEST_BUNDLES_TRUE@am__append_6 = libtest_bundle.c
 
 # These are part of the libcurl static lib. Add them here when linking shared.
-@USE_CPPFLAG_CURL_STATICLIB_FALSE@@USE_TEST_BUNDLES_TRUE@am__append_5 = $(WARNLESS) $(MULTIBYTE) $(INET_PTON) $(TIMEDIFF) $(THREADS)
+@USE_CPPFLAG_CURL_STATICLIB_FALSE@@USE_TEST_BUNDLES_TRUE@am__append_7 = $(WARNLESS) $(MULTIBYTE) $(INET_PTON) $(TIMEDIFF) $(THREADS)
 subdir = tests/libtest
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/curl-amissl.m4 \
@@ -1986,11 +1988,12 @@ AUTOMAKE_OPTIONS = foreign nostdinc
 # $(top_srcdir)/lib for libcurl's lib/curl_setup.h and other "borrowed" files
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/lib \
 	-I$(top_srcdir)/lib -I$(top_srcdir)/src \
-	-I$(top_srcdir)/tests/libtest $(am__append_1)
+	-I$(top_srcdir)/tests/libtest $(am__append_1) $(am__append_2) \
+	$(am__append_3)
 EXTRA_DIST = test307.pl test610.pl test613.pl test1013.pl test1022.pl   \
   CMakeLists.txt mk-lib1521.pl .checksrc
 
-CLEANFILES = lib1521.c $(am__append_4)
+CLEANFILES = lib1521.c $(am__append_6)
 SUPPORTFILES_LIBS = $(top_builddir)/lib/libcurl.la @LIBCURL_PC_LIBS_PRIVATE@
 TESTUTIL_LIBS = $(top_builddir)/lib/libcurl.la @LIBCURL_PC_LIBS_PRIVATE@
 
@@ -2508,10 +2511,10 @@ lib3208_LDADD = $(TESTUTIL_LIBS)
 
 # Makefile.inc provides the source defines (TESTUTIL, SUPPORTFILES,
 # LIBTESTPROGS, lib*_SOURCES, and lib*_CFLAGS)
-noinst_LTLIBRARIES = $(am__append_3)
+noinst_LTLIBRARIES = $(am__append_5)
 AM_LDFLAGS = 
 AM_CFLAGS = 
-libstubgss_la_LDFLAGS_EXTRA = $(am__append_2)
+libstubgss_la_LDFLAGS_EXTRA = $(am__append_4)
 @BUILD_STUB_GSS_TRUE@libstubgss_la_CPPFLAGS = $(AM_CPPFLAGS)
 @BUILD_STUB_GSS_TRUE@libstubgss_la_LDFLAGS = $(AM_LDFLAGS) $(libstubgss_la_LDFLAGS_EXTRA) -avoid-version -rpath /nowhere
 @BUILD_STUB_GSS_TRUE@libstubgss_la_CFLAGS = $(AM_CFLAGS) -g
@@ -2520,7 +2523,7 @@ libstubgss_la_LDFLAGS_EXTRA = $(am__append_2)
 @BUILD_STUB_GSS_TRUE@libstubgss_la_DEPENDENCIES = 
 @USE_TEST_BUNDLES_TRUE@nodist_libtests_SOURCES = libtest_bundle.c
 @USE_TEST_BUNDLES_TRUE@libtests_SOURCES = $(TESTUTIL) $(TSTTRACE) \
-@USE_TEST_BUNDLES_TRUE@	$(am__append_5)
+@USE_TEST_BUNDLES_TRUE@	$(am__append_7)
 @USE_TEST_BUNDLES_TRUE@libtests_LDADD = $(TESTUTIL_LIBS)
 CHECKSRC = $(CS_$(V))
 CS_0 = @echo "  RUN     " $@;
@@ -6534,7 +6537,7 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
-@USE_TEST_BUNDLES_TRUE@libtest_bundle.c: $(top_srcdir)/tests/mk-bundle.pl lib1521.c
+@USE_TEST_BUNDLES_TRUE@libtest_bundle.c: $(top_srcdir)/tests/mk-bundle.pl $(FIRSTFILES) lib1521.c
 @USE_TEST_BUNDLES_TRUE@	@PERL@ $(top_srcdir)/tests/mk-bundle.pl $(srcdir) > libtest_bundle.c
 
 lib1521.c: $(top_srcdir)/tests/libtest/mk-lib1521.pl $(top_srcdir)/include/curl/curl.h
