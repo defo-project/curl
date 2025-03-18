@@ -1,3 +1,20 @@
+curl (8.13.0~rc2-2) unstable; urgency=medium
+
+  * Team upload.
+  * d/p/runtests-feat-filter.patch: Import upstream patch for feature-based
+    test filtering
+  * d/rules:
+    - Add pkg.curl.debug profile support
+    - Add 'feat:debug' as option to the TESTS_GENERAL_PARAMETERS in debug
+      profile
+  * d/tests:
+    - Add new autopkgtests for event-based tests
+    - Redirect specific autopkgtest outputs to artifacts to reduce build log
+      noise
+    - Reduce override_dh_auto_test verbosity in the event-based autopkgtests
+
+ -- Aquila Macedo Costa <aquilamacedo@riseup.net>  Mon, 17 Mar 2025 21:04:08 -0300
+
 curl (8.13.0~rc2-1) unstable; urgency=medium
 
   * New upstream version 8.13.0~rc2
