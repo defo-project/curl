@@ -1750,7 +1750,7 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
-@BUILD_UNITTESTS_TRUE@@USE_TEST_BUNDLES_TRUE@unit_bundle.c: $(top_srcdir)/tests/mk-bundle.pl
+@BUILD_UNITTESTS_TRUE@@USE_TEST_BUNDLES_TRUE@unit_bundle.c: $(top_srcdir)/tests/mk-bundle.pl Makefile.inc
 @BUILD_UNITTESTS_TRUE@@USE_TEST_BUNDLES_TRUE@	@PERL@ $(top_srcdir)/tests/mk-bundle.pl $(srcdir) > unit_bundle.c
 
 # ignore generated C files since they play by slightly different rules!
