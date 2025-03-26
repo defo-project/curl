@@ -1,3 +1,14 @@
+curl (8.13.0~rc3-1) UNRELEASED; urgency=medium
+
+  [ Vladimir Petko ]
+  * Revert Ubuntu compatibility changes for building with libssh (closes: #1079076)
+
+  [ Samuel Henrique ]
+  * d/watch: Properly identify RC release IDs (rc1, rc2...)
+  * New upstream version 8.13.0~rc3
+
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 26 Mar 2025 18:36:42 +0000
+
 curl (8.13.0~rc2-2) unstable; urgency=medium
 
   * Team upload.
