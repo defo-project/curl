@@ -366,9 +366,9 @@ static void destroy_async_data(struct Curl_easy *data)
 #endif
 
 #ifdef USE_HTTPSRR_ARES
-    if(data->state.async.thdata.channel) {
-      ares_destroy(data->state.async.thdata.channel);
-      data->state.async.thdata.channel = NULL;
+    if(td->channel) {
+      ares_destroy(td->channel);
+      td->channel = NULL;
     }
 #endif
     /*
@@ -567,13 +567,8 @@ CURLcode Curl_resolver_is_resolved(struct Curl_easy *data,
   DEBUGASSERT(entry);
   *entry = NULL;
 
-  if(!td) {
-    DEBUGASSERT(td);
-    return CURLE_COULDNT_RESOLVE_HOST;
-  }
 #ifdef USE_HTTPSRR_ARES
-  if(Curl_ares_perform(data->state.async.thdata.channel, 0) < 0)
-    return CURLE_UNRECOVERABLE_POLL;
+  (void)Curl_ares_perform(td->channel, 0); /* ignore errors */
 #endif
 
   Curl_mutex_acquire(&td->tsd.mutx);
@@ -640,8 +635,8 @@ int Curl_resolver_getsock(struct Curl_easy *data, curl_socket_t *socks)
 #endif
 
 #ifdef USE_HTTPSRR_ARES
-  if(data->state.async.thdata.channel) {
-    ret_val = Curl_ares_getsock(data, data->state.async.thdata.channel, socks);
+  if(td->init && td->channel) {
+    ret_val = Curl_ares_getsock(data, td->channel, socks);
     for(socketi = 0; socketi < (MAX_SOCKSPEREASYHANDLE - 1); socketi++)
       if(!ARES_GETSOCK_READABLE(ret_val, socketi) &&
          !ARES_GETSOCK_WRITABLE(ret_val, socketi))
@@ -649,10 +644,13 @@ int Curl_resolver_getsock(struct Curl_easy *data, curl_socket_t *socks)
   }
 #endif
 #ifndef CURL_DISABLE_SOCKETPAIR
-  /* return read fd to client for polling the DNS resolution status */
-  socks[socketi] = td->tsd.sock_pair[0];
-  ret_val |= GETSOCK_READSOCK(socketi);
-#else
+  if(td->init) {
+    /* return read fd to client for polling the DNS resolution status */
+    socks[socketi] = td->tsd.sock_pair[0];
+    ret_val |= GETSOCK_READSOCK(socketi);
+  }
+  else
+#endif
   {
     timediff_t milli;
     timediff_t ms = Curl_timediff(Curl_now(), td->start);
@@ -666,7 +664,6 @@ int Curl_resolver_getsock(struct Curl_easy *data, curl_socket_t *socks)
       milli = 200;
     Curl_expire(data, milli, EXPIRE_ASYNC_NAME);
   }
-#endif
 
   return ret_val;
 }

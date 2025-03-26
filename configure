@@ -21372,21 +21372,7 @@ case $host_os in
     ;;
 esac
 
-# In order to detect support of sendmmsg(), we need to escape the POSIX
-# jail by defining _GNU_SOURCE or <sys/socket.h> will not expose it.
-case $host_os in
-  linux*)
-    CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
-    ;;
-esac
-
-if test "x$want_debug" = "xyes" &&
-   test "x$supports_unittests" = "xyes"; then
-  want_unittests=yes
-else
-  want_unittests=no
-fi
- if test x$want_unittests = xyes; then
+ if test x$supports_unittests = xyes; then
   BUILD_UNITTESTS_TRUE=
   BUILD_UNITTESTS_FALSE='#'
 else
@@ -21394,6 +21380,14 @@ else
   BUILD_UNITTESTS_FALSE=
 fi
 
+
+# In order to detect support of sendmmsg(), we need to escape the POSIX
+# jail by defining _GNU_SOURCE or <sys/socket.h> will not expose it.
+case $host_os in
+  linux*)
+    CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
+    ;;
+esac
 
 OPT_SERVER_DEBUG="default"
 # Check whether --enable-server-debug was given.
@@ -44145,6 +44139,8 @@ if test "x$want_ech" != "xno"; then
 printf %s "checking whether ECH support is available... " >&6; }
 
     ECH_ENABLED=0
+  ECH_ENABLED_OPENSSL=0
+  ECH_ENABLED_WOLFSSL=0
   ECH_SUPPORT=''
 
     if test "x$OPENSSL_ENABLED" = "x1"; then
@@ -44155,8 +44151,8 @@ do :
 if test "x$ac_cv_func_SSL_set1_ech_config_list" = xyes
 then :
   printf "%s\n" "#define HAVE_SSL_SET1_ECH_CONFIG_LIST 1" >>confdefs.h
- ECH_SUPPORT="ECH support available via BoringSSL with SSL_set1_ech_config_list"
-      ECH_ENABLED=1
+ ECH_SUPPORT="$ECH_SUPPORT OpenSSL"
+      ECH_ENABLED_OPENSSL=1
 fi
 
 done
@@ -44169,20 +44165,22 @@ do :
 if test "x$ac_cv_func_wolfSSL_CTX_GenerateEchConfig" = xyes
 then :
   printf "%s\n" "#define HAVE_WOLFSSL_CTX_GENERATEECHCONFIG 1" >>confdefs.h
- ECH_SUPPORT="ECH support available via wolfSSL with wolfSSL_CTX_GenerateEchConfig"
-      ECH_ENABLED=1
+ ECH_SUPPORT="$ECH_SUPPORT wolfSSL"
+      ECH_ENABLED_WOLFSSL=1
 fi
 
 done
   fi
 
-    if test "x$ECH_ENABLED" = "x1"; then
+    if test "x$ECH_ENABLED_OPENSSL" = "x1" -o \
+          "x$ECH_ENABLED_WOLFSSL" = "x1"; then
 
 printf "%s\n" "#define USE_ECH 1" >>confdefs.h
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ECH_SUPPORT" >&5
-printf "%s\n" "$ECH_SUPPORT" >&6; }
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ECH support available via:$ECH_SUPPORT" >&5
+printf "%s\n" "ECH support available via:$ECH_SUPPORT" >&6; }
     experimental="$experimental ECH"
+    ECH_ENABLED=1
         want_httpsrr="yes"
   else
     as_fn_error $? "--enable-ech ignored: No ECH support found" "$LINENO" 5

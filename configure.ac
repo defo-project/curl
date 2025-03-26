@@ -572,6 +572,8 @@ case $host_os in
     ;;
 esac
 
+AM_CONDITIONAL(BUILD_UNITTESTS, test x$supports_unittests = xyes)
+
 # In order to detect support of sendmmsg(), we need to escape the POSIX
 # jail by defining _GNU_SOURCE or <sys/socket.h> will not expose it.
 case $host_os in
@@ -579,15 +581,6 @@ case $host_os in
     CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
     ;;
 esac
-
-dnl Build unit tests when option --enable-debug is given.
-if test "x$want_debug" = "xyes" &&
-   test "x$supports_unittests" = "xyes"; then
-  want_unittests=yes
-else
-  want_unittests=no
-fi
-AM_CONDITIONAL(BUILD_UNITTESTS, test x$want_unittests = xyes)
 
 dnl Apply curl debug options to test servers
 OPT_SERVER_DEBUG="default"
@@ -4893,25 +4886,29 @@ if test "x$want_ech" != "xno"; then
 
   dnl assume NOT and look for sufficient condition
   ECH_ENABLED=0
+  ECH_ENABLED_OPENSSL=0
+  ECH_ENABLED_WOLFSSL=0
   ECH_SUPPORT=''
 
   dnl check for OpenSSL equivalent
   if test "x$OPENSSL_ENABLED" = "x1"; then
     AC_CHECK_FUNCS(SSL_set1_ech_config_list,
-      ECH_SUPPORT="ECH support available via BoringSSL with SSL_set1_ech_config_list"
-      ECH_ENABLED=1)
+      ECH_SUPPORT="$ECH_SUPPORT OpenSSL"
+      ECH_ENABLED_OPENSSL=1)
   fi
   if test "x$WOLFSSL_ENABLED" = "x1"; then
     AC_CHECK_FUNCS(wolfSSL_CTX_GenerateEchConfig,
-      ECH_SUPPORT="ECH support available via wolfSSL with wolfSSL_CTX_GenerateEchConfig"
-      ECH_ENABLED=1)
+      ECH_SUPPORT="$ECH_SUPPORT wolfSSL"
+      ECH_ENABLED_WOLFSSL=1)
   fi
 
   dnl now deal with whatever we found
-  if test "x$ECH_ENABLED" = "x1"; then
+  if test "x$ECH_ENABLED_OPENSSL" = "x1" -o \
+          "x$ECH_ENABLED_WOLFSSL" = "x1"; then
     AC_DEFINE(USE_ECH, 1, [if ECH support is available])
-    AC_MSG_RESULT($ECH_SUPPORT)
+    AC_MSG_RESULT(ECH support available via:$ECH_SUPPORT)
     experimental="$experimental ECH"
+    ECH_ENABLED=1
     dnl ECH wants HTTPSRR
     want_httpsrr="yes"
   else
