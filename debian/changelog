@@ -1,3 +1,19 @@
+curl (8.13.0-3) unstable; urgency=medium
+
+  [ Carlos Henrique Lima Melara ]
+  * d/t/upstream-tests-*: use correct version of curl in tests
+
+  [ наб ]
+  * d/README.source: delete (false)
+
+  [ Matheus Polkorny ]
+  * d/copyright: Update to reflect upstream copyright changes
+
+  [ Samuel Henrique ]
+  * Update wcurl to v2025.04.20
+
+ -- Samuel Henrique <samueloph@debian.org>  Mon, 21 Apr 2025 00:23:44 +0100
+
 curl (8.13.0-2) unstable; urgency=medium
 
   * Link with OpenSSL for the curl CLI (closes: #1095986)
