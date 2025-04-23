@@ -1,3 +1,11 @@
+curl (8.13.0-4) unstable; urgency=medium
+
+  * d/tests/control: Install curl for the openssl tests
+  * d/p/autotools_install_shell_completion_files_on_cross_build: Fix FTCBFS,
+    thanks to Helmut Grohne (closes: #1103938)
+
+ -- Samuel Henrique <samueloph@debian.org>  Thu, 24 Apr 2025 00:02:26 +0100
+
 curl (8.13.0-3) unstable; urgency=medium
 
   [ Carlos Henrique Lima Melara ]
