@@ -4,3 +4,4 @@ build-Divide-mit-krb5-gssapi-link-flags-between-LDFLAGS-a.patch
 
 # Post 8.14.1 patches
 tool_getparam_fix_ftp_pasv.patch
+curl_path_make_SFTP_handle_a_path.patch
