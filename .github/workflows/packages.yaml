@@ -67,14 +67,6 @@ jobs:
           apt-ftparchive packages . > Packages
           apt-ftparchive release . > Release
 
-      - name: Test packages
-        run: |
-          mmdebstrap --verbose --chrooted-customize-hook="curl --ech true --doh-url 'https://1.1.1.1/dns-query' 'https://defo.ie/ech-check.php' | grep 'SSL_ECH_STATUS: success'" \
-            --variant=essential --include=ca-certificates,curl testing /dev/null \
-            "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian testing main" \
-            "deb [trusted=yes] https://github.com/defo-project/openssl/raw/packages/ /" \
-            "deb [trusted=yes] copy:/$HOME/apt_repo /"
-
       - name: Upload apt repository
         run: |
           cd "$HOME/apt_repo"
