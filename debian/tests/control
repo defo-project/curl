@@ -2,15 +2,7 @@ Tests: upstream-tests-openssl
 Depends: curl, @builddeps@
 Restrictions: allow-stderr
 
-Tests: upstream-tests-gnutls
-Depends: @builddeps@
-Restrictions: allow-stderr
-
 Tests: upstream-event-based-tests-openssl
-Depends: @builddeps@
-Restrictions: allow-stderr
-
-Tests: upstream-event-based-tests-gnutls
 Depends: @builddeps@
 Restrictions: allow-stderr
 
@@ -20,8 +12,4 @@ Restrictions: allow-stderr, isolation-container, needs-root
 
 Tests: build-using-libcurl-openssl
 Depends: build-essential, libcurl4-openssl-dev, pkgconf
-Restrictions: superficial
-
-Tests: build-using-libcurl-gnutls
-Depends: build-essential, libcurl4-gnutls-dev, pkgconf
 Restrictions: superficial
