@@ -1,3 +1,26 @@
+curl (8.15.0-1) unstable; urgency=medium
+
+  [ Samuel Henrique ]
+  * New upstream version 8.15.0
+  * d/patches:
+    - Drop patches merged upstream
+    - build-Divide-mit-krb5-gssapi...: Refresh patch
+    - ZZZgnutls-build.patch: Update patch
+  * d/copyright:
+    - Update with renamed and removed files
+    - Remove dropped files build-openssl.bat and checksrc.bat
+
+  [ Carlos Henrique Lima Melara ]
+  * d/patches/:
+    - Refresh patches
+    - Rebase patches against new upstream version
+  * d/libcurl4-doc.docs: remove docs/examples/README.md, it's in .examples *
+
+  [ Aquila Macedo ]
+  * d/tests/common-upstream-tests: centralize common build steps
+
+ -- Samuel Henrique <samueloph@debian.org>  Sun, 10 Aug 2025 16:38:32 +0100
+
 curl (8.14.1-2) unstable; urgency=medium
 
   * gbp pq import/export: Updated hunks offsets
