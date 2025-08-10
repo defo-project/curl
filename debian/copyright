@@ -27,6 +27,7 @@ Copyright: 1999, Leon Breedt <ljb@debian.org>
  2023-2025, Carlos Henrique Lima Melara <charlesmelara@riseup.net>
  2022-2024, Sergio Durigan Junior <sergiodj@debian.org>
  2021-2024, Samuel Henrique <samueloph@debian.org>
+ 2025, Aquila Macedo Costa <aquilamacedo@riseup.net>
 License: curl
 
 Files: debian/tests/LDAP-bindata.c
