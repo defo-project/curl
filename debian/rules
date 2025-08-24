@@ -50,28 +50,30 @@ endif
 %:
 	dh $@
 
+# Run configure for a specific curl flavour.
+#
+# First argument is the flavour name (openssl or gnutls).
+# Second argument is extra configure parameters (if any).
+define configure-curl
+mkdir -p debian/build-$(1)
+tar -cf - --exclude=debian/build* --exclude=.pc . \
+  | tar -xf - -C debian/build-$(1)
+cd debian/build-$(1) && \
+autoreconf -fi && \
+cp ../../ltmain.sh . && \
+dh_auto_configure \
+  $(CONFIGURE_ARGS) \
+  --with-$(1) \
+  --with-nghttp3 \
+  $(2)
+endef
+
 override_dh_auto_configure:
-ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
-	mkdir -p debian/build
-	tar -cf - --exclude=debian/build* --exclude=.pc . \
-		| tar -xf - -C debian/build
-	cd debian/build && \
-	autoreconf -fi && \
-	cp ../../ltmain.sh . && \
-	dh_auto_configure ${CONFIGURE_ARGS} --with-openssl \
-		--with-openssl-quic \
-		--with-nghttp3
+ifeq ($(with_openssl),yes)
+	$(call configure-curl,openssl,--with-openssl-quic)
 endif
-ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
-	mkdir -p debian/build-gnutls
-	tar -cf - --exclude=debian/build* --exclude=.pc . \
-		| tar -xf - -C debian/build-gnutls
-	cd debian/build-gnutls && \
-	autoreconf -fi && \
-	cp ../../ltmain.sh . && \
-	dh_auto_configure ${CONFIGURE_ARGS} --with-gnutls \
-		--with-ngtcp2 \
-		--with-nghttp3
+ifeq ($(with_gnutls),yes)
+	$(call configure-curl,gnutls,--with-ngtcp2)
 endif
 
 override_dh_auto_build:
