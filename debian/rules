@@ -179,7 +179,3 @@ override_dh_installchangelogs:
 
 override_dh_compress:
 	dh_compress -X.pdf
-
-override_dh_auto_clean:
-	$(RM) -r debian/build* debian/tmp*
-	dh_auto_clean
