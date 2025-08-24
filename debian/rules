@@ -127,25 +127,26 @@ ifeq ($(with_gnutls),yes)
 endif
 endif
 
+# Install a specific curl flavour.
+#
+# First argument is the flavour name (openssl or gnutls).
+# Second argument is the directory (under debian/) to install to.
+# Third argument is the list of packages to pass dh_install.
+define install-curl
+$(MAKE) -C debian/build-$(1) \
+   DESTDIR=$(CURDIR)/debian/$(2) install
+find $(CURDIR)/debian/$(2) -name '*.la' -delete
+dh_install $(3) --sourcedir=debian/$(2)
+endef
+
 override_dh_install:
-ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
-	${MAKE} -C debian/build					\
-		DESTDIR=$(shell pwd)/debian/tmp install
+ifeq ($(with_openssl),yes)
+	$(call install-curl,openssl,tmp,-plibcurl4t64 -plibcurl4-openssl-dev -plibcurl4-doc -pcurl)
 endif
-ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
-	${MAKE} -C debian/build-gnutls				\
-		DESTDIR=$(shell pwd)/debian/tmp-gnutls install
+ifeq ($(with_gnutls),yes)
+	$(call install-curl,gnutls,tmp-gnutls,-plibcurl3t64-gnutls -plibcurl4-gnutls-dev)
 endif
-	find debian/tmp* -name '*.la' -delete
-ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
-	dh_install -plibcurl4t64 -plibcurl4-openssl-dev -plibcurl4-doc \
-		-pcurl \
-		--sourcedir=debian/tmp
-endif
-ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
-	dh_install -plibcurl3t64-gnutls -plibcurl4-gnutls-dev	\
-		--sourcedir=debian/tmp-gnutls
-endif
+
 # Modify curl-config to make it architecture-independent:
 # 1. In --static-libs output, replace the output of krb5-config (which
 #    currently includes architecture-specific paths) with a call at
