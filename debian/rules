@@ -108,19 +108,22 @@ TESTS_FAILS_ON_IPV6_ONLY_MACHINES ?= $(addprefix ~, 300 301 303 304 306 309 310 
 
 TESTS_GENERAL_PARAMETERS += $(TESTS_FAILS_ON_IPV6_ONLY_MACHINES)
 
+# Test a specific curl flavour.
+#
+# First argument is the flavour name (openssl or gnutls).
+define test-curl
+cd debian/build-$(1) && VERBOSE=1 \
+  TFLAGS="$(TESTS_GENERAL_PARAMETERS)" \
+$(MAKE) $(MAKE_EXTRA_FLAGS) test-nonflaky
+endef
+
 override_dh_auto_test:
 ifeq ($(filter nocheck,$(DEB_BUILD_PROFILES)),)
-ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
-# OpenSSL tests.
-	cd debian/build && VERBOSE=1 \
-		TFLAGS="$(TESTS_GENERAL_PARAMETERS)" \
-		$(MAKE) $(MAKE_EXTRA_FLAGS) test-nonflaky
+ifeq ($(with_openssl),yes)
+	$(call test-curl,openssl)
 endif
-ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
-# GnuTLS tests.
-	cd debian/build-gnutls && VERBOSE=1 \
-		TFLAGS="$(TESTS_GENERAL_PARAMETERS)" \
-		$(MAKE) $(MAKE_EXTRA_FLAGS) test-nonflaky
+ifeq ($(with_gnutls),yes)
+	$(call test-curl,gnutls)
 endif
 endif
 
