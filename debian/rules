@@ -36,6 +36,9 @@ ifneq ($(filter pkg.curl.gnutls-only,$(DEB_BUILD_PROFILES)),)
 	DEB_BUILD_PROFILES += pkg.curl.no-openssl
 endif
 
+with_openssl := $(if $(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),no,yes)
+with_gnutls := $(if $(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),no,yes)
+
 # Enable debug support when the debug profile is active.
 ifneq ($(filter pkg.curl.debug,$(DEB_BUILD_PROFILES)),)
     CONFIGURE_ARGS += --enable-debug
