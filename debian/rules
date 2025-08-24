@@ -76,12 +76,19 @@ ifeq ($(with_gnutls),yes)
 	$(call configure-curl,gnutls,--with-ngtcp2)
 endif
 
+# Invoke dh_auto_build for a specific curl flavour.
+#
+# First argument is the flavour name (openssl or gnutls).
+define build-curl
+cd debian/build-$(1) && dh_auto_build
+endef
+
 override_dh_auto_build:
-ifeq ($(filter pkg.curl.no-openssl,$(DEB_BUILD_PROFILES)),)
-	cd debian/build && dh_auto_build
+ifeq ($(with_openssl),yes)
+	$(call build-curl,openssl)
 endif
-ifeq ($(filter pkg.curl.no-gnutls,$(DEB_BUILD_PROFILES)),)
-	cd debian/build-gnutls && dh_auto_build
+ifeq ($(with_gnutls),yes)
+	$(call build-curl,gnutls)
 endif
 
 # Test parameters that are passed to runtests.pl.
