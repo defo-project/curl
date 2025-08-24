@@ -19,6 +19,8 @@ CONFIGURE_ARGS = -- --disable-dependency-tracking		\
 	--with-ca-path=/etc/ssl/certs \
 	--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
 	--without-libssh --with-libssh2
+	--without-libssh --with-libssh2 \
+	--cache-file=$(CURDIR)/debian/config.cache
 
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
   NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
