@@ -18,7 +18,6 @@ CONFIGURE_ARGS = -- --disable-dependency-tracking		\
 	--with-fish-functions-dir=/usr/share/fish/vendor_completions.d \
 	--with-ca-path=/etc/ssl/certs \
 	--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
-	--without-libssh --with-libssh2
 	--without-libssh --with-libssh2 \
 	--cache-file=$(CURDIR)/debian/config.cache
 
