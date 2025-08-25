@@ -1,27 +1,36 @@
-curl (8.16.0~rc2-1) UNRELEASED; urgency=medium
+curl (8.16.0~rc2-1) unstable; urgency=medium
 
   [ Samuel Henrique ]
-  * New upstream version 8.16.0~rc1
-  * d/watch: Point to rc releases and pick tar.xz tarballs
   * New upstream version 8.16.0~rc2
+  * d/watch: Point to rc releases and pick tar.xz tarballs
+  * Update patches:
+    - 11_omit-directories-from-config.patch: Upstream changes in Makefile
+    - ZZZgnutls-build.patch: Upstream changes in Makefile
+    - build-Divide-mit-krb5-gssapi-link-flags-between-LDFLAGS-a.patch: Update
+      context
+  * d/libcurl*.symbols: New symbols "curl_multi_get_offt" and
+    "curl_ws_start_frame"
+  * d/rules: Add missing backslash to escape newline
+  * d/rules: Remove "--cache-files" from curl-config
 
   [ Sergio Durigan Junior ]
-  * d/rules: Enable symbol hiding when compiling curl.
-  * d/rules: New variables with_{openssl,gnutls}.
-  * d/rules: Specify --cache-file when invoking configure.
   * Use d/clean instead of overriding dh_auto_clean
-  * d/rules: Expand removal of aclocal to debian/tmp*/ directories.
-  * d/rules: Use "define" to create a template of the configure step.
-  * d/rules: Use "define" to create a template of the build step.
-  * d/rules: Use "define" to create a template of the test step.
-  * d/rules: Use "define" to create a template of the install step.
+  * d/rules:
+    - Enable symbol hiding when compiling curl.
+    - New variables with_{openssl,gnutls}.
+    - Specify --cache-file when invoking configure.
+    - Expand removal of aclocal to debian/tmp*/ directories.
+    - Use "define" to create a template of the configure step.
+    - Use "define" to create a template of the build step.
+    - Use "define" to create a template of the test step.
+    - Use "define" to create a template of the install step.
 
   [ Aquila Macedo ]
   * d/copyright: sync licenses
   * d/copyright: add myself
   * d/lrc.config: add initial exclusions to suppress false positives
 
- -- Samuel Henrique <samueloph@debian.org>  Mon, 25 Aug 2025 22:36:38 +0100
+ -- Samuel Henrique <samueloph@debian.org>  Mon, 25 Aug 2025 23:21:04 +0100
 
 curl (8.15.0-1) unstable; urgency=medium
 
