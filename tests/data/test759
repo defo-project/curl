@@ -1,35 +1,28 @@
 <testcase>
 <info>
 <keywords>
-missing URL
+globbing
 </keywords>
 </info>
-#
-# Server-side
-<reply>
-</reply>
 
+#
 # Client-side
 <client>
 <server>
 none
 </server>
-<features>
-http
-</features>
-# tool is what to use instead of 'curl'
-<tool>
-lib%TESTNUMBER
-</tool>
-
 <name>
-simple libcurl attempt operation without URL set
+glob '{,'
 </name>
+<command>
+"{,,,,,,,}" "{," "{,,,"
+</command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
+# curl: (3) unmatched brace in URL position 1:
 <errorcode>
 3
 </errorcode>
