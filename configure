@@ -45857,7 +45857,9 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile docs/Makefile docs/examples/Makefile docs/libcurl/Makefile docs/libcurl/opts/Makefile docs/cmdline-opts/Makefile include/Makefile include/curl/Makefile src/Makefile lib/Makefile scripts/Makefile lib/libcurl.vers tests/Makefile tests/config tests/configurehelp.pm tests/certs/Makefile tests/data/Makefile tests/server/Makefile tests/libtest/Makefile tests/unit/Makefile tests/tunit/Makefile tests/http/config.ini tests/http/Makefile packages/Makefile packages/vms/Makefile curl-config libcurl.pc"
+ac_config_files="$ac_config_files Makefile docs/Makefile docs/examples/Makefile docs/libcurl/Makefile docs/libcurl/opts/Makefile docs/cmdline-opts/Makefile include/Makefile include/curl/Makefile src/Makefile lib/Makefile scripts/Makefile lib/libcurl.vers tests/Makefile tests/config tests/configurehelp.pm tests/certs/Makefile tests/data/Makefile tests/server/Makefile tests/libtest/Makefile tests/unit/Makefile tests/tunit/Makefile tests/http/config.ini tests/http/Makefile packages/Makefile packages/vms/Makefile libcurl.pc"
+
+ac_config_files="$ac_config_files curl-config"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -47076,8 +47078,8 @@ do
     "tests/http/Makefile") CONFIG_FILES="$CONFIG_FILES tests/http/Makefile" ;;
     "packages/Makefile") CONFIG_FILES="$CONFIG_FILES packages/Makefile" ;;
     "packages/vms/Makefile") CONFIG_FILES="$CONFIG_FILES packages/vms/Makefile" ;;
-    "curl-config") CONFIG_FILES="$CONFIG_FILES curl-config" ;;
     "libcurl.pc") CONFIG_FILES="$CONFIG_FILES libcurl.pc" ;;
+    "curl-config") CONFIG_FILES="$CONFIG_FILES curl-config" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -48460,6 +48462,7 @@ hardcode_action=$hardcode_action_RC
 _LT_EOF
 
  ;;
+    "curl-config":F) chmod +x curl-config ;;
 
   esac
 done # for ac_tag
