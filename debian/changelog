@@ -1,3 +1,10 @@
+curl (8.16.0-1) unstable; urgency=medium
+
+  * d/watch: Point to GitHub for GA releases
+  * New upstream version 8.16.0
+
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 10 Sep 2025 08:40:58 +0100
+
 curl (8.16.0~rc3-1) unstable; urgency=medium
 
   * New upstream version 8.16.0~rc3.
