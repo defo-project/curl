@@ -129,7 +129,6 @@ static const char aschex[] =
   "\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x41\x42\x43\x44\x45\x46";
 
 
-
 #ifndef __VMS
 #define filesize(name, stat_data) (stat_data.st_size)
 #define fopen_read fopen
@@ -661,7 +660,7 @@ static size_t mime_mem_read(char *buffer, size_t size, size_t nitems,
 {
   curl_mimepart *part = (curl_mimepart *) instream;
   size_t sz = curlx_sotouz(part->datasize - part->state.offset);
-  (void)size;   /* Always 1.*/
+  (void)size;  /* Always 1 */
 
   if(!nitems)
     return STOP_FILLING;
@@ -1000,7 +999,7 @@ static size_t mime_subparts_read(char *buffer, size_t size, size_t nitems,
 {
   curl_mime *mime = (curl_mime *) instream;
   size_t cursize = 0;
-  (void)size;   /* Always 1. */
+  (void)size;  /* Always 1 */
 
   while(nitems) {
     size_t sz = 0;
@@ -1593,7 +1592,7 @@ size_t Curl_mime_read(char *buffer, size_t size, size_t nitems, void *instream)
   size_t ret;
   bool hasread;
 
-  (void)size;   /* Always 1. */
+  (void)size;  /* Always 1 */
 
   /* If `nitems` is <= 4, some encoders will return STOP_FILLING without
    * adding any data and this loops infinitely. */
