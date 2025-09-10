@@ -479,6 +479,8 @@
 #include <stdint.h>
 #endif
 
+#include <limits.h>
+
 #ifdef _WIN32
 #  ifdef HAVE_IO_H
 #  include <io.h>
@@ -783,20 +785,12 @@
  * Parameters should of course normally not be unused, but for example when
  * we have multiple implementations of the same interface it may happen.
  */
-
 #if defined(__GNUC__) && ((__GNUC__ >= 3) || \
   ((__GNUC__ == 2) && defined(__GNUC_MINOR__) && (__GNUC_MINOR__ >= 7)))
-#  define UNUSED_PARAM __attribute__((__unused__))
 #  define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-#elif defined(__IAR_SYSTEMS_ICC__)
-#  define UNUSED_PARAM __attribute__((__unused__))
-#  if (__VER__ >= 9040001)
-#    define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-#  else
-#    define WARN_UNUSED_RESULT
-#  endif
+#elif defined(__IAR_SYSTEMS_ICC__) && (__VER__ >= 9040001)
+#  define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 #else
-#  define UNUSED_PARAM /* NOTHING */
 #  define WARN_UNUSED_RESULT
 #endif
 
@@ -1090,6 +1084,9 @@ CURL_EXTERN ALLOC_FUNC
 #define CURL_FREEADDRINFO(data) \
   curl_dbg_freeaddrinfo(data, __LINE__, __FILE__)
 
+#define CURL_ACCEPT(sock,addr,len) \
+  curl_dbg_accept(sock, addr, len, __LINE__, __FILE__)
+
 #else /* !CURLDEBUG */
 
 #define sclose(x) CURL_SCLOSE(x)
@@ -1097,6 +1094,8 @@ CURL_EXTERN ALLOC_FUNC
 
 #define CURL_GETADDRINFO getaddrinfo
 #define CURL_FREEADDRINFO freeaddrinfo
+
+#define CURL_ACCEPT accept
 
 #endif /* CURLDEBUG */
 
