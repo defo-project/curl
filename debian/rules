@@ -1,6 +1,6 @@
 #! /usr/bin/make -f
 
-# Include pkg-info to make use of DEB_VERSION
+# Include pkg-info to make use of DEB_VERSION and DEB_DISTRIBUTION
 include /usr/share/dpkg/pkg-info.mk
 
 # enable all hardening options (see #763372)
@@ -20,6 +20,12 @@ CONFIGURE_ARGS = -- --disable-dependency-tracking		\
 	--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
 	--without-libssh --with-libssh2 \
 	--cache-file=$(CURDIR)/debian/config.cache
+
+# Experimental features targetted at debian experimental
+ifeq ($(DEB_DISTRIBUTION),experimental)
+CONFIGURE_ARGS += --enable-httpsrr \
+                  --enable-ssls-export
+endif
 
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
   NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
