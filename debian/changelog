@@ -1,4 +1,4 @@
-curl (8.16.0-2) UNRELEASED; urgency=medium
+curl (8.16.0-2) unstable; urgency=medium
 
   [ Carlos Henrique Lima Melara ]
   * d/rules: use DEB_DISTRIBUTION to add configure flags for experimental
@@ -9,7 +9,18 @@ curl (8.16.0-2) UNRELEASED; urgency=medium
     - async-thrdd-drop-pthread_cancel.patch: Upstream changes
     - setopt-accept-_SSL_VERIFYHOST-set-to-2L.patch: Upstream changes
 
- -- Marcos Felipe de Almeida Souza <marcosfas.dev@gmail.com>  Fri, 26 Sep 2025 20:52:05 -0300
+  [ Samuel Henrique ]
+  * Build OpenSSL HTTP/3 support with ngtcp2
+    - Add B-D on libngtcp2-crypto-ossl-dev (>= 1.16.0)
+    - Add Depends on libngtcp2-crypto-ossl-dev (>= 1.16.0) and
+      libngtcp2-dev (>= 1.16.0) in the OpenSSL -dev package
+    - Bump libngtcp2-dev and libngtcp2-crypto-gnutls-dev Depends in the
+      GnuTLS -dev package to >= 1.16.0
+    - Drop --with-openssl-quic configure flag in OpenSSL build
+    - Set --with-ngtcp2 and --with-nghttp3 configure flag for both builds
+      (OpenSSL and GnuTLS)
+
+ -- Samuel Henrique <samueloph@debian.org>  Thu, 02 Oct 2025 22:29:47 +0100
 
 curl (8.16.0-1) unstable; urgency=medium
 
