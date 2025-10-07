@@ -1,3 +1,15 @@
+curl (8.16.0-3) unstable; urgency=medium
+
+  * d/control: Fix required versions of libnghttp3 and libngtcp2 packages.
+     - Append "~" to the end of the version, for a backports-friendly package.
+     - Add an explicit dependency on libnghttp3-9 and libngtcp2-16, as
+       otherwise dpkg picks a lower version as a dependency, but we need
+       newer versions for HTTP/3.
+     - Bump the version requirement for libnghttp3-dev to 1.11.0.
+  * d/control: wrap-and-sort -taf
+
+ -- Samuel Henrique <samueloph@debian.org>  Tue, 07 Oct 2025 20:47:19 +0100
+
 curl (8.16.0-2) unstable; urgency=medium
 
   [ Carlos Henrique Lima Melara ]
