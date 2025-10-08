@@ -1,3 +1,10 @@
+curl (8.16.0-4) unstable; urgency=medium
+
+  * debian/patches/setopt-make-CURLOPT_MAXREDIRS-accept-1-again.patch: import
+    from upstream. (Closes: #1117593)
+
+ -- Carlos Henrique Lima Melara <charlesmelara@riseup.net>  Wed, 08 Oct 2025 13:05:07 -0300
+
 curl (8.16.0-3) unstable; urgency=medium
 
   * d/control: Fix required versions of libnghttp3 and libngtcp2 packages.
