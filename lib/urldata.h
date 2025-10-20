@@ -578,6 +578,9 @@ struct Curl_handler {
 #define PROTOPT_USERPWDCTRL (1<<13) /* Allow "control bytes" (< 32 ASCII) in
                                        username and password */
 #define PROTOPT_NOTCPPROXY (1<<14) /* this protocol cannot proxy over TCP */
+#define PROTOPT_SSL_REUSE (1<<15)  /* this protocol may reuse an existing
+                                      SSL connection in the same family
+                                      without having PROTOPT_SSL. */
 
 #define CONNCHECK_NONE 0                 /* No checks */
 #define CONNCHECK_ISDEAD (1<<0)          /* Check if the connection is dead. */
@@ -977,10 +980,7 @@ struct UrlState {
   char *first_host;
   int first_remote_port;
   curl_prot_t first_remote_protocol;
-
-  int retrycount; /* number of retries on a new connection */
   int os_errno;  /* filled in with errno whenever an error occurs */
-  long followlocation; /* redirect counter */
   int requests; /* request counter: redirects + authentication retakes */
 #ifdef HAVE_SIGNAL
   /* storage for the previous bag^H^H^HSIGPIPE signal handler :-) */
@@ -1100,6 +1100,9 @@ struct UrlState {
 #ifndef CURL_DISABLE_HTTP
   struct http_negotiation http_neg;
 #endif
+  unsigned short followlocation; /* redirect counter */
+  unsigned char retrycount; /* number of retries on a new connection, up to
+                               CONN_MAX_RETRIES */
   unsigned char httpreq; /* Curl_HttpReq; what kind of HTTP request (if any)
                             is this */
   unsigned int creds_from:2; /* where is the server credentials originating

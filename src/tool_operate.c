@@ -393,8 +393,7 @@ static CURLcode retrycheck(struct OperationConfig *config,
       retry = RETRY_CONNREFUSED;
   }
   else if((CURLE_OK == result) ||
-          ((config->failonerror || config->failwithbody) &&
-           (CURLE_HTTP_RETURNED_ERROR == result))) {
+          (config->fail && (CURLE_HTTP_RETURNED_ERROR == result))) {
     /* If it returned OK. _or_ failonerror was enabled and it
        returned due to such an error, check for HTTP transient
        errors to retry on. */
@@ -413,6 +412,8 @@ static CURLcode retrycheck(struct OperationConfig *config,
       case 502: /* Bad Gateway */
       case 503: /* Service Unavailable */
       case 504: /* Gateway Timeout */
+      case 522: /* Connection Timed Out (Cloudflare) */
+      case 524: /* Proxy Read Timeout (Cloudflare) */
         retry = RETRY_HTTP;
         /*
          * At this point, we have already written data to the output
@@ -583,10 +584,8 @@ static CURLcode retrycheck(struct OperationConfig *config,
         rc = fseek(outs->stream, 0, SEEK_END);
 #else
         /* ftruncate is not available, so just reposition the file
-           to the location we would have truncated it. This will not
-           work properly with large files on 32-bit systems, but
-           most of those will have ftruncate. */
-        rc = fseek(outs->stream, (long)outs->init, SEEK_SET);
+           to the location we would have truncated it. */
+        rc = curlx_fseek(outs->stream, outs->init, SEEK_SET);
 #endif
         if(rc) {
           errorf("Failed seeking to end of file");
@@ -659,7 +658,7 @@ static CURLcode post_per_transfer(struct per_transfer *per,
       if(result == CURLE_PEER_FAILED_VERIFICATION)
         fputs(CURL_CA_CERT_ERRORMSG, tool_stderr);
     }
-    else if(config->failwithbody) {
+    else if(config->fail == FAIL_WITH_BODY) {
       /* if HTTP response >= 400, return error */
       long code = 0;
       curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
@@ -2073,6 +2072,10 @@ static CURLcode cacertpaths(struct OperationConfig *config)
     if(cafile) {
       curlx_fclose(cafile);
       config->cacert = strdup(cacert);
+      if(!config->cacert) {
+        result = CURLE_OUT_OF_MEMORY;
+        goto fail;
+      }
     }
 #elif !defined(CURL_WINDOWS_UWP) && !defined(UNDER_CE) && \
   !defined(CURL_DISABLE_CA_SEARCH)

@@ -843,6 +843,15 @@ static CURLcode ssh_force_knownhost_key_type(struct Curl_easy *data,
   return result;
 }
 
+static CURLcode return_quote_error(struct Curl_easy *data,
+                                   struct ssh_conn *sshc)
+{
+  failf(data, "Suspicious data after the command line");
+  Curl_safefree(sshc->quote_path1);
+  Curl_safefree(sshc->quote_path2);
+  return CURLE_QUOTE_ERROR;
+}
+
 static CURLcode sftp_quote(struct Curl_easy *data,
                            struct ssh_conn *sshc,
                            struct SSHPROTO *sshp)
@@ -930,6 +939,9 @@ static CURLcode sftp_quote(struct Curl_easy *data,
       Curl_safefree(sshc->quote_path1);
       return result;
     }
+    if(*cp)
+      return_quote_error(data, sshc);
+
     memset(&sshp->quote_attrs, 0, sizeof(LIBSSH2_SFTP_ATTRIBUTES));
     myssh_state(data, sshc, SSH_SFTP_QUOTE_STAT);
     return result;
@@ -946,10 +958,14 @@ static CURLcode sftp_quote(struct Curl_easy *data,
       Curl_safefree(sshc->quote_path1);
       return result;
     }
+    if(*cp)
+      return_quote_error(data, sshc);
     myssh_state(data, sshc, SSH_SFTP_QUOTE_SYMLINK);
     return result;
   }
   else if(!strncmp(cmd, "mkdir ", 6)) {
+    if(*cp)
+      return_quote_error(data, sshc);
     /* create dir */
     myssh_state(data, sshc, SSH_SFTP_QUOTE_MKDIR);
     return result;
@@ -965,19 +981,27 @@ static CURLcode sftp_quote(struct Curl_easy *data,
       Curl_safefree(sshc->quote_path1);
       return result;
     }
+    if(*cp)
+      return_quote_error(data, sshc);
     myssh_state(data, sshc, SSH_SFTP_QUOTE_RENAME);
     return result;
   }
   else if(!strncmp(cmd, "rmdir ", 6)) {
+    if(*cp)
+      return_quote_error(data, sshc);
     /* delete dir */
     myssh_state(data, sshc, SSH_SFTP_QUOTE_RMDIR);
     return result;
   }
   else if(!strncmp(cmd, "rm ", 3)) {
+    if(*cp)
+      return_quote_error(data, sshc);
     myssh_state(data, sshc, SSH_SFTP_QUOTE_UNLINK);
     return result;
   }
   else if(!strncmp(cmd, "statvfs ", 8)) {
+    if(*cp)
+      return_quote_error(data, sshc);
     myssh_state(data, sshc, SSH_SFTP_QUOTE_STATVFS);
     return result;
   }
@@ -1404,6 +1428,7 @@ sftp_download_stat(struct Curl_easy *data,
     data->req.size = -1;
     data->req.maxdownload = -1;
     Curl_pgrsSetDownloadSize(data, -1);
+    attrs.filesize = 0; /* might be uninitialized but will be read below */
   }
   else {
     curl_off_t size = attrs.filesize;
@@ -1826,8 +1851,9 @@ static CURLcode ssh_state_auth_agent(struct Curl_easy *data,
       if(rc != LIBSSH2_ERROR_EAGAIN) {
         /* tried and failed? go to next identity */
         sshc->sshagent_prev_identity = sshc->sshagent_identity;
+        return CURLE_OK;
       }
-      return CURLE_OK;
+      return CURLE_AGAIN;
     }
   }
 
@@ -3035,12 +3061,13 @@ static CURLcode ssh_pollset(struct Curl_easy *data,
                             struct easy_pollset *ps)
 {
   int flags = 0;
-  if(data->conn->waitfor & KEEP_RECV)
+  struct connectdata *conn = data->conn;
+  if(conn->waitfor & KEEP_RECV)
     flags |= CURL_POLL_IN;
-  if(data->conn->waitfor & KEEP_SEND)
+  if(conn->waitfor & KEEP_SEND)
     flags |= CURL_POLL_OUT;
   return flags ?
-    Curl_pollset_change(data, ps, data->conn->sock[FIRSTSOCKET], flags, 0) :
+    Curl_pollset_change(data, ps, conn->sock[FIRSTSOCKET], flags, 0) :
     CURLE_OK;
 }
 
@@ -3207,12 +3234,12 @@ static ssize_t ssh_tls_recv(libssh2_socket_t sock, void *buffer,
                             size_t length, int flags, void **abstract)
 {
   struct Curl_easy *data = (struct Curl_easy *)*abstract;
+  int sockindex = Curl_conn_sockindex(data, sock);
   size_t nread;
   CURLcode result;
   struct connectdata *conn = data->conn;
-  Curl_recv *backup = conn->recv[0];
+  Curl_recv *backup = conn->recv[sockindex];
   struct ssh_conn *sshc = Curl_conn_meta_get(conn, CURL_META_SSH_CONN);
-  int socknum = Curl_conn_sockindex(data, sock);
   (void)flags;
 
   if(!sshc)
@@ -3220,9 +3247,9 @@ static ssize_t ssh_tls_recv(libssh2_socket_t sock, void *buffer,
 
   /* swap in the TLS reader function for this call only, and then swap back
      the SSH one again */
-  conn->recv[0] = sshc->tls_recv;
-  result = Curl_conn_recv(data, socknum, buffer, length, &nread);
-  conn->recv[0] = backup;
+  conn->recv[sockindex] = sshc->tls_recv;
+  result = Curl_conn_recv(data, sockindex, buffer, length, &nread);
+  conn->recv[sockindex] = backup;
   if(result == CURLE_AGAIN)
     return -EAGAIN; /* magic return code for libssh2 */
   else if(result)
@@ -3235,12 +3262,12 @@ static ssize_t ssh_tls_send(libssh2_socket_t sock, const void *buffer,
                             size_t length, int flags, void **abstract)
 {
   struct Curl_easy *data = (struct Curl_easy *)*abstract;
+  int sockindex = Curl_conn_sockindex(data, sock);
   size_t nwrite;
   CURLcode result;
   struct connectdata *conn = data->conn;
-  Curl_send *backup = conn->send[0];
+  Curl_send *backup = conn->send[sockindex];
   struct ssh_conn *sshc = Curl_conn_meta_get(conn, CURL_META_SSH_CONN);
-  int socknum = Curl_conn_sockindex(data, sock);
   (void)flags;
 
   if(!sshc)
@@ -3248,9 +3275,9 @@ static ssize_t ssh_tls_send(libssh2_socket_t sock, const void *buffer,
 
   /* swap in the TLS writer function for this call only, and then swap back
      the SSH one again */
-  conn->send[0] = sshc->tls_send;
-  result = Curl_conn_send(data, socknum, buffer, length, FALSE, &nwrite);
-  conn->send[0] = backup;
+  conn->send[sockindex] = sshc->tls_send;
+  result = Curl_conn_send(data, sockindex, buffer, length, FALSE, &nwrite);
+  conn->send[sockindex] = backup;
   if(result == CURLE_AGAIN)
     return -EAGAIN; /* magic return code for libssh2 */
   else if(result)
@@ -3308,14 +3335,9 @@ static CURLcode ssh_connect(struct Curl_easy *data, bool *done)
      function to make the reuse checks properly be able to check this bit. */
   connkeep(conn, "SSH default");
 
-  if(conn->user)
-    infof(data, "User: '%s'", conn->user);
-  else
-    infof(data, "User: NULL");
+  infof(data, "User: '%s'", conn->user);
 #ifdef CURL_LIBSSH2_DEBUG
-  if(conn->passwd) {
-    infof(data, "Password: %s", conn->passwd);
-  }
+  infof(data, "Password: %s", conn->passwd);
   sock = conn->sock[FIRSTSOCKET];
 #endif /* CURL_LIBSSH2_DEBUG */
 

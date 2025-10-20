@@ -613,6 +613,7 @@ static int myssh_in_SFTP_READDIR(struct Curl_easy *data,
 
       if(result) {
         myssh_to(data, sshc, SSH_STOP);
+        sshc->actualcode = result;
         return SSH_NO_ERROR;
       }
 
@@ -1105,6 +1106,7 @@ static int myssh_in_AUTH_PASS(struct Curl_easy *data,
 static int myssh_in_AUTH_DONE(struct Curl_easy *data,
                               struct ssh_conn *sshc)
 {
+  struct connectdata *conn = data->conn;
   if(!sshc->authed) {
     failf(data, "Authentication failure");
     return myssh_to_ERROR(data, sshc, CURLE_LOGIN_DENIED);
@@ -1113,10 +1115,10 @@ static int myssh_in_AUTH_DONE(struct Curl_easy *data,
   /* At this point we have an authenticated ssh session. */
   infof(data, "Authentication complete");
   Curl_pgrsTime(data, TIMER_APPCONNECT);      /* SSH is connected */
-  data->conn->recv_idx = FIRSTSOCKET;
-  data->conn->send_idx = -1;
+  conn->recv_idx = FIRSTSOCKET;
+  conn->send_idx = -1;
 
-  if(data->conn->handler->protocol == CURLPROTO_SFTP) {
+  if(conn->handler->protocol == CURLPROTO_SFTP) {
     myssh_to(data, sshc, SSH_SFTP_INIT);
     return SSH_NO_ERROR;
   }
@@ -1239,6 +1241,10 @@ static int myssh_in_UPLOAD_INIT(struct Curl_easy *data,
 
     /* now, decrease the size of the read */
     if(data->state.infilesize > 0) {
+      if(data->state.resume_from > data->state.infilesize) {
+        failf(data, "Resume point beyond size");
+        return myssh_to_ERROR(data, sshc, CURLE_BAD_FUNCTION_ARGUMENT);
+      }
       data->state.infilesize -= data->state.resume_from;
       data->req.size = data->state.infilesize;
       Curl_pgrsSetUploadSize(data, data->state.infilesize);
@@ -1557,6 +1563,18 @@ static int myssh_in_SFTP_POSTQUOTE_INIT(struct Curl_easy *data,
   return SSH_NO_ERROR;
 }
 
+static int return_quote_error(struct Curl_easy *data,
+                              struct ssh_conn *sshc)
+{
+  failf(data, "Suspicious data after the command line");
+  Curl_safefree(sshc->quote_path1);
+  Curl_safefree(sshc->quote_path2);
+  myssh_to(data, sshc, SSH_SFTP_CLOSE);
+  sshc->nextstate = SSH_NO_STATE;
+  sshc->actualcode = CURLE_QUOTE_ERROR;
+  return SSH_NO_ERROR;
+}
+
 static int myssh_in_SFTP_QUOTE(struct Curl_easy *data,
                                struct ssh_conn *sshc,
                                struct SSHPROTO *sshp)
@@ -1665,6 +1683,8 @@ static int myssh_in_SFTP_QUOTE(struct Curl_easy *data,
       sshc->actualcode = result;
       return SSH_NO_ERROR;
     }
+    if(*cp)
+      return return_quote_error(data, sshc);
     sshc->quote_attrs = NULL;
     myssh_to(data, sshc, SSH_SFTP_QUOTE_STAT);
     return SSH_NO_ERROR;
@@ -1686,10 +1706,14 @@ static int myssh_in_SFTP_QUOTE(struct Curl_easy *data,
       sshc->actualcode = result;
       return SSH_NO_ERROR;
     }
+    if(*cp)
+      return return_quote_error(data, sshc);
     myssh_to(data, sshc, SSH_SFTP_QUOTE_SYMLINK);
     return SSH_NO_ERROR;
   }
   else if(!strncmp(cmd, "mkdir ", 6)) {
+    if(*cp)
+      return return_quote_error(data, sshc);
     /* create dir */
     myssh_to(data, sshc, SSH_SFTP_QUOTE_MKDIR);
     return SSH_NO_ERROR;
@@ -1710,20 +1734,28 @@ static int myssh_in_SFTP_QUOTE(struct Curl_easy *data,
       sshc->actualcode = result;
       return SSH_NO_ERROR;
     }
+    if(*cp)
+      return return_quote_error(data, sshc);
     myssh_to(data, sshc, SSH_SFTP_QUOTE_RENAME);
     return SSH_NO_ERROR;
   }
   else if(!strncmp(cmd, "rmdir ", 6)) {
     /* delete dir */
+    if(*cp)
+      return return_quote_error(data, sshc);
     myssh_to(data, sshc, SSH_SFTP_QUOTE_RMDIR);
     return SSH_NO_ERROR;
   }
   else if(!strncmp(cmd, "rm ", 3)) {
+    if(*cp)
+      return return_quote_error(data, sshc);
     myssh_to(data, sshc, SSH_SFTP_QUOTE_UNLINK);
     return SSH_NO_ERROR;
   }
 #ifdef HAS_STATVFS_SUPPORT
   else if(!strncmp(cmd, "statvfs ", 8)) {
+    if(*cp)
+      return return_quote_error(data, sshc);
     myssh_to(data, sshc, SSH_SFTP_QUOTE_STATVFS);
     return SSH_NO_ERROR;
   }
@@ -2398,14 +2430,15 @@ static CURLcode myssh_pollset(struct Curl_easy *data,
                               struct easy_pollset *ps)
 {
   int flags = 0;
-  if(data->conn->waitfor & KEEP_RECV)
+  struct connectdata *conn = data->conn;
+  if(conn->waitfor & KEEP_RECV)
     flags |= CURL_POLL_IN;
-  if(data->conn->waitfor & KEEP_SEND)
+  if(conn->waitfor & KEEP_SEND)
     flags |= CURL_POLL_OUT;
-  if(!data->conn->waitfor)
+  if(!conn->waitfor)
     flags |= CURL_POLL_OUT;
   return flags ?
-    Curl_pollset_change(data, ps, data->conn->sock[FIRSTSOCKET], flags, 0) :
+    Curl_pollset_change(data, ps, conn->sock[FIRSTSOCKET], flags, 0) :
     CURLE_OK;
 }
 

@@ -68,7 +68,7 @@ static curl_off_t sftpGetRemoteFileSize(const char *i_remoteFile)
                                &remoteFileSizeByte);
     if(result)
       return -1;
-    printf("filesize: %lu\n", (unsigned long)remoteFileSizeByte);
+    printf("filesize: %" CURL_FORMAT_CURL_OFF_T "\n", remoteFileSizeByte);
   }
   curl_easy_cleanup(curlHandlePtr);
 
@@ -121,18 +121,23 @@ static int sftpResumeUpload(CURL *curlhandle, const char *remotepath,
 
 int main(void)
 {
-  const char *remote = "sftp://user:pass@example.com/path/filename";
-  const char *filename = "filename";
   CURL *curlhandle = NULL;
 
-  curl_global_init(CURL_GLOBAL_ALL);
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
+
   curlhandle = curl_easy_init();
+  if(curlhandle) {
+    const char *remote = "sftp://user:pass@example.com/path/filename";
+    const char *filename = "filename";
 
-  if(!sftpResumeUpload(curlhandle, remote, filename)) {
-    printf("resumed upload using curl %s failed\n", curl_version());
+    if(!sftpResumeUpload(curlhandle, remote, filename)) {
+      printf("resumed upload using curl %s failed\n", curl_version());
+    }
+
+    curl_easy_cleanup(curlhandle);
   }
-
-  curl_easy_cleanup(curlhandle);
   curl_global_cleanup();
 
   return 0;

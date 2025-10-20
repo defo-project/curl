@@ -200,7 +200,7 @@ const struct Curl_handler Curl_handler_pop3 = {
   CURLPROTO_POP3,                   /* protocol */
   CURLPROTO_POP3,                   /* family */
   PROTOPT_CLOSEACTION | PROTOPT_NOURLQUERY | /* flags */
-  PROTOPT_URLOPTIONS
+  PROTOPT_URLOPTIONS | PROTOPT_SSL_REUSE
 };
 
 #ifdef USE_SSL
@@ -1057,8 +1057,7 @@ static CURLcode pop3_state_user_resp(struct Curl_easy *data, int pop3code,
   }
   else
     /* Send the PASS command */
-    result = Curl_pp_sendf(data, &pop3c->pp, "PASS %s",
-                           conn->passwd ? conn->passwd : "");
+    result = Curl_pp_sendf(data, &pop3c->pp, "PASS %s", conn->passwd);
   if(!result)
     pop3_state(data, POP3_PASS);
 
@@ -1377,17 +1376,16 @@ static CURLcode pop3_perform(struct Curl_easy *data, bool *connected,
 
   DEBUGF(infof(data, "DO phase starts"));
 
-  if(data->req.no_body) {
-    /* Requested no body means no transfer */
-    pop3->transfer = PPTRANSFER_INFO;
-  }
-
-  *dophase_done = FALSE; /* not done yet */
-
-  /* Start the first command in the DO phase */
+  /* Start the first command in the DO phase, may alter data->req.no_body */
   result = pop3_perform_command(data);
   if(result)
     return result;
+
+  if(data->req.no_body)
+    /* Requested no body means no transfer */
+    pop3->transfer = PPTRANSFER_INFO;
+
+  *dophase_done = FALSE; /* not done yet */
 
   /* Run the state-machine */
   result = pop3_multi_statemach(data, dophase_done);
