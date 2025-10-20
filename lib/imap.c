@@ -78,8 +78,7 @@
 #include "curlx/warnless.h"
 #include "curl_ctype.h"
 
-/* The last 3 #include files should be in this order */
-#include "curl_printf.h"
+/* The last 2 #include files should be in this order */
 #include "curl_memory.h"
 #include "memdebug.h"
 
@@ -210,7 +209,8 @@ const struct Curl_handler Curl_handler_imap = {
   CURLPROTO_IMAP,                   /* protocol */
   CURLPROTO_IMAP,                   /* family */
   PROTOPT_CLOSEACTION|              /* flags */
-  PROTOPT_URLOPTIONS
+  PROTOPT_URLOPTIONS|
+  PROTOPT_SSL_REUSE
 };
 
 #ifdef USE_SSL
@@ -1056,19 +1056,19 @@ static CURLcode imap_state_capability_resp(struct Curl_easy *data,
         wordlen++;
 
       /* Does the server support the STARTTLS capability? */
-      if(wordlen == 8 && !memcmp(line, "STARTTLS", 8))
+      if(wordlen == 8 && curl_strnequal(line, "STARTTLS", 8))
         imapc->tls_supported = TRUE;
 
       /* Has the server explicitly disabled clear text authentication? */
-      else if(wordlen == 13 && !memcmp(line, "LOGINDISABLED", 13))
+      else if(wordlen == 13 && curl_strnequal(line, "LOGINDISABLED", 13))
         imapc->login_disabled = TRUE;
 
       /* Does the server support the SASL-IR capability? */
-      else if(wordlen == 7 && !memcmp(line, "SASL-IR", 7))
+      else if(wordlen == 7 && curl_strnequal(line, "SASL-IR", 7))
         imapc->ir_supported = TRUE;
 
       /* Do we have a SASL based authentication mechanism? */
-      else if(wordlen > 5 && !memcmp(line, "AUTH=", 5)) {
+      else if(wordlen > 5 && curl_strnequal(line, "AUTH=", 5)) {
         size_t llen;
         unsigned short mechbit;
 
@@ -1943,9 +1943,9 @@ static CURLcode imap_sendf(struct Curl_easy *data,
   DEBUGASSERT(fmt);
 
   /* Calculate the tag based on the connection ID and command ID */
-  msnprintf(imapc->resptag, sizeof(imapc->resptag), "%c%03d",
-            'A' + curlx_sltosi((long)(data->conn->connection_id % 26)),
-            ++imapc->cmdid);
+  curl_msnprintf(imapc->resptag, sizeof(imapc->resptag), "%c%03d",
+                 'A' + curlx_sltosi((long)(data->conn->connection_id % 26)),
+                 ++imapc->cmdid);
 
   /* start with a blank buffer */
   curlx_dyn_reset(&imapc->dyn);

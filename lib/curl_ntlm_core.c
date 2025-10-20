@@ -38,10 +38,9 @@
    1. USE_OPENSSL
    2. USE_WOLFSSL
    3. USE_GNUTLS
-   4. -
-   5. USE_MBEDTLS
-   6. USE_OS400CRYPTO
-   7. USE_WIN32_CRYPTO
+   4. USE_MBEDTLS
+   5. USE_OS400CRYPTO
+   6. USE_WIN32_CRYPTO
 
    This ensures that:
    - the same SSL branch gets activated throughout this source
@@ -60,6 +59,11 @@
   #include <wolfssl/options.h>
   #ifndef NO_DES3
     #define USE_OPENSSL_DES
+  #endif
+#elif defined(USE_MBEDTLS)
+  #include <mbedtls/version.h>
+  #if MBEDTLS_VERSION_NUMBER < 0x04000000
+    #define USE_MBEDTLS_DES
   #endif
 #endif
 
@@ -97,7 +101,7 @@
 
 #  include <nettle/des.h>
 
-#elif defined(USE_MBEDTLS)
+#elif defined(USE_MBEDTLS_DES)
 
 #  include <mbedtls/des.h>
 
@@ -119,8 +123,8 @@
 #include "curl_endian.h"
 #include "curl_des.h"
 #include "curl_md4.h"
-/* The last 3 #include files should be in this order */
-#include "curl_printf.h"
+
+/* The last 2 #include files should be in this order */
 #include "curl_memory.h"
 #include "memdebug.h"
 
@@ -178,7 +182,7 @@ static void setup_des_key(const unsigned char *key_56,
   des_set_key(des, (const uint8_t *) key);
 }
 
-#elif defined(USE_MBEDTLS)
+#elif defined(USE_MBEDTLS_DES)
 
 static bool encrypt_des(const unsigned char *in, unsigned char *out,
                         const unsigned char *key_56)
@@ -305,7 +309,7 @@ void Curl_ntlm_core_lm_resp(const unsigned char *keys,
   des_encrypt(&des, 8, results + 8, plaintext);
   setup_des_key(keys + 14, &des);
   des_encrypt(&des, 8, results + 16, plaintext);
-#elif defined(USE_MBEDTLS) || defined(USE_OS400CRYPTO) ||       \
+#elif defined(USE_MBEDTLS_DES) || defined(USE_OS400CRYPTO) ||   \
   defined(USE_WIN32_CRYPTO)
   encrypt_des(plaintext, results, keys);
   encrypt_des(plaintext, results + 8, keys + 7);
@@ -353,7 +357,7 @@ CURLcode Curl_ntlm_core_mk_lm_hash(const char *password,
     des_encrypt(&des, 8, lmbuffer, magic);
     setup_des_key(pw + 7, &des);
     des_encrypt(&des, 8, lmbuffer + 8, magic);
-#elif defined(USE_MBEDTLS) || defined(USE_OS400CRYPTO) ||       \
+#elif defined(USE_MBEDTLS_DES) || defined(USE_OS400CRYPTO) ||   \
   defined(USE_WIN32_CRYPTO)
     encrypt_des(magic, lmbuffer, pw);
     encrypt_des(magic, lmbuffer + 8, pw + 7);
@@ -567,14 +571,15 @@ CURLcode Curl_ntlm_core_mk_ntlmv2_resp(unsigned char *ntlmv2hash,
     return CURLE_OUT_OF_MEMORY;
 
   /* Create the BLOB structure */
-  msnprintf((char *)ptr + HMAC_MD5_LENGTH, NTLMv2_BLOB_LEN,
-            "%c%c%c%c"           /* NTLMv2_BLOB_SIGNATURE */
-            "%c%c%c%c"           /* Reserved = 0 */
-            "%c%c%c%c%c%c%c%c",  /* Timestamp */
-            NTLMv2_BLOB_SIGNATURE[0], NTLMv2_BLOB_SIGNATURE[1],
-            NTLMv2_BLOB_SIGNATURE[2], NTLMv2_BLOB_SIGNATURE[3],
-            0, 0, 0, 0,
-            LONGQUARTET(tw.dwLowDateTime), LONGQUARTET(tw.dwHighDateTime));
+  curl_msnprintf((char *)ptr + HMAC_MD5_LENGTH, NTLMv2_BLOB_LEN,
+                 "%c%c%c%c"           /* NTLMv2_BLOB_SIGNATURE */
+                 "%c%c%c%c"           /* Reserved = 0 */
+                 "%c%c%c%c%c%c%c%c",  /* Timestamp */
+                 NTLMv2_BLOB_SIGNATURE[0], NTLMv2_BLOB_SIGNATURE[1],
+                 NTLMv2_BLOB_SIGNATURE[2], NTLMv2_BLOB_SIGNATURE[3],
+                 0, 0, 0, 0,
+                 LONGQUARTET(tw.dwLowDateTime),
+                 LONGQUARTET(tw.dwHighDateTime));
 
   memcpy(ptr + 32, challenge_client, 8);
   if(ntlm->target_info_len)
