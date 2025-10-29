@@ -213,6 +213,9 @@
 /* Define to 1 if you have the fseeko declaration */
 #undef HAVE_DECL_FSEEKO
 
+/* if you have the function DES_ecb_encrypt */
+#undef HAVE_DES_ECB_ENCRYPT
+
 /* if you have <dirent.h> */
 #undef HAVE_DIRENT_H
 
@@ -429,6 +432,9 @@
 
 /* Define to 1 if you have the `mach_absolute_time' function. */
 #undef HAVE_MACH_ABSOLUTE_TIME
+
+/* Define to 1 if you have the `mbedtls_des_crypt_ecb' function. */
+#undef HAVE_MBEDTLS_DES_CRYPT_ECB
 
 /* Define to 1 if you have the memrchr function or macro. */
 #undef HAVE_MEMRCHR
