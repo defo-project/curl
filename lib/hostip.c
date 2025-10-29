@@ -848,6 +848,8 @@ CURLcode Curl_resolv(struct Curl_easy *data,
   size_t hostname_len;
   bool keep_negative = TRUE; /* cache a negative result */
 
+  *entry = NULL;
+
 #ifndef CURL_DISABLE_DOH
   data->conn->bits.doh = FALSE; /* default is not */
 #else
@@ -969,7 +971,6 @@ out:
 error:
   if(dns)
     Curl_resolv_unlink(data, &dns);
-  *entry = NULL;
   Curl_async_shutdown(data);
   if(keep_negative)
     store_negative_resolve(data, hostname, port);
@@ -1352,9 +1353,9 @@ CURLcode Curl_loadhostpairs(struct Curl_easy *data)
           }
         }
 #ifndef USE_IPV6
-        if(memchr(target.str, ':', target.len)) {
-          infof(data, "Ignoring resolve address '%s', missing IPv6 support.",
-                address);
+        if(memchr(curlx_str(&target), ':', curlx_strlen(&target))) {
+          infof(data, "Ignoring resolve address '%.*s', missing IPv6 support.",
+                (int)curlx_strlen(&target), curlx_str(&target));
           if(curlx_str_single(&host, ','))
             goto err;
           continue;
