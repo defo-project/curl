@@ -1852,9 +1852,12 @@ void Curl_http_method(struct Curl_easy *data,
 {
   Curl_HttpReq httpreq = (Curl_HttpReq)data->state.httpreq;
   const char *request;
+#ifndef CURL_DISABLE_WEBSOCKETS
   if(data->conn->handler->protocol&(CURLPROTO_WS|CURLPROTO_WSS))
     httpreq = HTTPREQ_GET;
-  else if((data->conn->handler->protocol&(PROTO_FAMILY_HTTP|CURLPROTO_FTP)) &&
+  else
+#endif
+  if((data->conn->handler->protocol&(PROTO_FAMILY_HTTP|CURLPROTO_FTP)) &&
      data->state.upload)
     httpreq = HTTPREQ_PUT;
 
@@ -2777,7 +2780,11 @@ static CURLcode http_add_hd(struct Curl_easy *data,
                             Curl_HttpReq httpreq)
 {
   CURLcode result = CURLE_OK;
+#if !defined(CURL_DISABLE_ALTSVC) || \
+  !defined(CURL_DISABLE_PROXY) || \
+  !defined(CURL_DISABLE_WEBSOCKETS)
   struct connectdata *conn = data->conn;
+#endif
   switch(id) {
   case H1_HD_REQUEST:
     /* add the main request stuff */
@@ -4032,9 +4039,13 @@ static CURLcode http_on_response(struct Curl_easy *data,
                 goto out;
             }
             data->state.disableexpect = TRUE;
+            Curl_req_abort_sending(data);
             DEBUGASSERT(!data->req.newurl);
             data->req.newurl = strdup(data->state.url);
-            Curl_req_abort_sending(data);
+            if(!data->req.newurl) {
+              result = CURLE_OUT_OF_MEMORY;
+              goto out;
+            }
           }
           else if(data->set.http_keep_sending_on_error) {
             infof(data, "HTTP error before end of send, keep sending");

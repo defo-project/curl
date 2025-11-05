@@ -684,14 +684,13 @@ CURLcode Curl_gtls_cache_session(struct Curl_cfilter *cf,
                                  unsigned char *quic_tp,
                                  size_t quic_tp_len)
 {
-  struct ssl_config_data *ssl_config = Curl_ssl_cf_get_config(cf, data);
   struct Curl_ssl_session *sc_session;
   unsigned char *sdata, *qtp_clone = NULL;
   size_t sdata_len = 0;
   size_t earlydata_max = 0;
   CURLcode result = CURLE_OK;
 
-  if(!ssl_config->primary.cache_session)
+  if(!Curl_ssl_scache_use(cf, data))
     return CURLE_OK;
 
   /* we always unconditionally get the session id here, as even if we
@@ -1292,8 +1291,10 @@ static CURLcode pkp_pin_peer_pubkey(struct Curl_easy *data,
   do {
     int ret;
 
-    /* Begin Gyrations to get the public key     */
-    gnutls_pubkey_init(&key);
+    /* Begin Gyrations to get the public key */
+    ret = gnutls_pubkey_init(&key);
+    if(ret < 0)
+      break; /* failed */
 
     ret = gnutls_pubkey_import_x509(key, cert, 0);
     if(ret < 0)
