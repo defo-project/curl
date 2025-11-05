@@ -75,6 +75,7 @@
 #include "../select.h"
 #include "../setopt.h"
 #include "../rand.h"
+#include "../strdup.h"
 
 #ifdef USE_APPLE_SECTRUST
 #include <Security/Security.h>
@@ -1857,7 +1858,8 @@ static CURLcode vtls_shutdown_blocking(struct Curl_cfilter *cf,
     if(timeout_ms < 0) {
       /* no need to continue if time is already up */
       failf(data, "SSL shutdown timeout");
-      return CURLE_OPERATION_TIMEDOUT;
+      result = CURLE_OPERATION_TIMEDOUT;
+      goto out;
     }
 
     result = connssl->ssl_impl->shut_down(cf, data, send_shutdown, done);
@@ -2060,11 +2062,9 @@ CURLcode Curl_alpn_set_negotiated(struct Curl_cfilter *cf,
       result = CURLE_SSL_CONNECT_ERROR;
       goto out;
     }
-    connssl->negotiated.alpn = malloc(proto_len + 1);
+    connssl->negotiated.alpn = Curl_memdup0((const char *)proto, proto_len);
     if(!connssl->negotiated.alpn)
       return CURLE_OUT_OF_MEMORY;
-    memcpy(connssl->negotiated.alpn, proto, proto_len);
-    connssl->negotiated.alpn[proto_len] = 0;
   }
 
   if(proto && proto_len) {

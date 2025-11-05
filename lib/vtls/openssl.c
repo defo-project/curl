@@ -3056,7 +3056,6 @@ CURLcode Curl_ossl_add_session(struct Curl_cfilter *cf,
                                unsigned char *quic_tp,
                                size_t quic_tp_len)
 {
-  const struct ssl_config_data *config;
   unsigned char *der_session_buf = NULL;
   unsigned char *qtp_clone = NULL;
   CURLcode result = CURLE_OK;
@@ -3064,8 +3063,7 @@ CURLcode Curl_ossl_add_session(struct Curl_cfilter *cf,
   if(!cf || !data)
     goto out;
 
-  config = Curl_ssl_cf_get_config(cf, data);
-  if(config->primary.cache_session) {
+  if(Curl_ssl_scache_use(cf, data)) {
     struct Curl_ssl_session *sc_session = NULL;
     size_t der_session_size;
     unsigned char *der_session_ptr;
@@ -3498,6 +3496,7 @@ static CURLcode ossl_populate_x509_store(struct Curl_cfilter *cf,
   CURLcode result = CURLE_OK;
   X509_LOOKUP *lookup = NULL;
   const char * const ssl_crlfile = ssl_config->primary.CRLfile;
+  unsigned long x509flags = 0;
 
   CURL_TRC_CF(data, cf, "configuring OpenSSL's x509 trust store");
   if(!store)
@@ -3523,8 +3522,7 @@ static CURLcode ossl_populate_x509_store(struct Curl_cfilter *cf,
       failf(data, "error loading CRL file: %s", ssl_crlfile);
       return CURLE_SSL_CRL_BADFILE;
     }
-    X509_STORE_set_flags(store,
-                         X509_V_FLAG_CRL_CHECK|X509_V_FLAG_CRL_CHECK_ALL);
+    x509flags = X509_V_FLAG_CRL_CHECK|X509_V_FLAG_CRL_CHECK_ALL;
     infof(data, " CRLfile: %s", ssl_crlfile);
   }
 
@@ -3534,18 +3532,20 @@ static CURLcode ossl_populate_x509_store(struct Curl_cfilter *cf,
      determine that in a reliable manner.
      https://web.archive.org/web/20190422050538/rt.openssl.org/Ticket/Display.html?id=3621
   */
-  X509_STORE_set_flags(store, X509_V_FLAG_TRUSTED_FIRST);
+  x509flags |= X509_V_FLAG_TRUSTED_FIRST;
+
   if(!ssl_config->no_partialchain && !ssl_crlfile) {
     /* Have intermediate certificates in the trust store be treated as
-       trust-anchors, in the same way as self-signed root CA certificates
-       are. This allows users to verify servers using the intermediate cert
-       only, instead of needing the whole chain.
+       trust-anchors, in the same way as self-signed root CA certificates are.
+       This allows users to verify servers using the intermediate cert only,
+       instead of needing the whole chain.
 
        Due to OpenSSL bug https://github.com/openssl/openssl/issues/5081 we
        cannot do partial chains with a CRL check.
     */
-    X509_STORE_set_flags(store, X509_V_FLAG_PARTIAL_CHAIN);
+    x509flags |= X509_V_FLAG_PARTIAL_CHAIN;
   }
+  (void)X509_STORE_set_flags(store, x509flags);
 
   return result;
 }
@@ -3755,7 +3755,7 @@ ossl_init_session_and_alpns(struct ossl_ctx *octx,
   Curl_alpn_copy(&alpns, alpns_requested);
 
   octx->reused_session = FALSE;
-  if(ssl_config->primary.cache_session && !conn_cfg->verifystatus) {
+  if(Curl_ssl_scache_use(cf, data) && !conn_cfg->verifystatus) {
     struct Curl_ssl_session *scs = NULL;
 
     result = Curl_ssl_scache_take(cf, data, peer->scache_key, &scs);
@@ -3797,6 +3797,7 @@ ossl_init_session_and_alpns(struct ossl_ctx *octx,
             }
           }
 #else
+          (void)ssl_config;
           (void)sess_reuse_cb;
 #endif
         }
@@ -4049,6 +4050,7 @@ static CURLcode ossl_init_method(struct Curl_cfilter *cf,
   case TRNSPRT_QUIC:
     *pssl_version_min = CURL_SSLVERSION_TLSv1_3;
     if(conn_config->version_max &&
+       (conn_config->version_max != CURL_SSLVERSION_MAX_DEFAULT) &&
        (conn_config->version_max != CURL_SSLVERSION_MAX_TLSv1_3)) {
       failf(data, "QUIC needs at least TLS version 1.3");
       return CURLE_SSL_CONNECT_ERROR;
@@ -4244,6 +4246,7 @@ CURLcode Curl_ossl_ctx_init(struct ossl_ctx *octx,
     const char *ciphers13 = conn_config->cipher_list13;
     if(ciphers13 &&
        (!conn_config->version_max ||
+        (conn_config->version_max == CURL_SSLVERSION_MAX_DEFAULT) ||
         (conn_config->version_max >= CURL_SSLVERSION_MAX_TLSv1_3))) {
       if(!SSL_CTX_set_ciphersuites(octx->ssl_ctx, ciphers13)) {
         failf(data, "failed setting TLS 1.3 cipher suite: %s", ciphers13);
@@ -5130,6 +5133,10 @@ static CURLcode ossl_apple_verify(struct Curl_cfilter *cf,
     if(conn_config->verifystatus && !octx->reused_session)
       ocsp_len = (long)SSL_get_tlsext_status_ocsp_resp(octx->ssl, &ocsp_data);
 
+    /* SSL_get_tlsext_status_ocsp_resp() returns the length of the OCSP
+       response data or -1 if there is no OCSP response data. */
+    if(ocsp_len < 0)
+      ocsp_len = 0; /* no data available */
     result = Curl_vtls_apple_verify(cf, data, peer, chain.num_certs,
                                     ossl_chain_get_der, &chain,
                                     ocsp_data, ocsp_len);
@@ -5152,6 +5159,9 @@ CURLcode Curl_ossl_check_peer_cert(struct Curl_cfilter *cf,
   bool strict = (conn_config->verifypeer || conn_config->verifyhost);
   X509 *server_cert;
   bool verified = FALSE;
+#ifdef USE_APPLE_SECTRUST
+  bool sectrust_verified = FALSE;
+#endif
 
   if(data->set.ssl.certinfo && !octx->reused_session) {
     /* asked to gather certificate info. Reused sessions don't have cert
@@ -5204,6 +5214,7 @@ CURLcode Curl_ossl_check_peer_cert(struct Curl_cfilter *cf,
     if(verified) {
       infof(data, "SSL certificate verified via Apple SecTrust.");
       ssl_config->certverifyresult = X509_V_OK;
+      sectrust_verified = TRUE;
     }
   }
 #endif
@@ -5219,7 +5230,13 @@ CURLcode Curl_ossl_check_peer_cert(struct Curl_cfilter *cf,
   }
 
 #if !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_OCSP)
-  if(conn_config->verifystatus && !octx->reused_session) {
+  if(conn_config->verifystatus &&
+#ifdef USE_APPLE_SECTRUST
+     !sectrust_verified && /* already verified via apple sectrust, cannot
+                            * verifystate via OpenSSL in that case as it
+                            * does not have the trust anchors */
+#endif
+     !octx->reused_session) {
     /* do not do this after Session ID reuse */
     result = verifystatus(cf, data, octx);
     if(result)
@@ -5667,10 +5684,8 @@ static CURLcode ossl_get_channel_binding(struct Curl_easy *data, int sockindex,
       break;
     }
 
-    if(cf->next)
-      cf = cf->next;
-
-  } while(cf->next);
+    cf = cf->next;
+  } while(cf);
 
   if(!octx) {
     failf(data, "Failed to find the SSL filter");
