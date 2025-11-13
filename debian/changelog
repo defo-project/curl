@@ -1,3 +1,10 @@
+curl (8.17.0-2) unstable; urgency=medium
+
+  * d/p/wcurl-CVE-2025-11563.patch: Import new upstream patch to fix
+    CVE-2025-11563
+
+ -- Samuel Henrique <samueloph@debian.org>  Wed, 12 Nov 2025 20:08:24 -0800
+
 curl (8.17.0-1) unstable; urgency=medium
 
   * New upstream version 8.17.0
