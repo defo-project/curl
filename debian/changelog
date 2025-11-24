@@ -1,3 +1,9 @@
+curl (8.17.0-3) unstable; urgency=medium
+
+  * d/p/fix-progress-meter-in-parallel-mode.patch: cherry-pick from upstream.
+
+ -- Carlos Henrique Lima Melara <charlesmelara@riseup.net>  Sun, 23 Nov 2025 21:41:12 -0300
+
 curl (8.17.0-2) unstable; urgency=medium
 
   * d/p/wcurl-CVE-2025-11563.patch: Import new upstream patch to fix
