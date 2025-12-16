@@ -133,7 +133,6 @@ typedef unsigned int curl_prot_t;
    input easier and better. */
 #define CURL_MAX_INPUT_LENGTH 8000000
 
-
 #include "cookie.h"
 #include "psl.h"
 #include "formdata.h"
@@ -1134,6 +1133,7 @@ struct UrlState {
   BIT(http_hd_te); /* Added HTTP header TE: */
   BIT(http_hd_upgrade); /* Added HTTP header Upgrade: */
   BIT(http_hd_h2_settings); /* Added HTTP header H2Settings: */
+  BIT(maybe_folded);
 #endif
 };
 

@@ -266,6 +266,7 @@ endif()
 option(CURL_CLANG_TIDY "Run the build through clang-tidy" OFF)
 if(CURL_CLANG_TIDY)
   set(CMAKE_UNITY_BUILD OFF)  # clang-tidy is not looking into #included sources, thus not compatible with unity builds.
+  set(CURL_DISABLE_TYPECHECK ON)  # to improve performance and avoid potential interference.
   set(_tidy_checks "")
   list(APPEND _tidy_checks "-clang-analyzer-security.insecureAPI.bzero")  # for FD_ZERO() (seen on macOS)
   list(APPEND _tidy_checks "-clang-analyzer-security.insecureAPI.strcpy")
@@ -1772,8 +1773,6 @@ if(WIN32)
   endif()
   list(APPEND CURL_LIBS "bcrypt")
 
-  set(USE_WIN32_LARGE_FILES ON)
-
   # We use crypto functions that are not available for UWP apps
   if(NOT WINDOWS_STORE)
     set(USE_WIN32_CRYPTO ON)
@@ -1834,7 +1833,6 @@ if(CURL_LTO)
     message(FATAL_ERROR "LTO has been requested, but the compiler does not support it\n${_lto_error}")
   endif()
 endif()
-
 
 # Ugly (but functional) way to include "Makefile.inc" by transforming it
 # (= regenerate it).
@@ -1972,8 +1970,7 @@ curl_add_if("asyn-rr"       USE_ARES AND ENABLE_THREADED_RESOLVER AND USE_HTTPSR
 curl_add_if("IDN"           (HAVE_LIBIDN2 AND HAVE_IDN2_H) OR
                             USE_WIN32_IDN OR
                             USE_APPLE_IDN)
-curl_add_if("Largefile"     (SIZEOF_CURL_OFF_T GREATER 4) AND
-                            ((SIZEOF_OFF_T GREATER 4) OR USE_WIN32_LARGE_FILES))
+curl_add_if("Largefile"     (SIZEOF_CURL_OFF_T GREATER 4) AND ((SIZEOF_OFF_T GREATER 4) OR WIN32))
 curl_add_if("SSPI"          USE_WINDOWS_SSPI)
 curl_add_if("GSS-API"       HAVE_GSSAPI)
 curl_add_if("alt-svc"       NOT CURL_DISABLE_ALTSVC)

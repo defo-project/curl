@@ -913,10 +913,6 @@
 /* Define to 1 if you have the `normaliz' (WinIDN) library (-lnormaliz). */
 #undef USE_WIN32_IDN
 
-/* Define to 1 if you are building a Windows target with large file support.
-   */
-#undef USE_WIN32_LARGE_FILES
-
 /* Use Windows LDAP implementation */
 #undef USE_WIN32_LDAP
 

@@ -220,6 +220,7 @@ sub logmsg_bufferfortest {
         $singletest_bufferedrunner = $runnerid;
     }
 }
+
 #######################################################################
 # Store a log message in a buffer for this test
 # The messages can then be displayed all at once at the end of the test
@@ -325,7 +326,6 @@ if($ENV{"NGHTTPX"}) {
     chomp $nghttpx_h3;
 }
 
-
 #######################################################################
 # Get the list of tests that the tests/data/Makefile.am knows about!
 #
@@ -343,7 +343,6 @@ sub get_disttests {
     }
     close($dh);
 }
-
 
 #######################################################################
 # Remove all files in the specified directory
@@ -380,7 +379,6 @@ sub cleardir {
     closedir $dh;
     return $done;
 }
-
 
 #######################################################################
 # Given two array references, this function will store them in two temporary
@@ -423,7 +421,6 @@ sub showdiff {
 
     return @out;
 }
-
 
 #######################################################################
 # compare test results with the expected output, we might filter off
@@ -951,7 +948,6 @@ sub timestampskippedevents {
     }
 }
 
-
 # Setup CI Test Run
 sub citest_starttestrun {
     if(azure_check_environment()) {
@@ -960,7 +956,6 @@ sub citest_starttestrun {
     }
     # Appveyor does not require anything here
 }
-
 
 # Register the test case with the CI runner
 sub citest_starttest {
@@ -978,7 +973,6 @@ sub citest_starttest {
         appveyor_create_test_result($ACURL, $testnum, $testname);
     }
 }
-
 
 # Submit the test case result with the CI runner
 sub citest_finishtest {
@@ -1000,7 +994,6 @@ sub citest_finishtestrun {
     }
     # Appveyor does not require anything here
 }
-
 
 # add one set of test timings from the runner to global set
 sub updatetesttimings {
@@ -1026,7 +1019,6 @@ sub updatetesttimings {
     }
 }
 
-
 #######################################################################
 # Return the log directory for the given test runner
 sub getrunnernumlogdir {
@@ -1049,7 +1041,6 @@ sub getrunnerlogdir {
     }
     die "Internal error: runner ID $runnerid not found";
 }
-
 
 #######################################################################
 # Verify that this test case should be run
@@ -1188,13 +1179,12 @@ sub singletest_shouldrun {
         }
     }
 
-    if($why && $checktests && checktest("${TESTDIR}/test${testnum}")) {
+    if($why && checktest("${TESTDIR}/test${testnum}")) {
         logmsg "Warning: issue(s) found in test data: ${TESTDIR}/test${testnum}\n";
     }
 
     return ($why, $errorreturncode);
 }
-
 
 #######################################################################
 # Print the test name and count tests
@@ -1903,7 +1893,6 @@ sub singletest_check {
     return 0;
 }
 
-
 #######################################################################
 # Report a successful test
 sub singletest_success {
@@ -2104,7 +2093,6 @@ sub singletest {
             logmsg singletest_dumplogs();
             return ($cmdres, 0);
         }
-
 
         #######################################################################
         # Report a successful test
@@ -2415,6 +2403,10 @@ while(@ARGV) {
         my ($num)=($1);
         $maxtime=$num;
     }
+    elsif($ARGV[0] =~ /--min=(\d+)/) {
+        my ($num)=($1);
+        $mintotal=$num;
+    }
     elsif($ARGV[0] eq "-n") {
         # no valgrind
         undef $valgrind;
@@ -2426,10 +2418,6 @@ while(@ARGV) {
     elsif($ARGV[0] eq "-R") {
         # execute in scrambled order
         $scrambleorder=1;
-    }
-    elsif($ARGV[0] eq "-w") {
-        # verify test data
-        $checktests=1;
     }
     elsif($ARGV[0] =~ /^-t(.*)/) {
         # torture
@@ -2558,6 +2546,7 @@ Usage: runtests.pl [options] [test selection(s)]
   -L path  require an additional perl library file to replace certain functions
   -l       list all test case names/descriptions
   -m=[seconds] set timeout for curl commands in tests
+  --min=[count] minimum number of tests to run.
   -n       no valgrind
   --no-debuginfod disable the valgrind debuginfod functionality
   -o variable=value set internal variable to the specified value
@@ -2575,7 +2564,6 @@ Usage: runtests.pl [options] [test selection(s)]
   -u       error instead of warning on server unexpectedly alive
   -v       verbose output
   -vc path use this curl only to verify the existing servers
-  -w       check test data
   [num]    like "5 6 9" or " 5 to 22 " to run those tests only
   [!num]   like "!5 !6 !9" to disable those tests
   [~num]   like "~5 ~6 ~9" to ignore the result of those tests
@@ -2763,7 +2751,6 @@ if(!$listonly) {
 #######################################################################
 # Fetch all disabled tests, if there are any
 #
-
 sub disabledtests {
     my ($file) = @_;
     my @input;
@@ -3129,8 +3116,8 @@ while() {
                     $total++; # number of tests we have run
                     $executed++;
 
-                    if($error>0) {
-                        if($error==2) {
+                    if($error > 0) {
+                        if($error == 2) {
                             # ignored test failures
                             $failedign .= "$testnum ";
                         }
@@ -3151,7 +3138,7 @@ while() {
                             # display all files in $LOGDIR/ in a nice way
                             displaylogs($ridready, $testnum);
                         }
-                        if($error==2) {
+                        if($error == 2) {
                             $ign++; # ignored test result counter
                         }
                         elsif(!$anyway) {
@@ -3255,7 +3242,7 @@ if(%skipped && !$short) {
         my $r = $_;
         my $skip_count = $skipped{$r};
         my $log_line = sprintf("TESTINFO: \"%s\" %d time%s (", $r, $skip_count,
-                           ($skip_count == 1) ? "" : "s");
+                               ($skip_count == 1) ? "" : "s");
 
         # now gather all test case numbers that had this reason for being
         # skipped
@@ -3342,6 +3329,19 @@ else {
             logmsg "$_ ";
         }
         logmsg "\n";
+    }
+}
+
+if(!$mintotal && $ENV{"CURL_TEST_MIN"}) {
+    $mintotal = $ENV{"CURL_TEST_MIN"};
+}
+if($mintotal) {
+    if($total < $mintotal) {
+        logmsg "TESTFAIL: number of tests run was below the minimum of: $mintotal\n";
+        exit 1;
+    }
+    else {
+        logmsg "TESTDONE: minimum number of tests was met: $mintotal\n";
     }
 }
 

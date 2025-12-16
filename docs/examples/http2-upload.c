@@ -56,9 +56,9 @@
 
 #ifdef _WIN32
 #undef stat
-#define stat _stat
+#define stat _stati64
 #undef fstat
-#define fstat _fstat
+#define fstat _fstati64
 #define fileno _fileno
 #endif
 
@@ -67,7 +67,7 @@
 #endif
 
 #ifdef _MSC_VER
-#define gettimeofday(a, b) my_gettimeofday((a), (b))
+#define gettimeofday(a, b) my_gettimeofday(a, b)
 static int my_gettimeofday(struct timeval *tp, void *tzp)
 {
   (void)tzp;
