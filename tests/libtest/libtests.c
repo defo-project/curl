@@ -9,12 +9,14 @@
 #include "../../lib/curlx/fopen.c"
 #include "../../lib/curlx/multibyte.c"
 #include "../../lib/curlx/strerr.c"
+#include "../../lib/curlx/strparse.c"
 #include "../../lib/curlx/timediff.c"
 #include "../../lib/curlx/timeval.c"
 #include "../../lib/curlx/version_win32.c"
 #include "../../lib/curlx/wait.c"
 #include "../../lib/curlx/warnless.c"
 #include "../../lib/curlx/winapi.c"
+#include "cli_ftp_upload.c"
 #include "cli_h2_pausing.c"
 #include "cli_h2_serverpush.c"
 #include "cli_h2_upgrade_extreme.c"
@@ -261,6 +263,7 @@
 #include "lib1521.c"
 
 const struct entry_s s_entries[] = {
+  {"cli_ftp_upload", test_cli_ftp_upload},
   {"cli_h2_pausing", test_cli_h2_pausing},
   {"cli_h2_serverpush", test_cli_h2_serverpush},
   {"cli_h2_upgrade_extreme", test_cli_h2_upgrade_extreme},

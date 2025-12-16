@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="US-ASCII"?>
 <testcase>
 <info>
 <keywords>
@@ -20,7 +21,7 @@ Set-Cookie: onecookie=data;
 Set-Cookie: secondcookie=2data;
 Set-Cookie: cookie3=data3;
 Blank:
-Blank2:
+Blank2:%CR
 Location: /%TESTNUMBER0002
 
 </data>
@@ -58,9 +59,9 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 - Set-Cookie == onecookie=data; (0/3)
 - Set-Cookie == secondcookie=2data; (1/3)
 - Set-Cookie == cookie3=data3; (2/3)
- Fold == is folding a line
- Blank ==%spc%
- Blank2 ==%spc%
+ Fold == is folding a        line
+ Blank ==%SP
+ Blank2 ==%SP
 </stdout>
 </verify>
 </testcase>
