@@ -1,0 +1,52 @@
+Format: 1.8
+Date: Wed, 06 Aug 2025 14:15:44 +0200
+Source: curl
+Binary: curl curl-dbgsym libcurl3t64-gnutls libcurl4-doc libcurl4-gnutls-dev libcurl4-openssl-dev libcurl4t64 libcurl4t64-dbgsym
+Built-For-Profiles: pkg.curl.no-gnutls
+Architecture: amd64 all
+Version: 1:8.18.0.2.120.g0ab919af1b-20251227.063845475256840
+Distribution: testing
+Urgency: medium
+Maintainer: Debian Curl Maintainers <team+curl@tracker.debian.org>
+Changed-By: Jochen Sprickerhof <jspricke@debian.org>
+Description:
+ curl       - command line tool for transferring data with URL syntax
+ libcurl3t64-gnutls - easy-to-use client-side URL transfer library (GnuTLS flavour)
+ libcurl4-doc - documentation for libcurl
+ libcurl4-gnutls-dev - development files and documentation for libcurl (GnuTLS flavour)
+ libcurl4-openssl-dev - development files and documentation for libcurl (OpenSSL flavour)
+ libcurl4t64 - easy-to-use client-side URL transfer library (OpenSSL flavour)
+Changes:
+ curl (1:8.18.0.2.120.g0ab919af1b-20251227.063845475256840) UNRELEASED; urgency=medium
+ .
+   * Enable ECH
+Checksums-Sha1:
+ 55b7594c537fa07a26df18746a43875de8b1fa9f 230980 curl-dbgsym_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ cf72153628c8d9da752d3de1de0bd2a3e7afd31b 11935 curl_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.buildinfo
+ 2fbc17529512ef29ebc34b955c6fdd7b5bf2f92f 279840 curl_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 10f0f95cbe5ddac73bb54f6583b9fc95f2d0f7cc 21024 libcurl3t64-gnutls_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 5f2020f5097aa1face134d58329737288a026587 905368 libcurl4-doc_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_all.deb
+ 93f9778e0563b7ae33b83b52497f76e9f720f7ec 22620 libcurl4-gnutls-dev_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 464b0b0447b670172ec3200289e5fce63b8e5ae1 532052 libcurl4-openssl-dev_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ b017e320864265f4836a7743e810da582969b787 1380852 libcurl4t64-dbgsym_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ b328935887b4ac934e1f0c9b0db62e5adb2fb381 408416 libcurl4t64_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+Checksums-Sha256:
+ d9112d97ea2db03043a4e35acd3c1679918a61f5f83e76d45fe213c355c201da 230980 curl-dbgsym_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ ce33e93935ddef5f624397a67441d1f2efa23b89be58c7197795ebb16901c324 11935 curl_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.buildinfo
+ 6058e1276da4f06d6d07f33b7e159e534117fe53af60ff573f5b137253e2aa0d 279840 curl_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 462387b9a9e13d82eeb34ef59067b3ed5a176309c002e583bd47e2174cd17300 21024 libcurl3t64-gnutls_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 909c280230815928fa49a4304e9a66dd9b8d0e935469492fb0a53f1d8b4821ed 905368 libcurl4-doc_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_all.deb
+ a4047507265c0612aba46fdea05735ef6699aeec3bc86bf5d7bec1611c367bef 22620 libcurl4-gnutls-dev_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 15883bf4bf127e9bfe64bb3b54732876252c07a8526abe6bff3694e3c06c41a4 532052 libcurl4-openssl-dev_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ b095e8d04839f6bf555c109f484c48acf4c6694f2f12b8b34d3bf0202c01e503 1380852 libcurl4t64-dbgsym_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 5ca38b8371b7e75f51f491f7dc7b97a7e2bfd17e18168fcbd50f566388cbe496 408416 libcurl4t64_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+Files:
+ eb0a44710e990aed102a3f04739ac107 230980 debug optional curl-dbgsym_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 95ba45629624e7e924c7458d29538b66 11935 web optional curl_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.buildinfo
+ 6f97d5292d386d9260fd11ee005d6e3d 279840 web optional curl_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 0dc5d561e181669149e3204784ffd7c6 21024 libs optional libcurl3t64-gnutls_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 65b0723e7a7c0008b50841ebab36de26 905368 doc optional libcurl4-doc_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_all.deb
+ 25ca62a9dcb8169b9567d79a9f98d557 22620 libdevel optional libcurl4-gnutls-dev_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 95114f916999d4c3c6453f174cc970df 532052 libdevel optional libcurl4-openssl-dev_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 8ad360b14a38dac522e2ae3d1214e6db 1380852 debug optional libcurl4t64-dbgsym_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
+ 1797e1e92a5e1db02fa6384f9eeef50d 408416 libs optional libcurl4t64_8.18.0.2.120.g0ab919af1b-20251227.063845475256840_amd64.deb
