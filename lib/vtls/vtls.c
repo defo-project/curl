@@ -59,23 +59,20 @@
 #include "rustls.h"         /* Rustls versions */
 
 #include "../slist.h"
-#include "../sendf.h"
+#include "../curl_trc.h"
 #include "../strcase.h"
 #include "../url.h"
 #include "../progress.h"
-#include "../curl_share.h"
-#include "../multiif.h"
 #include "../curlx/fopen.h"
 #include "../curlx/timeval.h"
 #include "../curl_sha256.h"
-#include "../curlx/warnless.h"
 #include "../curlx/base64.h"
 #include "../curlx/inet_pton.h"
 #include "../connect.h"
 #include "../select.h"
 #include "../setopt.h"
-#include "../rand.h"
 #include "../strdup.h"
+#include "../curlx/strcopy.h"
 
 #ifdef USE_APPLE_SECTRUST
 #include <Security/Security.h>
@@ -1086,10 +1083,7 @@ static size_t multissl_version(char *buffer, size_t size)
   }
 
   if(size) {
-    if(backends_len < size)
-      strcpy(buffer, backends);
-    else
-      *buffer = 0; /* did not fit */
+    curlx_strcopy(buffer, size, backends, backends_len);
   }
   return 0;
 }
@@ -1370,8 +1364,9 @@ static CURLcode ssl_cf_connect(struct Curl_cfilter *cf,
 
   if(!result && *done) {
     cf->connected = TRUE;
-    if(connssl->state == ssl_connection_complete)
-      connssl->handshake_done = curlx_now();
+    if(connssl->state == ssl_connection_complete) {
+      connssl->handshake_done = *Curl_pgrs_now(data);
+    }
     /* Connection can be deferred when sending early data */
     DEBUGASSERT(connssl->state == ssl_connection_complete ||
                 connssl->state == ssl_connection_deferred);
@@ -1839,7 +1834,7 @@ static CURLcode vtls_shutdown_blocking(struct Curl_cfilter *cf,
 
   *done = FALSE;
   while(!result && !*done && loop--) {
-    timeout_ms = Curl_shutdown_timeleft(cf->conn, cf->sockindex, NULL);
+    timeout_ms = Curl_shutdown_timeleft(data, cf->conn, cf->sockindex);
 
     if(timeout_ms < 0) {
       /* no need to continue if time is already up */
@@ -1886,7 +1881,7 @@ CURLcode Curl_ssl_cfilter_remove(struct Curl_easy *data,
     if(cf->cft == &Curl_cft_ssl) {
       bool done;
       CURL_TRC_CF(data, cf, "shutdown and remove SSL, start");
-      Curl_shutdown_start(data, sockindex, 0, NULL);
+      Curl_shutdown_start(data, sockindex, 0);
       result = vtls_shutdown_blocking(cf, data, send_shutdown, &done);
       Curl_shutdown_clear(data, sockindex);
       if(!result && !done) /* blocking failed? */

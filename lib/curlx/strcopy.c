@@ -1,5 +1,3 @@
-#ifndef HEADER_CURL_RENAME_H
-#define HEADER_CURL_RENAME_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -23,7 +21,30 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
+#include "../curl_setup.h"
 
-int Curl_rename(const char *oldpath, const char *newpath);
+#include "strcopy.h"
 
-#endif /* HEADER_CURL_RENAME_H */
+/*
+ * curlx_strcopy() is a replacement for strcpy().
+ *
+ * Provide the target buffer @dest and size of the target buffer @dsize, If
+ * the source string @src with its *string length* @slen fits in the target
+ * buffer it will be copied there - including storing a null terminator.
+ *
+ * If the target buffer is too small, the copy is not performed but if the
+ * target buffer has a non-zero size it will get a null terminator stored.
+ */
+void curlx_strcopy(char *dest,      /* destination buffer */
+                   size_t dsize,    /* size of target buffer */
+                   const char *src, /* source string */
+                   size_t slen)     /* length of source string to copy */
+{
+  DEBUGASSERT(slen < dsize);
+  if(slen < dsize) {
+    memcpy(dest, src, slen);
+    dest[slen] = 0;
+  }
+  else if(dsize)
+    dest[0] = 0;
+}
