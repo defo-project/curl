@@ -23,8 +23,8 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-
 #include "tool_setup.h"
+
 #include "tool_sdecls.h"
 #include "tool_urlglob.h"
 #include "var.h"
@@ -38,7 +38,7 @@
 #endif
 #endif
 
-#define MAX_CONFIG_LINE_LENGTH (10*1024*1024)
+#define MAX_CONFIG_LINE_LENGTH (10 * 1024 * 1024)
 
 #define checkprefix(a, b) curl_strnequal(b, STRCONST(a))
 

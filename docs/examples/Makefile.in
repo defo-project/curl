@@ -1045,9 +1045,8 @@ LDADD = $(top_builddir)/lib/libcurl.la
 COMPLICATED_MAY_BUILD = \
   cacertinmem.c \
   multi-uv.c \
-  multithread.c \
   sessioninfo.c \
-  threaded-ssl.c \
+  threaded.c \
   usercertinmem.c
 
 

@@ -21,7 +21,6 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-
 /*
  * Source file for all GnuTLS-specific code for the TLS/SSL layer. No code
  * but vtls.c should ever call or use these functions.
@@ -29,7 +28,6 @@
  * Note: do not use the GnuTLS' *_t variable type names in this source code,
  * since they were not present in 1.0.X.
  */
-
 #include "../curl_setup.h"
 
 #ifdef USE_GNUTLS
@@ -41,8 +39,7 @@
 #include <nettle/sha2.h>
 
 #include "../urldata.h"
-#include "../sendf.h"
-#include "../curlx/inet_pton.h"
+#include "../curl_trc.h"
 #include "keylog.h"
 #include "gtls.h"
 #include "vtls.h"
@@ -53,12 +50,10 @@
 #include "../parsedate.h"
 #include "../connect.h" /* for the connect timeout */
 #include "../progress.h"
-#include "../select.h"
 #include "../strdup.h"
 #include "../curlx/fopen.h"
-#include "../curlx/warnless.h"
+#include "../curlx/timeval.h"
 #include "x509asn1.h"
-#include "../multiif.h"
 
 /* Enable GnuTLS debugging by defining GTLSDEBUG */
 /*#define GTLSDEBUG */
@@ -148,7 +143,7 @@ static ssize_t gtls_pull(void *s, void *buf, size_t blen)
  * gtls_init()
  *
  * Global GnuTLS init, called from Curl_ssl_init(). This calls functions that
- * are not thread-safe (It is thread safe since GnuTLS 3.3.0) and thus this
+ * are not thread-safe (It is thread-safe since GnuTLS 3.3.0) and thus this
  * function itself is not thread-safe and must only be called from within
  * curl_global_init() to keep the thread situation under control!
  *
@@ -178,7 +173,7 @@ static void showtime(struct Curl_easy *data, const char *text, time_t stamp)
   struct tm buffer;
   const struct tm *tm = &buffer;
   char str[96];
-  CURLcode result = Curl_gmtime(stamp, &buffer);
+  CURLcode result = curlx_gmtime(stamp, &buffer);
   if(result)
     return;
 
@@ -411,7 +406,7 @@ CURLcode Curl_gtls_shared_creds_create(struct Curl_easy *data,
   }
 
   shared->refcount = 1;
-  shared->time = curlx_now();
+  shared->time = *Curl_pgrs_now(data);
   *pcreds = shared;
   return CURLE_OK;
 }
@@ -558,12 +553,11 @@ static CURLcode gtls_populate_creds(struct Curl_cfilter *cf,
 /* key to use at `multi->proto_hash` */
 #define MPROTO_GTLS_X509_KEY   "tls:gtls:x509:share"
 
-static bool gtls_shared_creds_expired(const struct Curl_easy *data,
+static bool gtls_shared_creds_expired(struct Curl_easy *data,
                                       const struct gtls_shared_creds *sc)
 {
   const struct ssl_general_config *cfg = &data->set.general_ssl;
-  struct curltime now = curlx_now();
-  timediff_t elapsed_ms = curlx_timediff_ms(now, sc->time);
+  timediff_t elapsed_ms = curlx_ptimediff_ms(Curl_pgrs_now(data), &sc->time);
   timediff_t timeout_ms = cfg->ca_cache_timeout * (timediff_t)1000;
 
   if(timeout_ms < 0)

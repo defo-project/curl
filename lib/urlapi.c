@@ -21,7 +21,6 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-
 #include "curl_setup.h"
 
 #include "urldata.h"
@@ -29,7 +28,6 @@
 #include "strcase.h"
 #include "url.h"
 #include "escape.h"
-#include "curl_ctype.h"
 #include "curlx/inet_pton.h"
 #include "curlx/inet_ntop.h"
 #include "strdup.h"
@@ -510,7 +508,7 @@ static CURLUcode ipv6_parse(struct Curl_URL *u, char *hostname,
     hostname[hlen] = 0; /* end the address there */
     if(curlx_inet_pton(AF_INET6, hostname, dest) != 1)
       return CURLUE_BAD_IPV6;
-    if(curlx_inet_ntop(AF_INET6, dest, hostname, hlen)) {
+    if(curlx_inet_ntop(AF_INET6, dest, hostname, hlen + 1)) {
       hlen = strlen(hostname); /* might be shorter now */
       hostname[hlen + 1] = 0;
     }

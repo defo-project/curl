@@ -22,7 +22,6 @@
  *
  ***************************************************************************/
 #include "curl_setup.h"
-#include <curl/curl.h>
 
 #if !defined(CURL_DISABLE_WEBSOCKETS) && !defined(CURL_DISABLE_HTTP)
 
@@ -34,15 +33,14 @@
 #include "curlx/base64.h"
 #include "connect.h"
 #include "sendf.h"
+#include "curl_trc.h"
 #include "multiif.h"
 #include "ws.h"
 #include "easyif.h"
 #include "transfer.h"
 #include "select.h"
-#include "curlx/nonblock.h"
 #include "curlx/strparse.h"
-#include "curlx/warnless.h"
-
+#include "curlx/strcopy.h"
 
 /***
     RFC 6455 Section 5.2
@@ -770,7 +768,6 @@ static const struct Curl_cwtype ws_cw_decode = {
   sizeof(struct ws_cw_ctx)
 };
 
-
 static void ws_enc_info(struct ws_encoder *enc, struct Curl_easy *data,
                         const char *msg)
 {
@@ -1278,7 +1275,7 @@ CURLcode Curl_ws_request(struct Curl_easy *data, struct dynbuf *req)
     curlx_free(randstr);
     return CURLE_FAILED_INIT;
   }
-  strcpy(keyval, randstr);
+  curlx_strcopy(keyval, sizeof(keyval), randstr, randlen);
   curlx_free(randstr);
   for(i = 0; !result && (i < CURL_ARRAYSIZE(heads)); i++) {
     if(!Curl_checkheaders(data, heads[i].name, strlen(heads[i].name))) {
@@ -1696,7 +1693,7 @@ static CURLcode ws_send_raw_blocking(struct Curl_easy *data,
 
       CURL_TRC_WS(data, "ws_send_raw_blocking() partial, %zu left to send",
                   buflen);
-      left_ms = Curl_timeleft_ms(data, NULL, FALSE);
+      left_ms = Curl_timeleft_ms(data, FALSE);
       if(left_ms < 0) {
         failf(data, "[WS] Timeout waiting for socket becoming writable");
         return CURLE_SEND_ERROR;
@@ -1705,8 +1702,7 @@ static CURLcode ws_send_raw_blocking(struct Curl_easy *data,
       /* POLLOUT socket */
       if(sock == CURL_SOCKET_BAD)
         return CURLE_SEND_ERROR;
-      ev = Curl_socket_check(CURL_SOCKET_BAD, CURL_SOCKET_BAD, sock,
-                             left_ms ? left_ms : 500);
+      ev = SOCKET_WRITABLE(sock, left_ms ? left_ms : 500);
       if(ev < 0) {
         failf(data, "[WS] Error while waiting for socket becoming writable");
         return CURLE_SEND_ERROR;
