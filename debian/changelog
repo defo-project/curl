@@ -1,3 +1,14 @@
+curl (8.18.0-1) unstable; urgency=medium
+
+  * New upstream version 8.18.0
+  * debian/control:
+      - Bump stds-version to 4.7.3.
+      - Remove Priority field, it already defaults to optional.
+      - Remove Rules-Requires-Root, it already defaults to no.
+  * debian/copyright: bump packaging copyright years, happy 2026!
+
+ -- Carlos Henrique Lima Melara <charlesmelara@riseup.net>  Wed, 07 Jan 2026 21:09:51 -0300
+
 curl (8.18.0~rc3-1) unstable; urgency=medium
 
   * New upstream version 8.18.0~rc3
