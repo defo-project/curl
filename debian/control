@@ -40,7 +40,6 @@ Standards-Version: 4.7.3
 Vcs-Git: https://salsa.debian.org/debian/curl.git
 Vcs-Browser: https://salsa.debian.org/debian/curl
 Homepage: https://curl.se/
-Rules-Requires-Root: no
 
 Package: curl
 Architecture: any
