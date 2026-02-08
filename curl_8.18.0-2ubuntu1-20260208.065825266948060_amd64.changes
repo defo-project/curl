@@ -1,0 +1,52 @@
+Format: 1.8
+Date: Sun, 08 Feb 2026 06:58:25 +0000
+Source: curl
+Binary: curl curl-dbgsym libcurl3t64-gnutls libcurl4-doc libcurl4-gnutls-dev libcurl4-openssl-dev libcurl4t64 libcurl4t64-dbgsym
+Built-For-Profiles: pkg.curl.no-gnutls
+Architecture: amd64 all
+Version: 1:8.18.0-2ubuntu1-20260208.065825266948060
+Distribution: testing
+Urgency: medium
+Maintainer: Debian Curl Maintainers <team+curl@tracker.debian.org>
+Changed-By: <runner@runnervmwffz4.p24pu0kbuf1ubhpegrpp0p25na.ex.internal.cloudapp.net>
+Description:
+ curl       - command line tool for transferring data with URL syntax
+ libcurl3t64-gnutls - easy-to-use client-side URL transfer library (GnuTLS flavour)
+ libcurl4-doc - documentation for libcurl
+ libcurl4-gnutls-dev - development files and documentation for libcurl (GnuTLS flavour)
+ libcurl4-openssl-dev - development files and documentation for libcurl (OpenSSL flavour)
+ libcurl4t64 - easy-to-use client-side URL transfer library (OpenSSL flavour)
+Changes:
+ curl (1:8.18.0-2ubuntu1-20260208.065825266948060) UNRELEASED; urgency=medium
+ .
+   * Enable ECH
+Checksums-Sha1:
+ c9ac531851bffa066535215655c9da6ab669fe1a 229912 curl-dbgsym_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 656eed46a5a1ded0588b13ee3f396cdb96c4f0e8 11613 curl_8.18.0-2ubuntu1-20260208.065825266948060_amd64.buildinfo
+ 8620b9bf967f01f294bd5ef80d116465a2b58911 281604 curl_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 348fa4ca0aea990f125ec49e04d6253407b67ade 22764 libcurl3t64-gnutls_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ f513ba95653e3cac2bb40935e4cfbb192637e827 907524 libcurl4-doc_8.18.0-2ubuntu1-20260208.065825266948060_all.deb
+ a5b730b72317f84ff878e6092111a844c59a64a5 24344 libcurl4-gnutls-dev_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ ebc5ceef362bbf0335d4626ed55253d584a892f6 538520 libcurl4-openssl-dev_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ f30df0e5d28b23811d2642f4835a86182b3eae6c 1406844 libcurl4t64-dbgsym_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 757fdc1977a86387f860bc1f7de206d7465e0397 415044 libcurl4t64_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+Checksums-Sha256:
+ f755658bcac8718fa0277ada3ef2bef8923e61b541d69f2a237b50fa2cf25790 229912 curl-dbgsym_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 840198e3fc7821476c0b2678e9f9d7906b3f231b23afc8fcd8177320a996a56a 11613 curl_8.18.0-2ubuntu1-20260208.065825266948060_amd64.buildinfo
+ 371953c536f50e8b654ed6c3f6097bb74da15603dbba93ccf811cfe7ca00f90f 281604 curl_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 8ea5c5ea7171f94d1c606ee78dd39705dcfc082604f5ed076be88a650944ceb7 22764 libcurl3t64-gnutls_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ bb2a1db19bc8ccc0d562af2d8986eace60bbc50cb5bceb6e805357bd4aaf76d1 907524 libcurl4-doc_8.18.0-2ubuntu1-20260208.065825266948060_all.deb
+ b7f0fb0ecbc7785019487265dcbebd6fc4e4f2e126a0db96e3c49c939383284d 24344 libcurl4-gnutls-dev_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 7c08f37ece5f4393220ab4fa232b8b3d5ced31363feae838535a470ce723bc16 538520 libcurl4-openssl-dev_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 458d8aff0ff24c1a47459249f9cdbde0495c3dcfd9c75c1b1a1319a7ab667ace 1406844 libcurl4t64-dbgsym_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 35c42ffad948973c85f9ba954a0ba376bd02c37089d8d80ced1c1cb129a0c2de 415044 libcurl4t64_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+Files:
+ 231bdb71be2803b5a1d3ca0069aa1342 229912 debug optional curl-dbgsym_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 0ef6a466bb0e2d4fba4d0d7e02ff5409 11613 web optional curl_8.18.0-2ubuntu1-20260208.065825266948060_amd64.buildinfo
+ 5814d1938242f97a43ac278ecffe7fcf 281604 web optional curl_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 351c13887823f01c4060aeec91681ce7 22764 libs optional libcurl3t64-gnutls_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 9c12d344d327d08249da506e65dbb63f 907524 doc optional libcurl4-doc_8.18.0-2ubuntu1-20260208.065825266948060_all.deb
+ b94c45db2dbefe9c7cebc2d02d0a22b0 24344 libdevel optional libcurl4-gnutls-dev_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ b3b64ebb34adc36ee841ad4e73e238e0 538520 libdevel optional libcurl4-openssl-dev_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ a0d291160296d185aaf9c87b4f3abd07 1406844 debug optional libcurl4t64-dbgsym_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
+ 104f8f236a8ff3bce0571a0b91b55930 415044 libs optional libcurl4t64_8.18.0-2ubuntu1-20260208.065825266948060_amd64.deb
