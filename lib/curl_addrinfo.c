@@ -62,9 +62,9 @@
 #if defined(__INTEL_COMPILER) && (__INTEL_COMPILER == 910) && \
   defined(__OPTIMIZE__) && defined(__unix__) && defined(__i386__)
   /* workaround icc 9.1 optimizer issue */
-# define vqualifier volatile
+#  define vqualifier volatile
 #else
-# define vqualifier
+#  define vqualifier
 #endif
 
 void Curl_freeaddrinfo(struct Curl_addrinfo *cahead)
@@ -404,19 +404,19 @@ static CURLcode ip2addr(struct Curl_addrinfo **addrp, int af,
  * Given an IPv4 or IPv6 dotted string address, this converts it to a proper
  * allocated Curl_addrinfo struct and returns it.
  */
-CURLcode Curl_str2addr(const char *address, int port,
+CURLcode Curl_str2addr(const char *dotted, int port,
                        struct Curl_addrinfo **addrp)
 {
   struct in_addr in;
-  if(curlx_inet_pton(AF_INET, address, &in) > 0)
+  if(curlx_inet_pton(AF_INET, dotted, &in) > 0)
     /* This is a dotted IP address 123.123.123.123-style */
-    return ip2addr(addrp, AF_INET, &in, address, port);
+    return ip2addr(addrp, AF_INET, &in, dotted, port);
 #ifdef USE_IPV6
   {
     struct in6_addr in6;
-    if(curlx_inet_pton(AF_INET6, address, &in6) > 0)
+    if(curlx_inet_pton(AF_INET6, dotted, &in6) > 0)
       /* This is a dotted IPv6 address ::1-style */
-      return ip2addr(addrp, AF_INET6, &in6, address, port);
+      return ip2addr(addrp, AF_INET6, &in6, dotted, port);
   }
 #endif
   return CURLE_BAD_FUNCTION_ARGUMENT; /* bad input format */
@@ -485,7 +485,7 @@ struct Curl_addrinfo *Curl_unix2addr(const char *path, bool *longpath,
 }
 #endif
 
-#if defined(CURLDEBUG) && defined(HAVE_GETADDRINFO) &&  \
+#if defined(CURL_MEMDEBUG) && defined(HAVE_GETADDRINFO) && \
   defined(HAVE_FREEADDRINFO)
 /*
  * curl_dbg_freeaddrinfo()
@@ -515,9 +515,9 @@ void curl_dbg_freeaddrinfo(struct addrinfo *freethis,
   freeaddrinfo(freethis);
 #endif
 }
-#endif /* CURLDEBUG && HAVE_FREEADDRINFO */
+#endif /* CURL_MEMDEBUG && HAVE_FREEADDRINFO */
 
-#if defined(CURLDEBUG) && defined(HAVE_GETADDRINFO)
+#if defined(CURL_MEMDEBUG) && defined(HAVE_GETADDRINFO)
 /*
  * curl_dbg_getaddrinfo()
  *
@@ -553,7 +553,7 @@ int curl_dbg_getaddrinfo(const char *hostname,
     curl_dbg_log("ADDR %s:%d getaddrinfo() failed\n", source, line);
   return res;
 }
-#endif /* CURLDEBUG && HAVE_GETADDRINFO */
+#endif /* CURL_MEMDEBUG && HAVE_GETADDRINFO */
 
 #if defined(HAVE_GETADDRINFO) && defined(USE_RESOLVE_ON_IPS)
 /*

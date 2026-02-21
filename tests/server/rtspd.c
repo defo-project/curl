@@ -143,13 +143,13 @@ static const char *RTP_DATA = "$_1234\n\0Rsdf";
 
 static int rtspd_ProcessRequest(struct rtspd_httprequest *req)
 {
-  char *line = &req->reqbuf[req->checkindex];
+  const char *line = &req->reqbuf[req->checkindex];
   bool chunked = FALSE;
   static char request[REQUEST_KEYWORD_SIZE];
   static char doc[MAXDOCNAMELEN];
   static char prot_str[5];
   int prot_major, prot_minor;
-  char *end = strstr(line, END_OF_HEADERS);
+  const char *end = strstr(line, END_OF_HEADERS);
 
   logmsg("rtspd_ProcessRequest() called with testno %ld and line [%s]",
          req->testno, line);
@@ -164,7 +164,7 @@ static int rtspd_ProcessRequest(struct rtspd_httprequest *req)
             prot_str,
             &prot_major,
             &prot_minor) == 5) {
-    char *ptr;
+    const char *ptr;
     const char *pval;
     curl_off_t testnum;
 
@@ -325,12 +325,17 @@ static int rtspd_ProcessRequest(struct rtspd_httprequest *req)
                   req->rtp_buffersize = rtp_size + 4;
                 }
                 else {
-                  req->rtp_buffer = realloc(req->rtp_buffer,
-                                            req->rtp_buffersize +
-                                            rtp_size + 4);
-                  memcpy(req->rtp_buffer + req->rtp_buffersize, rtp_scratch,
-                         rtp_size + 4);
-                  req->rtp_buffersize += rtp_size + 4;
+                  char *rtp_buffer = realloc(req->rtp_buffer,
+                                             req->rtp_buffersize +
+                                             rtp_size + 4);
+                  if(rtp_buffer) {
+                    req->rtp_buffer = rtp_buffer;
+                    memcpy(req->rtp_buffer + req->rtp_buffersize, rtp_scratch,
+                           rtp_size + 4);
+                    req->rtp_buffersize += rtp_size + 4;
+                  }
+                  else
+                    logmsg("failed resizing buffer.");
                   free(rtp_scratch);
                 }
                 logmsg("rtp_buffersize is %zu, rtp_size is %d.",
@@ -367,7 +372,7 @@ static int rtspd_ProcessRequest(struct rtspd_httprequest *req)
         else if(!strncmp(doc, "test", 4)) {
           /* if the hostname starts with test, the port number used in the
              CONNECT line will be used as test number! */
-          char *portp = strchr(doc, ':');
+          const char *portp = strchr(doc, ':');
           if(portp && (*(portp + 1) != '\0') && ISDIGIT(*(portp + 1))) {
             pval = portp + 1;
             if(!curlx_str_number(&pval, &testnum, INT_MAX))
@@ -539,7 +544,7 @@ static int rtspd_ProcessRequest(struct rtspd_httprequest *req)
 }
 
 /* store the entire request in a file */
-static void rtspd_storerequest(char *reqbuf, size_t totalsize)
+static void rtspd_storerequest(const char *reqbuf, size_t totalsize)
 {
   int res;
   int error = 0;
@@ -997,7 +1002,7 @@ static int rtspd_send_doc(curl_socket_t sock, struct rtspd_httprequest *req)
   return 0;
 }
 
-static int test_rtspd(int argc, char *argv[])
+static int test_rtspd(int argc, const char *argv[])
 {
   srvr_sockaddr_union_t me;
   curl_socket_t sock = CURL_SOCKET_BAD;
@@ -1111,7 +1116,7 @@ static int test_rtspd(int argc, char *argv[])
     sock = socket(AF_INET6, SOCK_STREAM, 0);
 #endif
 
-  if(CURL_SOCKET_BAD == sock) {
+  if(sock == CURL_SOCKET_BAD) {
     error = SOCKERRNO;
     logmsg("Error creating socket (%d) %s",
            error, curlx_strerror(error, errbuf, sizeof(errbuf)));
@@ -1225,7 +1230,7 @@ static int test_rtspd(int argc, char *argv[])
 
     if(got_exit_signal)
       break;
-    if(CURL_SOCKET_BAD == msgsock) {
+    if(msgsock == CURL_SOCKET_BAD) {
       error = SOCKERRNO;
       logmsg("MAJOR ERROR, accept() failed with error (%d) %s",
              error, curlx_strerror(error, errbuf, sizeof(errbuf)));
@@ -1250,7 +1255,7 @@ static int test_rtspd(int argc, char *argv[])
      */
     flag = 1;
     if(setsockopt(msgsock, IPPROTO_TCP, TCP_NODELAY,
-                   (void *)&flag, sizeof(flag)) == -1) {
+                  (void *)&flag, sizeof(flag)) == -1) {
       logmsg("====> TCP_NODELAY failed");
     }
 #endif

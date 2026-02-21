@@ -253,6 +253,8 @@ ParameterError parseconfig(const char *filename, int max_recursive,
     curlx_dyn_free(&pbuf);
     if(file != stdin)
       curlx_fclose(file);
+    /* Silence false positive about failing to close stdin.
+       NOLINTNEXTLINE(clang-analyzer-unix.Stream) */
     if(fileerror)
       err = PARAM_READ_ERROR;
   }
@@ -277,7 +279,7 @@ static bool get_line(FILE *input, struct dynbuf *buf, bool *error)
   char buffer[128];
   curlx_dyn_reset(buf);
   while(1) {
-    char *b = fgets(buffer, sizeof(buffer), input);
+    const char *b = fgets(buffer, sizeof(buffer), input);
 
     if(b) {
       size_t rlen = strlen(b);

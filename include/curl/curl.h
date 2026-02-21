@@ -842,10 +842,13 @@ typedef enum {
 #define CURLAUTH_BEARER       (((unsigned long)1) << 6)
 #define CURLAUTH_AWS_SIGV4    (((unsigned long)1) << 7)
 #define CURLAUTH_ONLY         (((unsigned long)1) << 31)
-#define CURLAUTH_ANY          (~CURLAUTH_DIGEST_IE)
-#define CURLAUTH_ANYSAFE      (~(CURLAUTH_BASIC | CURLAUTH_DIGEST_IE))
+#define CURLAUTH_ANY          ((~CURLAUTH_DIGEST_IE) & \
+                               ((unsigned long)0xffffffff))
+#define CURLAUTH_ANYSAFE      ((~(CURLAUTH_BASIC | CURLAUTH_DIGEST_IE)) & \
+                               ((unsigned long)0xffffffff))
 
-#define CURLSSH_AUTH_ANY       ~0L       /* all types supported by server */
+/* all types supported by server */
+#define CURLSSH_AUTH_ANY       ((unsigned long)0xffffffff)
 #define CURLSSH_AUTH_NONE      0L        /* none allowed, silly but complete */
 #define CURLSSH_AUTH_PUBLICKEY (1L << 0) /* public/private key files */
 #define CURLSSH_AUTH_PASSWORD  (1L << 1) /* password */
@@ -1100,7 +1103,8 @@ typedef CURLSTScode (*curl_hstswrite_callback)(CURL *easy,
 #define CURLPROTO_SMBS    (1L << 27)
 #define CURLPROTO_MQTT    (1L << 28)
 #define CURLPROTO_GOPHERS (1L << 29)
-#define CURLPROTO_ALL     (~0L) /* enable everything */
+#define CURLPROTO_MQTTS   (1L << 30)
+#define CURLPROTO_ALL     ((unsigned long)0xffffffff) /* enable everything */
 
 /* long may be 32 or 64 bits, but we should never depend on anything else
    but 32 */
@@ -2704,7 +2708,7 @@ CURL_EXTERN char *curl_escape(const char *string,
  *
  * DESCRIPTION
  *
- * Unescapes URL encoding in strings (converts all %XX codes to their 8bit
+ * Unescapes URL encoding in strings (converts all %XX codes to their 8-bit
  * versions). This function returns a new allocated string or NULL if an error
  * occurred.
  * Conversion Note: On non-ASCII platforms the ASCII %XX codes are
@@ -3183,7 +3187,8 @@ typedef struct curl_version_info_data curl_version_info_data;
                                              supported */
 #define CURL_VERSION_SSPI         (1<<11) /* Built against Windows SSPI */
 #define CURL_VERSION_CONV         (1<<12) /* Character conversions supported */
-#define CURL_VERSION_CURLDEBUG    (1<<13) /* Debug memory tracking supported */
+#define CURL_VERSION_CURLDEBUG    (1<<13) /* Debug memory tracking supported
+                                             (deprecated) */
 #define CURL_VERSION_TLSAUTH_SRP  (1<<14) /* TLS-SRP auth is supported */
 #define CURL_VERSION_NTLM_WB      (1<<15) /* NTLM delegation to winbind helper
                                              is supported */
@@ -3324,10 +3329,14 @@ CURL_EXTERN CURLcode curl_easy_ssls_export(CURL *handle,
 /* This preprocessor magic that replaces a call with the exact same call is
    only done to make sure application authors pass exactly three arguments
    to these functions. */
-#define curl_easy_setopt(handle,opt,param) curl_easy_setopt(handle,opt,param)
-#define curl_easy_getinfo(handle,info,arg) curl_easy_getinfo(handle,info,arg)
-#define curl_share_setopt(share,opt,param) curl_share_setopt(share,opt,param)
-#define curl_multi_setopt(handle,opt,param) curl_multi_setopt(handle,opt,param)
+#define curl_easy_setopt(handle, opt, param) \
+  (curl_easy_setopt)(handle, opt, param)
+#define curl_easy_getinfo(handle, info, arg) \
+  (curl_easy_getinfo)(handle, info, arg)
+#define curl_share_setopt(share, opt, param) \
+  (curl_share_setopt)(share, opt, param)
+#define curl_multi_setopt(handle,opt,param) \
+  (curl_multi_setopt)(handle, opt, param)
 #endif /* __STDC__ >= 1 */
 #endif /* gcc >= 4.3 && !__cplusplus && !CURL_DISABLE_TYPECHECK */
 

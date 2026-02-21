@@ -812,7 +812,6 @@ AC_DEFUN([CURL_SET_COMPILER_WARNING_OPTS], [
           CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [sign-compare])
           tmp_CFLAGS="$tmp_CFLAGS -Wno-multichar"
           CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [undef])
-          tmp_CFLAGS="$tmp_CFLAGS -Wno-format-nonliteral"
           CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [endif-labels strict-prototypes])
           CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [declaration-after-statement])
           CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [cast-align])
@@ -863,13 +862,13 @@ AC_DEFUN([CURL_SET_COMPILER_WARNING_OPTS], [
             CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [conditional-uninitialized])
             CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [language-extension-token])
             tmp_CFLAGS="$tmp_CFLAGS -Wformat=2"
-            tmp_CFLAGS="$tmp_CFLAGS -Wno-used-but-marked-unused"    # Triggered by typecheck-gcc.h (with clang 14+)
+            tmp_CFLAGS="$tmp_CFLAGS -Wno-used-but-marked-unused"    # Triggered by typecheck-gcc.h with clang 14+, dependency headers
           fi
           dnl Only clang 3.1 or later
           if test "$compiler_num" -ge "301"; then
             CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [format-non-iso])
             tmp_CFLAGS="$tmp_CFLAGS -Wno-covered-switch-default"    # Annoying to fix or silence
-            tmp_CFLAGS="$tmp_CFLAGS -Wno-disabled-macro-expansion"  # Triggered by typecheck-gcc.h (with clang 14+)
+            tmp_CFLAGS="$tmp_CFLAGS -Wno-disabled-macro-expansion"  # Triggered by standard headers
           fi
           #
           dnl Only clang 3.2 or later
@@ -1026,11 +1025,6 @@ AC_DEFUN([CURL_SET_COMPILER_WARNING_OPTS], [
             dnl lots of "`_POSIX_C_SOURCE' is not defined" in system
             dnl headers with gcc 2.95.4 on FreeBSD 4.9
             CURL_ADD_COMPILER_WARNINGS([tmp_CFLAGS], [undef])
-          fi
-          #
-          dnl Only gcc 2.97 or later
-          if test "$compiler_num" -ge "297"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wno-format-nonliteral"
           fi
           #
           dnl Only gcc 3.0 or later
@@ -1605,7 +1599,7 @@ AC_DEFUN([CURL_CHECK_COMPILER_PROTOTYPE_MISMATCH], [
           return n;
       }
     ]],[[
-      int i[2]={0,0};
+      int i[2] ={ 0, 0 };
       int j = rand(i[0]);
       if(j)
         return j;

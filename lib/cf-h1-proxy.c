@@ -31,7 +31,6 @@
 #include "http.h"
 #include "http1.h"
 #include "http_proxy.h"
-#include "url.h"
 #include "select.h"
 #include "progress.h"
 #include "cfilters.h"
@@ -39,7 +38,6 @@
 #include "connect.h"
 #include "curl_trc.h"
 #include "strcase.h"
-#include "transfer.h"
 #include "curlx/strparse.h"
 
 
@@ -106,8 +104,8 @@ static CURLcode tunnel_init(struct Curl_cfilter *cf,
 {
   struct h1_tunnel_state *ts;
 
-  if(cf->conn->handler->flags & PROTOPT_NOTCPPROXY) {
-    failf(data, "%s cannot be done over CONNECT", cf->conn->handler->scheme);
+  if(cf->conn->scheme->flags & PROTOPT_NOTCPPROXY) {
+    failf(data, "%s cannot be done over CONNECT", cf->conn->scheme->name);
     return CURLE_UNSUPPORTED_PROTOCOL;
   }
 
@@ -241,7 +239,7 @@ static CURLcode send_CONNECT(struct Curl_cfilter *cf,
                              struct h1_tunnel_state *ts,
                              bool *done)
 {
-  uint8_t *buf = curlx_dyn_uptr(&ts->request_data);
+  const uint8_t *buf = curlx_dyn_uptr(&ts->request_data);
   size_t request_len = curlx_dyn_len(&ts->request_data);
   size_t blen = request_len;
   CURLcode result = CURLE_OK;
@@ -262,7 +260,7 @@ static CURLcode send_CONNECT(struct Curl_cfilter *cf,
 
   DEBUGASSERT(blen >= nwritten);
   ts->nsent += nwritten;
-  Curl_debug(data, CURLINFO_HEADER_OUT, (char *)buf, nwritten);
+  Curl_debug(data, CURLINFO_HEADER_OUT, (const char *)buf, nwritten);
 
 out:
   if(result)
@@ -353,9 +351,9 @@ static CURLcode single_header(struct Curl_cfilter *cf,
                               struct h1_tunnel_state *ts)
 {
   CURLcode result = CURLE_OK;
-  char *linep = curlx_dyn_ptr(&ts->rcvbuf);
+  const char *linep = curlx_dyn_ptr(&ts->rcvbuf);
   size_t line_len = curlx_dyn_len(&ts->rcvbuf); /* bytes in this line */
-  struct SingleRequest *k = &data->req;
+  const struct SingleRequest *k = &data->req;
   int writetype;
   ts->headerlines++;
 
@@ -531,7 +529,7 @@ static CURLcode recv_CONNECT_resp(struct Curl_cfilter *cf,
     if(byte != 0x0a)
       continue;
     else {
-      char *linep = curlx_dyn_ptr(&ts->rcvbuf);
+      const char *linep = curlx_dyn_ptr(&ts->rcvbuf);
       size_t hlen = curlx_dyn_len(&ts->rcvbuf);
       if(hlen && ISNEWLINE(linep[0])) {
         /* end of headers */
@@ -571,7 +569,7 @@ static CURLcode H1_CONNECT(struct Curl_cfilter *cf,
 
   do {
 
-    if(Curl_timeleft_ms(data, TRUE) < 0) {
+    if(Curl_timeleft_ms(data) < 0) {
       failf(data, "Proxy CONNECT aborted due to timeout");
       result = CURLE_OPERATION_TIMEDOUT;
       goto out;

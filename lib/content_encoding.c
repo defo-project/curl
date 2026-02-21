@@ -600,9 +600,7 @@ static const struct Curl_cwtype * const general_unencoders[] = {
 
 /* supported content decoders only for transfer encodings */
 static const struct Curl_cwtype * const transfer_unencoders[] = {
-#ifndef CURL_DISABLE_HTTP
   &Curl_httpchunk_unencoder,
-#endif
   NULL
 };
 
@@ -679,8 +677,8 @@ static const struct Curl_cwtype *find_unencode_writer(const char *name,
     for(cep = transfer_unencoders; *cep; cep++) {
       const struct Curl_cwtype *ce = *cep;
       if((curl_strnequal(name, ce->name, len) && !ce->name[len]) ||
-         (ce->alias && curl_strnequal(name, ce->alias, len)
-                    && !ce->alias[len]))
+         (ce->alias && curl_strnequal(name, ce->alias, len) &&
+          !ce->alias[len]))
         return ce;
     }
   }

@@ -43,10 +43,14 @@ struct dynbuf;
 #define SSLSUPP_CA_CACHE     (1 << 8)
 #define SSLSUPP_CIPHER_LIST  (1 << 9) /* supports TLS 1.0-1.2 ciphersuites */
 #define SSLSUPP_SIGNATURE_ALGORITHMS (1 << 10) /* supports TLS sigalgs */
+#define SSLSUPP_ISSUERCERT   (1 << 11) /* supports CURLOPT_ISSUERCERT */
+#define SSLSUPP_SSL_EC_CURVES (1 << 12) /* supports CURLOPT_SSL_EC_CURVES */
+#define SSLSUPP_CRLFILE      (1 << 13) /* supports CURLOPT_CRLFILE */
+#define SSLSUPP_ISSUERCERT_BLOB (1 << 14) /* CURLOPT_ISSUERCERT_BLOB */
 
 #ifdef USE_ECH
-# include "../curlx/base64.h"
-# define ECH_ENABLED(__data__) \
+#include "../curlx/base64.h"
+#define ECH_ENABLED(__data__) \
   (__data__->set.tls_ech && !(__data__->set.tls_ech & CURLECH_DISABLE))
 #endif /* USE_ECH */
 
@@ -93,9 +97,7 @@ struct ssl_peer {
 CURLsslset Curl_init_sslset_nolock(curl_sslbackend id, const char *name,
                                    const curl_ssl_backend ***avail);
 
-#ifndef MAX_PINNED_PUBKEY_SIZE
 #define MAX_PINNED_PUBKEY_SIZE 1048576 /* 1 MiB */
-#endif
 
 curl_sslbackend Curl_ssl_backend(void);
 
@@ -176,8 +178,8 @@ CURLcode Curl_ssl_push_certinfo(struct Curl_easy *data, int certnum,
 /* Functions to be used by SSL library adaptation functions */
 
 /* get N random bytes into the buffer */
-CURLcode Curl_ssl_random(struct Curl_easy *data, unsigned char *buffer,
-                         size_t length);
+CURLcode Curl_ssl_random(struct Curl_easy *data,
+                         unsigned char *buffer, size_t length);
 /* Check pinned public key. */
 CURLcode Curl_pin_peer_pubkey(struct Curl_easy *data,
                               const char *pinnedpubkey,

@@ -44,6 +44,12 @@
 #define HAVE_BORINGSSL_LIKE
 #endif
 
+/* OpenSSL 3.5.0+ has built-in 'SSLKEYLOGFILE' support if built with
+   'enable-sslkeylog' */
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L && !defined(OPENSSL_NO_SSLKEYLOG)
+#define HAVE_KEYLOG_UPSTREAM
+#endif
+
 /*
  * Whether SSL_CTX_set_keylog_callback is available.
  * OpenSSL: supported since 1.1.1 https://github.com/openssl/openssl/pull/2287
@@ -73,7 +79,7 @@ struct ossl_ctx {
   CURLcode io_result;       /* result of last BIO cfilter operation */
   /* blocked writes need to retry with same length, remember it */
   int      blocked_ssl_write_len;
-#ifndef HAVE_KEYLOG_CALLBACK
+#if !defined(HAVE_KEYLOG_UPSTREAM) && !defined(HAVE_KEYLOG_CALLBACK)
   /* Set to true once a valid keylog entry has been created to avoid dupes.
      This is a bool and not a bitfield because it is passed by address. */
   bool keylog_done;
@@ -100,7 +106,7 @@ CURLcode Curl_ossl_ctx_init(struct ossl_ctx *octx,
                             struct Curl_cfilter *cf,
                             struct Curl_easy *data,
                             struct ssl_peer *peer,
-                            const struct alpn_spec *alpns,
+                            const struct alpn_spec *alpns_requested,
                             Curl_ossl_ctx_setup_cb *cb_setup,
                             void *cb_user_data,
                             Curl_ossl_new_session_cb *cb_new_session,
@@ -132,7 +138,7 @@ CURLcode Curl_ossl_ctx_configure(struct Curl_cfilter *cf,
 CURLcode Curl_ossl_add_session(struct Curl_cfilter *cf,
                                struct Curl_easy *data,
                                const char *ssl_peer_key,
-                               SSL_SESSION *ssl_sessionid,
+                               SSL_SESSION *session,
                                int ietf_tls_id,
                                const char *alpn,
                                unsigned char *quic_tp,
