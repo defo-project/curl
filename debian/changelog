@@ -1,3 +1,11 @@
+curl (8.19.0~rc2-1) UNRELEASED; urgency=medium
+
+  * New upstream version 8.19.0~rc2
+  * Refresh patches
+  * d/copyright: Drop removed files
+
+ -- Samuel Henrique <samueloph@debian.org>  Sat, 21 Feb 2026 09:44:52 -0800
+
 curl (8.18.0-2) unstable; urgency=medium
 
   [ Simon McVittie ]
