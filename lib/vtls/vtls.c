@@ -147,7 +147,7 @@ static const struct alpn_spec ALPN_SPEC_H2_H11 = {
 static const struct alpn_spec ALPN_SPEC_H11_H2 = {
   { ALPN_HTTP_1_1, ALPN_H2 }, 2
 };
-#endif
+#endif /* USE_HTTP2 */
 
 #if !defined(CURL_DISABLE_HTTP) || !defined(CURL_DISABLE_PROXY)
 static const struct alpn_spec *alpn_get_spec(http_majors wanted,
@@ -679,12 +679,11 @@ CURLcode Curl_ssl_push_certinfo_len(struct Curl_easy *data,
 
 /* get length bytes of randomness */
 CURLcode Curl_ssl_random(struct Curl_easy *data,
-                         unsigned char *entropy,
-                         size_t length)
+                         unsigned char *buffer, size_t length)
 {
   DEBUGASSERT(length == sizeof(int));
   if(Curl_ssl->random)
-    return Curl_ssl->random(data, entropy, length);
+    return Curl_ssl->random(data, buffer, length);
   else
     return CURLE_NOT_BUILT_IN;
 }

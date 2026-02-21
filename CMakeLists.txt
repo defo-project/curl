@@ -149,6 +149,10 @@ else()
   set(CURL_OS "\"${CMAKE_SYSTEM_NAME}\"")
 endif()
 
+if(CURL_PATCHSTAMP)
+  set(CURL_PATCHSTAMP "\"${CURL_PATCHSTAMP}\"")
+endif()
+
 set(LIB_NAME "libcurl")
 set(EXE_NAME "curl")
 
@@ -197,8 +201,12 @@ if(WIN32)
 
   set(CURL_TARGET_WINDOWS_VERSION "" CACHE STRING "Minimum target Windows version as hex string")
   if(CURL_TARGET_WINDOWS_VERSION)
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "_WIN32_WINNT=${CURL_TARGET_WINDOWS_VERSION}")
-    list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D_WIN32_WINNT=${CURL_TARGET_WINDOWS_VERSION}")  # Apply to all feature checks
+    if(CURL_TARGET_WINDOWS_VERSION MATCHES "^0x[0-9a-fA-F]+$")
+      set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "_WIN32_WINNT=${CURL_TARGET_WINDOWS_VERSION}")
+      list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D_WIN32_WINNT=${CURL_TARGET_WINDOWS_VERSION}")  # Apply to all feature checks
+    else()
+      message(WARNING "CURL_TARGET_WINDOWS_VERSION value '${CURL_TARGET_WINDOWS_VERSION}' is not a valid hex string.")
+    endif()
   endif()
 
   # Detect actual value of _WIN32_WINNT and store as HAVE_WIN32_WINNT
@@ -206,7 +214,7 @@ if(WIN32)
   if(HAVE_WIN32_WINNT)
     string(REGEX MATCH "_WIN32_WINNT=0x[0-9a-fA-F]+" CURL_TEST_OUTPUT "${CURL_TEST_OUTPUT}")
     string(REGEX REPLACE "_WIN32_WINNT=" "" CURL_TEST_OUTPUT "${CURL_TEST_OUTPUT}")
-    string(REGEX REPLACE "0x([0-9a-f][0-9a-f][0-9a-f])$" "0x0\\1" CURL_TEST_OUTPUT "${CURL_TEST_OUTPUT}")  # pad to 4 digits
+    string(REGEX REPLACE "0x([0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])$" "0x0\\1" CURL_TEST_OUTPUT "${CURL_TEST_OUTPUT}") # pad to 4 digits
     string(TOLOWER "${CURL_TEST_OUTPUT}" HAVE_WIN32_WINNT)
     message(STATUS "Found _WIN32_WINNT=${HAVE_WIN32_WINNT}")
   endif()
@@ -243,8 +251,6 @@ if(NOT DOS AND NOT AMIGA)
   option(ENABLE_THREADED_RESOLVER "Enable threaded DNS lookup" ${_enable_threaded_resolver_default})
 endif()
 
-include(PickyWarnings)
-
 if(CYGWIN OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "GNU")
   set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "_GNU_SOURCE")  # Required for accept4(), pipe2(), sendmmsg()
   list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE")  # Apply to all feature checks
@@ -262,22 +268,21 @@ endif()
 
 option(CURL_CLANG_TIDY "Run the build through clang-tidy" OFF)
 if(CURL_CLANG_TIDY)
+  find_program(CLANG_TIDY NAMES "clang-tidy" REQUIRED)
+  if(NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
+    set(PICKY_COMPILER OFF)  # Do a best effort and skip passing non-clang warning options to clang-tidy.
+    # This lets through warning options enabled via CURL_WERROR=ON, affecting lib and src.
+  endif()
   set(CMAKE_UNITY_BUILD OFF)  # clang-tidy is not looking into #included sources, thus not compatible with unity builds.
   set(CURL_DISABLE_TYPECHECK ON)  # to improve performance and avoid potential interference.
-  set(_tidy_checks "")
-  list(APPEND _tidy_checks "-clang-analyzer-security.insecureAPI.bzero")  # for FD_ZERO() (seen on macOS)
-  list(APPEND _tidy_checks "-clang-analyzer-optin.performance.Padding")
-  list(APPEND _tidy_checks "-clang-analyzer-security.ArrayBound")  # false positives with clang-tidy v21.1.0
-  list(APPEND _tidy_checks "-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling")
-  string(REPLACE ";" "," _tidy_checks "${_tidy_checks}")
-  find_program(CLANG_TIDY NAMES "clang-tidy" REQUIRED)
-  set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY}" "-checks=${_tidy_checks}" "-quiet")
-  unset(_tidy_checks)
+  set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY}")
+  list(APPEND CMAKE_C_CLANG_TIDY "--config-file=${PROJECT_SOURCE_DIR}/.clang-tidy.yml")
   if(CURL_WERROR)
     list(APPEND CMAKE_C_CLANG_TIDY "--warnings-as-errors=*")
   endif()
   if(CURL_CLANG_TIDYFLAGS)
-    list(APPEND CMAKE_C_CLANG_TIDY ${CURL_CLANG_TIDYFLAGS})
+    string(REPLACE " " ";" _tidy_flags_list "${CURL_CLANG_TIDYFLAGS}")
+    list(APPEND CMAKE_C_CLANG_TIDY ${_tidy_flags_list})
   endif()
 endif()
 
@@ -300,6 +305,8 @@ if(CURL_CODE_COVERAGE)
     set(CURL_CODE_COVERAGE OFF)
   endif()
 endif()
+
+include(PickyWarnings)
 
 set(CURL_CFLAGS "")  # C flags set for libcurl and curl tool (aka public binaries) only
 
@@ -496,6 +503,11 @@ option(CURL_DISABLE_TYPECHECK "Disable curl_easy_setopt()/curl_easy_getinfo() ty
 mark_as_advanced(CURL_DISABLE_TYPECHECK)
 option(CURL_DISABLE_VERBOSE_STRINGS "Disable verbose strings" OFF)
 mark_as_advanced(CURL_DISABLE_VERBOSE_STRINGS)
+
+if(CURL_DISABLE_TYPECHECK)
+  # Set it via the command-line to make it apply to examples also.
+  set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "CURL_DISABLE_TYPECHECK")
+endif()
 
 if(CURL_DISABLE_HTTP)
   set(CURL_DISABLE_ALTSVC ON)
@@ -821,6 +833,9 @@ if(CURL_USE_OPENSSL)
   endif()
 
   if(HAVE_BORINGSSL)
+    if(BORINGSSL_VERSION)
+      set(CURL_BORINGSSL_VERSION "\"${BORINGSSL_VERSION}\"")
+    endif()
     set(_openssl "BoringSSL")
   elseif(HAVE_AWSLC)
     set(_openssl "AWS-LC")
@@ -868,6 +883,8 @@ if(CURL_USE_WOLFSSL)
     set(_valid_default_ssl_backend TRUE)
   endif()
   set(_curl_ca_bundle_supported TRUE)
+
+  set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "WOLFSSL_OPTIONS_IGNORE_SYS")
 endif()
 
 if(CURL_USE_GNUTLS)
@@ -968,6 +985,7 @@ macro(curl_openssl_check_exists)
   endif()
   if(USE_WOLFSSL)
     list(APPEND CMAKE_REQUIRED_LIBRARIES CURL::wolfssl)
+    list(APPEND CMAKE_REQUIRED_DEFINITIONS "-DWOLFSSL_OPTIONS_IGNORE_SYS")
     if(HAVE_LIBZ)
       list(APPEND CMAKE_REQUIRED_LIBRARIES ZLIB::ZLIB)  # Public wolfSSL headers also require zlib headers
     endif()
@@ -1809,28 +1827,30 @@ endif()
 # linkers sensitive to lib order. There must be a better solution to this.
 # Enable the workaround for all compilers, to make it available when using GCC
 # to consume libcurl, regardless of the compiler used to build libcurl itself.
-if(USE_OPENSSL AND TARGET OpenSSL::Crypto)
-  get_target_property(_curl_imported OpenSSL::Crypto IMPORTED)
-  if(_curl_imported)
-    add_library(CURL::OpenSSL_Crypto INTERFACE IMPORTED)
-    get_target_property(_curl_libname OpenSSL::Crypto LOCATION)
-    set_target_properties(CURL::OpenSSL_Crypto PROPERTIES INTERFACE_LINK_LIBRARIES "${_curl_libname}")
-    list(APPEND CURL_LIBS CURL::OpenSSL_Crypto)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  if(USE_OPENSSL AND TARGET OpenSSL::Crypto)
+    get_target_property(_curl_imported OpenSSL::Crypto IMPORTED)
+    if(_curl_imported)
+      add_library(CURL::OpenSSL_Crypto INTERFACE IMPORTED)
+      get_target_property(_curl_libname OpenSSL::Crypto LOCATION)
+      set_target_properties(CURL::OpenSSL_Crypto PROPERTIES INTERFACE_LINK_LIBRARIES "${_curl_libname}")
+      list(APPEND CURL_LIBS CURL::OpenSSL_Crypto)
+    endif()
   endif()
-endif()
-if(HAVE_LIBZ AND TARGET ZLIB::ZLIB)
-  get_target_property(_curl_imported ZLIB::ZLIB IMPORTED)
-  if(_curl_imported)
-    add_library(CURL::ZLIB INTERFACE IMPORTED)
-    get_target_property(_curl_libname ZLIB::ZLIB LOCATION)
-    set_target_properties(CURL::ZLIB PROPERTIES INTERFACE_LINK_LIBRARIES "${_curl_libname}")
-    list(APPEND CURL_LIBS CURL::ZLIB)
+  if(HAVE_LIBZ AND TARGET ZLIB::ZLIB)
+    get_target_property(_curl_imported ZLIB::ZLIB IMPORTED)
+    if(_curl_imported)
+      add_library(CURL::ZLIB INTERFACE IMPORTED)
+      get_target_property(_curl_libname ZLIB::ZLIB LOCATION)
+      set_target_properties(CURL::ZLIB PROPERTIES INTERFACE_LINK_LIBRARIES "${_curl_libname}")
+      list(APPEND CURL_LIBS CURL::ZLIB)
+    endif()
   endif()
-endif()
-if(WIN32)
-  add_library(CURL::win32_winsock INTERFACE IMPORTED)
-  set_target_properties(CURL::win32_winsock PROPERTIES INTERFACE_LINK_LIBRARIES "ws2_32")
-  list(APPEND CURL_LIBS CURL::win32_winsock)
+  if(WIN32)
+    add_library(CURL::win32_winsock INTERFACE IMPORTED)
+    set_target_properties(CURL::win32_winsock PROPERTIES INTERFACE_LINK_LIBRARIES "ws2_32")
+    list(APPEND CURL_LIBS CURL::win32_winsock)
+  endif()
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")  # MSVC but exclude clang-cl

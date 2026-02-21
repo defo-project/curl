@@ -325,12 +325,17 @@ static int rtspd_ProcessRequest(struct rtspd_httprequest *req)
                   req->rtp_buffersize = rtp_size + 4;
                 }
                 else {
-                  req->rtp_buffer = realloc(req->rtp_buffer,
-                                            req->rtp_buffersize +
-                                            rtp_size + 4);
-                  memcpy(req->rtp_buffer + req->rtp_buffersize, rtp_scratch,
-                         rtp_size + 4);
-                  req->rtp_buffersize += rtp_size + 4;
+                  char *rtp_buffer = realloc(req->rtp_buffer,
+                                             req->rtp_buffersize +
+                                             rtp_size + 4);
+                  if(rtp_buffer) {
+                    req->rtp_buffer = rtp_buffer;
+                    memcpy(req->rtp_buffer + req->rtp_buffersize, rtp_scratch,
+                           rtp_size + 4);
+                    req->rtp_buffersize += rtp_size + 4;
+                  }
+                  else
+                    logmsg("failed resizing buffer.");
                   free(rtp_scratch);
                 }
                 logmsg("rtp_buffersize is %zu, rtp_size is %d.",
@@ -1250,7 +1255,7 @@ static int test_rtspd(int argc, const char *argv[])
      */
     flag = 1;
     if(setsockopt(msgsock, IPPROTO_TCP, TCP_NODELAY,
-                   (void *)&flag, sizeof(flag)) == -1) {
+                  (void *)&flag, sizeof(flag)) == -1) {
       logmsg("====> TCP_NODELAY failed");
     }
 #endif

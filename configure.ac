@@ -120,6 +120,11 @@ AC_SUBST([AR])
 
 AC_SUBST(libext)
 
+if test -z "$CLANG_TIDY"; then
+  CLANG_TIDY=clang-tidy
+fi
+AC_SUBST(CLANG_TIDY)
+
 dnl figure out the libcurl version
 CURLVERSION=`$SED -ne 's/^#define LIBCURL_VERSION "\(.*\)".*/\1/p' ${srcdir}/include/curl/curlver.h`
 XC_CHECK_PROG_CC
@@ -680,6 +685,8 @@ case $host_os in
     CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
     ;;
 esac
+
+AM_CONDITIONAL(CLANG, test "$compiler_id" = "APPLECLANG" || test "$compiler_id" = "CLANG")
 
 dnl **********************************************************************
 dnl Compilation based checks should not be done before this point.
@@ -1784,7 +1791,7 @@ int main(int argc, char **argv)
 #else
   (void)argc;
   argv[0][0] = ' ';
-  return (argv[0][0] == ' ')?0:1;
+  return (argv[0][0] == ' ') ? 0 : 1;
 #endif
 }
 ]],[
@@ -4331,7 +4338,8 @@ AS_HELP_STRING([--disable-typecheck],[Disable type checking]),
 [ case "$enableval" in
   no)
     AC_MSG_RESULT(no)
-    AC_DEFINE(CURL_DISABLE_TYPECHECK, 1, [to disable type checking])
+    dnl Set it via the command-line to make it apply to examples also.
+    CPPFLAGS="$CPPFLAGS -DCURL_DISABLE_TYPECHECK"
     curl_typecheck_msg="no"
     ;;
   *)

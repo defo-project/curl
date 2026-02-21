@@ -35,7 +35,7 @@
 #include "connect.h"
 #include "curlx/strdup.h"
 #include "curlx/dynbuf.h"
-#include "escape.h"
+#include "escape.h"  /* for Curl_hexencode() */
 #include "urlapi-int.h"
 
 #define DNS_CLASS_IN 0x01
@@ -884,13 +884,13 @@ static void doh_show(struct Curl_easy *data,
   }
 #ifdef USE_HTTPSRR
   for(i = 0; i < d->numhttps_rrs; i++) {
-# if defined(DEBUGBUILD) && defined(CURLVERBOSE)
+#if defined(DEBUGBUILD) && defined(CURLVERBOSE)
     doh_print_buf(data, "DoH HTTPS", d->https_rrs[i].val, d->https_rrs[i].len);
-# else
+#else
     infof(data, "DoH HTTPS RR: length %d", d->https_rrs[i].len);
-# endif
-  }
 #endif
+  }
+#endif /* USE_HTTPSRR */
   for(i = 0; i < d->numcname; i++) {
     infof(data, "CNAME: %s", curlx_dyn_ptr(&d->cname[i]));
   }
@@ -980,7 +980,7 @@ static CURLcode doh2ai(const struct dohentry *de, const char *hostname,
       addr = (void *)ai->ai_addr; /* storage area for this info */
       DEBUGASSERT(sizeof(struct in_addr) == sizeof(de->addr[i].ip.v4));
       memcpy(&addr->sin_addr, &de->addr[i].ip.v4, sizeof(struct in_addr));
-      addr->sin_family = (CURL_SA_FAMILY_T)addrtype;
+      addr->sin_family = addrtype;
       addr->sin_port = htons((unsigned short)port);
       break;
 
@@ -989,7 +989,7 @@ static CURLcode doh2ai(const struct dohentry *de, const char *hostname,
       addr6 = (void *)ai->ai_addr; /* storage area for this info */
       DEBUGASSERT(sizeof(struct in6_addr) == sizeof(de->addr[i].ip.v6));
       memcpy(&addr6->sin6_addr, &de->addr[i].ip.v6, sizeof(struct in6_addr));
-      addr6->sin6_family = (CURL_SA_FAMILY_T)addrtype;
+      addr6->sin6_family = addrtype;
       addr6->sin6_port = htons((unsigned short)port);
       break;
 #endif
@@ -1268,12 +1268,12 @@ CURLcode Curl_doh_is_resolved(struct Curl_easy *data,
             goto error;
           }
           infof(data, "Some HTTPS RR to process");
-# if defined(DEBUGBUILD) && defined(CURLVERBOSE)
+#if defined(DEBUGBUILD) && defined(CURLVERBOSE)
           doh_print_httpsrr(data, hrr);
-# endif
+#endif
           dns->hinfo = hrr;
         }
-#endif
+#endif /* USE_HTTPSRR */
         /* and add the entry to the cache */
         data->state.async.dns = dns;
         result = Curl_dnscache_add(data, dns);

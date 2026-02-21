@@ -164,9 +164,6 @@ char *Curl_checkProxyheaders(struct Curl_easy *data,
 
   return NULL;
 }
-#else
-/* disabled */
-#define Curl_checkProxyheaders(x, y, z, a) NULL
 #endif
 
 static bool http_header_is_empty(const char *header)
@@ -542,7 +539,7 @@ CURLcode Curl_http_auth_act(struct Curl_easy *data)
   bool pickhost = FALSE;
   bool pickproxy = FALSE;
   CURLcode result = CURLE_OK;
-  unsigned long authmask = ~0ul;
+  unsigned long authmask = ~0UL;
 
   if(!data->set.str[STRING_BEARER])
     authmask &= (unsigned long)~CURLAUTH_BEARER;
@@ -3743,12 +3740,12 @@ static CURLcode http_statusline(struct Curl_easy *data,
 
   data->info.httpcode = k->httpcode;
   data->info.httpversion = k->httpversion;
-  conn->httpversion_seen = (unsigned char)k->httpversion;
+  conn->httpversion_seen = k->httpversion;
 
   if(!data->state.http_neg.rcvd_min ||
      data->state.http_neg.rcvd_min > k->httpversion)
     /* store the lowest server version we encounter */
-    data->state.http_neg.rcvd_min = (unsigned char)k->httpversion;
+    data->state.http_neg.rcvd_min = k->httpversion;
 
   /*
    * This code executes as part of processing the header. As a
@@ -4062,7 +4059,7 @@ static CURLcode http_on_response(struct Curl_easy *data,
     goto out;
 
   if(k->httpcode >= 300) {
-    if((!data->req.authneg) && !conn->bits.close &&
+    if(!data->req.authneg && !conn->bits.close &&
        !Curl_creader_will_rewind(data)) {
       /*
        * General treatment of errors when about to send data. Including :

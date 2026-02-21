@@ -239,6 +239,7 @@ target_link_libraries(my_target PRIVATE CURL::libcurl)
 - `CURL_DEFAULT_SSL_BACKEND`:               Override default TLS backend in MultiSSL builds.
                                             Accepted values in order of default priority:
                                             `wolfssl`, `gnutls`, `mbedtls`, `openssl`, `schannel`, `rustls`
+- `CURL_DROP_UNUSED`:                       Drop unused code and data from built binaries. Default: `OFF`
 - `CURL_ENABLE_EXPORT_TARGET`:              Enable CMake export target. Default: `ON`
 - `CURL_HIDDEN_SYMBOLS`:                    Hide libcurl internal symbols (=hide all symbols that are not officially external). Default: `ON`
 - `CURL_LIBCURL_SOVERSION`:                 Enable libcurl SOVERSION. Default: `ON` for supported platforms
@@ -246,9 +247,9 @@ target_link_libraries(my_target PRIVATE CURL::libcurl)
 - `CURL_LIBCURL_VERSIONED_SYMBOLS_PREFIX`:  Override default versioned symbol prefix. Default: `<TLS-BACKEND>_` or `MULTISSL_`
 - `CURL_LINT`:                              Run lint checks while building. Default: `OFF`
 - `CURL_LTO`:                               Enable compiler Link Time Optimizations. Default: `OFF`
-- `CURL_DROP_UNUSED`:                       Drop unused code and data from built binaries. Default: `OFF`
+- `CURL_PATCHSTAMP`:                        Set security patch string for `curl -V`/`curl --version` output.
 - `CURL_STATIC_CRT`:                        Build libcurl with static CRT with MSVC (`/MT`) (requires UCRT, static libcurl or no curl executable). Default: `OFF`
-- `CURL_TARGET_WINDOWS_VERSION`:            Minimum target Windows version as hex string.
+- `CURL_TARGET_WINDOWS_VERSION`:            Minimum target Windows version as hex string, e.g. `0x0a00` for Windows 10.
 - `CURL_WERROR`:                            Turn compiler warnings into errors. Default: `OFF`
 - `ENABLE_CURL_MANUAL`:                     Build the man page for curl and enable its `-M`/`--manual` option. Default: `ON`
 - `ENABLE_DEBUG`:                           Enable curl debug features (for developing curl itself). Default: `OFF`
@@ -398,14 +399,15 @@ Details via CMake
 
 ## Dependency options (tools)
 
-- `CLANG_TIDY`:                             `clang-tidy` tool used with `CURL_CLANG_TIDY=ON`. Default: `clang-tidy`
-- `PERL_EXECUTABLE`:                        Perl binary used throughout the build and tests.
+- `CLANG_TIDY`:                             Absolute path to `clang-tidy` tool used with `CURL_CLANG_TIDY=ON`. Default: search for `clang-tidy`
+- `PERL_EXECUTABLE`:                        Absolute path to Perl binary used throughout the build and tests. Default: auto-detect
 
 ## Dependency options (libraries)
 
 - `AMISSL_INCLUDE_DIR`:                     Absolute path to AmiSSL include directory.
 - `AMISSL_STUBS_LIBRARY`:                   Absolute path to `amisslstubs` library.
 - `AMISSL_AUTO_LIBRARY`:                    Absolute path to `amisslauto` library.
+- `BORINGSSL_VERSION`:                      Set BoringSSL version for `curl -V`/`curl --version` output.
 - `BROTLI_INCLUDE_DIR`:                     Absolute path to brotli include directory.
 - `BROTLICOMMON_LIBRARY`:                   Absolute path to `brotlicommon` library.
 - `BROTLIDEC_LIBRARY`:                      Absolute path to `brotlidec` library.
@@ -499,15 +501,15 @@ Examples:
 
 ## Test tools
 
-- `APXS`:                                   Default: `apxs`
-- `CADDY`:                                  Default: `caddy`
-- `HTTPD_NGHTTPX`:                          Default: `nghttpx`
-- `HTTPD`:                                  Default: `apache2`
-- `DANTED`:                                 Default: `danted`
-- `TEST_NGHTTPX`:                           Default: `nghttpx`
-- `VSFTPD`:                                 Default: `vsftps`
-- `SSHD`:                                   Default: `sshd`
-- `SFTPD`:                                  Default: `sftp-server`
+- `APXS`:                                   Absolute path. Default: search for `apxs`
+- `CADDY`:                                  Absolute path. Default: search for `caddy`
+- `HTTPD_NGHTTPX`:                          Absolute path. Default: search for `nghttpx`
+- `HTTPD`:                                  Absolute path. Default: search for `apache2`
+- `DANTED`:                                 Absolute path. Default: search for `danted`
+- `TEST_NGHTTPX`:                           Absolute path. Default: search for `nghttpx`
+- `VSFTPD`:                                 Absolute path. Default: search for `vsftps`
+- `SSHD`:                                   Absolute path. Default: search for `sshd`
+- `SFTPD`:                                  Absolute path. Default: search for `sftp-server`
 
 ## Feature detection variables
 

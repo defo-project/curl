@@ -147,7 +147,7 @@ if(PICKY_COMPILER)
       list(APPEND _picky_enable
         ${_picky_common_old}
         -Wconditional-uninitialized        # clang  3.0
-        -Wno-used-but-marked-unused        # clang  3.0                         # Triggered by typecheck-gcc.h (with clang 14+)
+        -Wno-used-but-marked-unused        # clang  3.0            # Triggered by typecheck-gcc.h with clang 14+, dependency headers
         -Wshift-sign-overflow              # clang  2.9
         -Wshorten-64-to-32                 # clang  1.0
         -Wformat=2                         # clang  3.0  gcc  4.8
@@ -161,7 +161,7 @@ if(PICKY_COMPILER)
       if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 3.1)
         list(APPEND _picky_enable
           -Wno-covered-switch-default      # clang  3.1            appleclang  3.1  # Annoying to fix or silence
-          -Wno-disabled-macro-expansion    # clang  3.1            appleclang  3.1  # Triggered by typecheck-gcc.h (with clang 14+)
+          -Wno-disabled-macro-expansion    # clang  3.1            appleclang  3.1  # Triggered by standard headers
         )
         if(MSVC)
           list(APPEND _picky_enable
@@ -395,7 +395,7 @@ if(PICKY_COMPILER)
         list(APPEND _picky "-Wno-conversion")  # Avoid false positives
       endif()
     endif()
-  elseif(MSVC AND MSVC_VERSION LESS_EQUAL 1944)  # Skip for untested/unreleased newer versions
+  elseif(MSVC AND MSVC_VERSION LESS_EQUAL 1950)  # Skip for untested/unreleased newer versions
     list(APPEND _picky "-Wall")
     list(APPEND _picky "-wd4061")  # enumerator 'A' in switch of enum 'B' is not explicitly handled by a case label
     list(APPEND _picky "-wd4191")  # 'type cast': unsafe conversion from 'FARPROC' to 'void (__cdecl *)(void)'

@@ -25,11 +25,10 @@
  ***************************************************************************/
 #include "../curl_setup.h"
 
-#include "../bufq.h"
-
 #ifdef USE_HTTP3
 
-#define MAX_PKT_BURST         10
+#include "../bufq.h"
+
 #define MAX_UDP_PAYLOAD_SIZE  1452
 
 /* definitions from RFC 9114, ch 8.1 */
@@ -121,8 +120,6 @@ CURLcode vquic_recv_packets(struct Curl_cfilter *cf,
                             size_t max_pkts,
                             vquic_recv_pkts_cb *recv_cb, void *userp);
 
-#endif /* !USE_HTTP3 */
-
 #ifdef USE_NGTCP2
 struct ngtcp2_mem;
 struct ngtcp2_mem *Curl_ngtcp2_mem(void);
@@ -131,5 +128,7 @@ struct ngtcp2_mem *Curl_ngtcp2_mem(void);
 struct nghttp3_mem;
 struct nghttp3_mem *Curl_nghttp3_mem(void);
 #endif
+
+#endif /* !USE_HTTP3 */
 
 #endif /* HEADER_CURL_VQUIC_QUIC_INT_H */

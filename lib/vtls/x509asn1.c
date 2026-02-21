@@ -50,6 +50,7 @@
 /* Largest supported ASN.1 structure. */
 #define CURL_ASN1_MAX                   ((size_t)0x40000)      /* 256K */
 
+#ifdef WANT_EXTRACT_CERTINFO
 /* ASN.1 classes. */
 /* #define CURL_ASN1_UNIVERSAL             0 */
 /* #define CURL_ASN1_APPLICATION           1 */
@@ -86,7 +87,6 @@
 /* #define CURL_ASN1_CHARACTER_STRING      29 */
 #define CURL_ASN1_BMP_STRING            30
 
-#ifdef WANT_EXTRACT_CERTINFO
 /* ASN.1 OID table entry. */
 struct Curl_OID {
   const char *numoid;  /* Dotted-numeric OID. */
@@ -556,7 +556,7 @@ static CURLcode GTime2str(struct dynbuf *store,
                         "%.4s-%.2s-%.2s %.2s:%.2s:%c%c%s%.*s%s%.*s",
                         beg, beg + 4, beg + 6,
                         beg + 8, beg + 10, sec1, sec2,
-                        fracl ? ".": "", (int)fracl, fracp,
+                        fracl ? "." : "", (int)fracl, fracp,
                         sep, (int)tzl, tzp);
 }
 

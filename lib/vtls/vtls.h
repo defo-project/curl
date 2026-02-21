@@ -49,8 +49,8 @@ struct dynbuf;
 #define SSLSUPP_ISSUERCERT_BLOB (1 << 14) /* CURLOPT_ISSUERCERT_BLOB */
 
 #ifdef USE_ECH
-# include "../curlx/base64.h"
-# define ECH_ENABLED(__data__) \
+#include "../curlx/base64.h"
+#define ECH_ENABLED(__data__) \
   (__data__->set.tls_ech && !(__data__->set.tls_ech & CURLECH_DISABLE))
 #endif /* USE_ECH */
 
@@ -178,8 +178,8 @@ CURLcode Curl_ssl_push_certinfo(struct Curl_easy *data, int certnum,
 /* Functions to be used by SSL library adaptation functions */
 
 /* get N random bytes into the buffer */
-CURLcode Curl_ssl_random(struct Curl_easy *data, unsigned char *buffer,
-                         size_t length);
+CURLcode Curl_ssl_random(struct Curl_easy *data,
+                         unsigned char *buffer, size_t length);
 /* Check pinned public key. */
 CURLcode Curl_pin_peer_pubkey(struct Curl_easy *data,
                               const char *pinnedpubkey,

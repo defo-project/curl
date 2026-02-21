@@ -286,16 +286,36 @@
  * When HTTP is disabled, disable HTTP-only features
  */
 #ifdef CURL_DISABLE_HTTP
-#  define CURL_DISABLE_ALTSVC 1
-#  define CURL_DISABLE_COOKIES 1
-#  define CURL_DISABLE_BASIC_AUTH 1
-#  define CURL_DISABLE_BEARER_AUTH 1
-#  define CURL_DISABLE_AWS 1
-#  define CURL_DISABLE_DOH 1
-#  define CURL_DISABLE_FORM_API 1
-#  define CURL_DISABLE_HEADERS_API 1
-#  define CURL_DISABLE_HSTS 1
-#  define CURL_DISABLE_HTTP_AUTH 1
+#  ifndef CURL_DISABLE_ALTSVC
+#  define CURL_DISABLE_ALTSVC
+#  endif
+#  ifndef CURL_DISABLE_COOKIES
+#  define CURL_DISABLE_COOKIES
+#  endif
+#  ifndef CURL_DISABLE_BASIC_AUTH
+#  define CURL_DISABLE_BASIC_AUTH
+#  endif
+#  ifndef CURL_DISABLE_BEARER_AUTH
+#  define CURL_DISABLE_BEARER_AUTH
+#  endif
+#  ifndef CURL_DISABLE_AWS
+#  define CURL_DISABLE_AWS
+#  endif
+#  ifndef CURL_DISABLE_DOH
+#  define CURL_DISABLE_DOH
+#  endif
+#  ifndef CURL_DISABLE_FORM_API
+#  define CURL_DISABLE_FORM_API
+#  endif
+#  ifndef CURL_DISABLE_HEADERS_API
+#  define CURL_DISABLE_HEADERS_API
+#  endif
+#  ifndef CURL_DISABLE_HSTS
+#  define CURL_DISABLE_HSTS
+#  endif
+#  ifndef CURL_DISABLE_HTTP_AUTH
+#  define CURL_DISABLE_HTTP_AUTH
+#  endif
 #  ifndef CURL_DISABLE_WEBSOCKETS
 #  define CURL_DISABLE_WEBSOCKETS /* no WebSockets without HTTP present */
 #  endif
@@ -793,7 +813,7 @@
     (defined(__clang__) && __clang_major__ >= 10)
 #  define FALLTHROUGH()  __attribute__((fallthrough))
 #else
-#  define FALLTHROUGH()  do {} while (0)
+#  define FALLTHROUGH()  do {} while(0)
 #endif
 #endif
 
@@ -1085,7 +1105,9 @@ typedef unsigned int curl_bit;
 #define SOCKEINVAL        WSAEINVAL
 #define SOCKEISCONN       WSAEISCONN
 #define SOCKEMSGSIZE      WSAEMSGSIZE
-#define SOCKENOMEM        WSA_NOT_ENOUGH_MEMORY
+/* Use literal value to work around clang-tidy <=20 misreporting
+  'readability-uppercase-literal-suffix' with mingw-w64 headers */
+#define SOCKENOMEM        8L  /* WSA_NOT_ENOUGH_MEMORY */
 #define SOCKETIMEDOUT     WSAETIMEDOUT
 #define SOCKEWOULDBLOCK   WSAEWOULDBLOCK
 #else
@@ -1131,9 +1153,9 @@ typedef unsigned int curl_bit;
 #include "curlx/warnless.h"
 
 #ifdef _WIN32
-#  undef  read
+#  undef read
 #  define read(fd, buf, count)  (ssize_t)_read(fd, buf, curlx_uztoui(count))
-#  undef  write
+#  undef write
 #  define write(fd, buf, count) (ssize_t)_write(fd, buf, curlx_uztoui(count))
 /* Avoid VS2005+ _CRT_NONSTDC_NO_DEPRECATE warnings about non-portable funcs */
 #  undef fileno
@@ -1528,8 +1550,11 @@ typedef struct sockaddr_un {
 #endif
 
 #ifdef USE_OPENSSL
-/* OpenSSLv3 marks DES, MD5 and ENGINE functions deprecated but we have no
-   replacements (yet) so tell the compiler to not warn for them. */
+/* OpenSSL 3 marks these functions deprecated but we have no replacements (yet)
+   so tell the compiler to not warn for them:
+   - DES_* (for NTLM), SSL_CTX_set_srp_* (for TLS-SRP)
+   - EVP_PKEY_get1_RSA, MD5_*, RSA_flags, RSA_free (auto-skipped for OpenSSL
+     built with no-deprecated) */
 #  define OPENSSL_SUPPRESS_DEPRECATED
 #  ifdef _WIN32
 /* Silence LibreSSL warnings about wincrypt.h collision. Works in 3.8.2+ */
