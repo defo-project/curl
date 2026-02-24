@@ -1,3 +1,10 @@
+curl (8.19.0~rc2-2) unstable; urgency=medium
+
+  * debian/patches/revert-to-recursive-macros.patch: cherry-pick from
+    upstream. (Closes: #1128884)
+
+ -- Carlos Henrique Lima Melara <charlesmelara@riseup.net>  Mon, 23 Feb 2026 21:12:59 -0300
+
 curl (8.19.0~rc2-1) unstable; urgency=medium
 
   * New upstream version 8.19.0~rc2
