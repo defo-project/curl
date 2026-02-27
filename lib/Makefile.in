@@ -1606,7 +1606,8 @@ lib_LTLIBRARIES = libcurl.la
 # $(top_builddir)/lib is for libcurl's generated lib/curl_config.h file
 # $(srcdir) for the generated unity source to find included sources
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/lib \
-	-I$(srcdir) $(am__append_1) -DBUILDING_LIBCURL
+	-I$(top_srcdir)/lib -I$(srcdir) $(am__append_1) \
+	-DBUILDING_LIBCURL
 @USE_UNITY_TRUE@nodist_libcurl_la_SOURCES = libcurl_unity.c
 @USE_UNITY_FALSE@libcurl_la_SOURCES = $(CSOURCES) $(HHEADERS) \
 @USE_UNITY_FALSE@	$(am__append_9)

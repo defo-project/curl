@@ -17852,7 +17852,8 @@ printf %s "checking compiler version... " >&6; }
     compiler_ver="$clangver"
     compiler_num=`(expr $clangvhi "*" 100 + $clangvlo) 2>/dev/null`
     if test "$appleclang" = "1" && test "$oldapple" = "0"; then
-            if   test "$compiler_num" -ge '1700'; then compiler_num='1901'
+            if   test "$compiler_num" -ge '2604'; then compiler_num='2101'
+      elif test "$compiler_num" -ge '1700'; then compiler_num='1901'
       elif test "$compiler_num" -ge '1600'; then compiler_num='1700'
       elif test "$compiler_num" -ge '1500'; then compiler_num='1600'
       elif test "$compiler_num" -ge '1400'; then compiler_num='1400'
@@ -19636,6 +19637,26 @@ printf "%s\n" "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
 
 
     ac_var_added_warnings=""
+  for warning in cast-qual; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
   for warning in conversion; do
 
   ac_var_match_word="no"
@@ -19694,6 +19715,7 @@ printf "%s\n" "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
     tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
   squeeze tmp_CFLAGS
 
+            tmp_CFLAGS="$tmp_CFLAGS -Wformat=2"
 
     ac_var_added_warnings=""
   for warning in missing-field-initializers; do
@@ -19866,6 +19888,7 @@ printf "%s\n" "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
                     if test "$compiler_num" -ge "209"; then
             tmp_CFLAGS="$tmp_CFLAGS -Wno-sign-conversion"
             tmp_CFLAGS="$tmp_CFLAGS -Wno-padded"                         # Not used because we cannot change public structs
+            tmp_CFLAGS="$tmp_CFLAGS -Wno-used-but-marked-unused"         # Triggered by typecheck-gcc.h with clang 14+, dependency headers
 
     ac_var_added_warnings=""
   for warning in shift-sign-overflow; do
@@ -19889,26 +19912,6 @@ printf "%s\n" "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
           fi
           #
                     if test "$compiler_num" -ge "300"; then
-
-    ac_var_added_warnings=""
-  for warning in cast-qual; do
-
-  ac_var_match_word="no"
-  for word1 in $CFLAGS; do
-    for word2 in -Wno-$warning -W$warning; do
-      if test "$word1" = "$word2"; then
-        ac_var_match_word="yes"
-      fi
-    done
-  done
-
-    if test "$ac_var_match_word" = "no"; then
-      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
-    fi
-  done
-    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
-  squeeze tmp_CFLAGS
-
 
     ac_var_added_warnings=""
   for warning in conditional-uninitialized; do
@@ -19949,8 +19952,6 @@ printf "%s\n" "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
     tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
   squeeze tmp_CFLAGS
 
-            tmp_CFLAGS="$tmp_CFLAGS -Wformat=2"
-            tmp_CFLAGS="$tmp_CFLAGS -Wno-used-but-marked-unused"    # Triggered by typecheck-gcc.h with clang 14+, dependency headers
           fi
                     if test "$compiler_num" -ge "301"; then
 
@@ -19974,7 +19975,7 @@ printf "%s\n" "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
   squeeze tmp_CFLAGS
 
             tmp_CFLAGS="$tmp_CFLAGS -Wno-covered-switch-default"    # Annoying to fix or silence
-            tmp_CFLAGS="$tmp_CFLAGS -Wno-disabled-macro-expansion"  # Triggered by standard headers
+            tmp_CFLAGS="$tmp_CFLAGS -Wno-disabled-macro-expansion"  # Triggered by curl/curl.h, standard headers
           fi
           #
                     if test "$compiler_num" -ge "302"; then
@@ -20328,6 +20329,26 @@ printf "%s\n" "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
 
     ac_var_added_warnings=""
   for warning in c++-hidden-decl; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in jump-misses-init; do
 
   ac_var_match_word="no"
   for word1 in $CFLAGS; do
