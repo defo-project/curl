@@ -1,3 +1,11 @@
+curl (8.19.0~rc3-1) unstable; urgency=medium
+
+  * New upstream version 8.19.0~rc3.
+  * debian/patches: refresh patches.
+      - revert-to-recursive-macros.patch: drop, in the release.
+
+ -- Carlos Henrique Lima Melara <charlesmelara@riseup.net>  Fri, 27 Feb 2026 19:06:29 -0300
+
 curl (8.19.0~rc2-2) unstable; urgency=medium
 
   * debian/patches/revert-to-recursive-macros.patch: cherry-pick from
