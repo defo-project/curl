@@ -247,7 +247,7 @@ else
     xc_tst_auto_separator=':'
   fi
   if test -z "$PATH_SEPARATOR"; then
-    # Simply use the auto-detected one when not already set.
+    # Use the auto-detected one when not already set.
     PATH_SEPARATOR=$xc_tst_auto_separator
   elif test "x$PATH_SEPARATOR" != "x$xc_tst_auto_separator"; then
     echo "$xc_msg_warn 'PATH_SEPARATOR' does not match auto-detected one." >&2
@@ -7385,7 +7385,7 @@ Select from these:
   --with-amissl
   --with-gnutls
   --with-mbedtls
-  --with-openssl (also works for BoringSSL and LibreSSL)
+  --with-openssl (also works for AWS-LC, BoringSSL and LibreSSL)
   --with-rustls
   --with-schannel
   --with-wolfssl
@@ -23231,26 +23231,25 @@ if test "$HAVE_GETHOSTBYNAME" != "1" || test "$curl_cv_winuwp" = "yes"; then
     if test "$curl_cv_winuwp" != "yes"; then
       winsock_LIB="$winsock_LIB -liphlpapi"
     fi
-    if test -n "$winsock_LIB"; then
-      my_ac_save_LIBS=$LIBS
-      LIBS="$winsock_LIB $LIBS"
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in $winsock_LIB" >&5
+    my_ac_save_LIBS=$LIBS
+    LIBS="$winsock_LIB $LIBS"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in $winsock_LIB" >&5
 printf %s "checking for gethostbyname in $winsock_LIB... " >&6; }
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 
-          #ifdef _WIN32
-          #ifndef WIN32_LEAN_AND_MEAN
-          #define WIN32_LEAN_AND_MEAN
-          #endif
-          #include <winsock2.h>
-          #endif
+        #ifdef _WIN32
+        #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+        #endif
+        #include <winsock2.h>
+        #endif
 
 int main(void)
 {
 
-          gethostbyname("localhost");
+        gethostbyname("localhost");
 
   return 0;
 }
@@ -23259,21 +23258,20 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        HAVE_GETHOSTBYNAME="1"
+      HAVE_GETHOSTBYNAME="1"
 
 else $as_nop
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        winsock_LIB=""
-        LIBS=$my_ac_save_LIBS
+      winsock_LIB=""
+      LIBS=$my_ac_save_LIBS
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-    fi
   fi
 fi
 
@@ -28431,7 +28429,7 @@ if test "$USE_WIN32_CRYPTO" = "1" || test "$SCHANNEL_ENABLED" = "1"; then
 fi
 
 if test "$curl_cv_native_windows" = "yes"; then
-  LIBS="-lbcrypt $LIBS"
+    LIBS="-lbcrypt $LIBS"
 fi
 
 case "x$SSL_DISABLED$OPENSSL_ENABLED$GNUTLS_ENABLED$MBEDTLS_ENABLED$WOLFSSL_ENABLED$SCHANNEL_ENABLED$RUSTLS_ENABLED" in
@@ -42742,12 +42740,6 @@ then :
   printf "%s\n" "#define HAVE_SETRLIMIT 1" >>confdefs.h
 
 fi
-ac_fn_c_check_func "$LINENO" "snprintf" "ac_cv_func_snprintf"
-if test "x$ac_cv_func_snprintf" = xyes
-then :
-  printf "%s\n" "#define HAVE_SNPRINTF 1" >>confdefs.h
-
-fi
 ac_fn_c_check_func "$LINENO" "utime" "ac_cv_func_utime"
 if test "x$ac_cv_func_utime" = xyes
 then :
@@ -42779,6 +42771,12 @@ ac_fn_c_check_func "$LINENO" "sched_yield" "ac_cv_func_sched_yield"
 if test "x$ac_cv_func_sched_yield" = xyes
 then :
   printf "%s\n" "#define HAVE_SCHED_YIELD 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "snprintf" "ac_cv_func_snprintf"
+if test "x$ac_cv_func_snprintf" = xyes
+then :
+  printf "%s\n" "#define HAVE_SNPRINTF 1" >>confdefs.h
 
 fi
 
