@@ -184,6 +184,7 @@
 #include "lib1571.c"
 #include "lib1576.c"
 #include "lib1582.c"
+#include "lib1587.c"
 #include "lib1591.c"
 #include "lib1592.c"
 #include "lib1593.c"
@@ -227,6 +228,7 @@
 #include "lib1959.c"
 #include "lib1960.c"
 #include "lib1964.c"
+#include "lib1965.c"
 #include "lib1970.c"
 #include "lib1971.c"
 #include "lib1972.c"
@@ -432,6 +434,7 @@ const struct entry_s s_entries[] = {
   {"lib1571", test_lib1571},
   {"lib1576", test_lib1576},
   {"lib1582", test_lib1582},
+  {"lib1587", test_lib1587},
   {"lib1591", test_lib1591},
   {"lib1592", test_lib1592},
   {"lib1593", test_lib1593},
@@ -475,6 +478,7 @@ const struct entry_s s_entries[] = {
   {"lib1959", test_lib1959},
   {"lib1960", test_lib1960},
   {"lib1964", test_lib1964},
+  {"lib1965", test_lib1965},
   {"lib1970", test_lib1970},
   {"lib1971", test_lib1971},
   {"lib1972", test_lib1972},

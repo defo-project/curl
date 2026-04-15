@@ -28,6 +28,7 @@ TESTENV =                               \
   testenv/certs.py                      \
   testenv/client.py                     \
   testenv/curl.py                       \
+  testenv/dnsd.py                       \
   testenv/dante.py                      \
   testenv/env.py                        \
   testenv/httpd.py                      \
@@ -63,6 +64,7 @@ EXTRA_DIST =             \
   test_18_methods.py     \
   test_19_shutdown.py    \
   test_20_websockets.py  \
+  test_21_resolve.py     \
   test_30_vsftpd.py      \
   test_31_vsftpds.py     \
   test_32_ftps_vsftpd.py \

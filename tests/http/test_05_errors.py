@@ -26,10 +26,11 @@
 #
 import logging
 import os
+import socket
+import threading
+
 import pytest
-
-from testenv import Env, CurlClient
-
+from testenv import CurlClient, Env
 
 log = logging.getLogger(__name__)
 
@@ -41,6 +42,9 @@ class TestErrors:
     # download 1 file, check that we get CURLE_PARTIAL_FILE
     @pytest.mark.parametrize("proto", Env.http_protos())
     def test_05_01_partial_1(self, env: Env, httpd, nghttpx, proto):
+        if proto == 'h3' and env.curl_uses_lib('quiche') and \
+                not env.curl_lib_version_at_least('quiche', '0.24.8'):
+            pytest.skip("quiche issue #2277 not fixed")
         count = 1
         curl = CurlClient(env=env)
         urln = f'https://{env.authority_for(env.domain1, proto)}' \
@@ -140,3 +144,71 @@ class TestErrors:
         ])
         assert r.exit_code == 60, f'{r}'
         assert r.stats[0]['errormsg'] != 'CURL_DBG_SOCK_FAIL_IPV6: failed to open socket'
+
+    # Get, retry on 502
+    def test_05_06_retry_502(self, env: Env, httpd, nghttpx):
+        proto = 'http/1.1'
+        curl = CurlClient(env=env)
+        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/tweak?status=502'
+        r = curl.http_download(urls=[url], alpn_proto=proto, extra_args=[
+            '--retry', '2', '--retry-all-errors', '--retry-delay', '1',
+        ])
+        r.check_response(http_status=502)
+        assert r.stats[0]['num_retries'] == 2, f'{r}'
+        # curious, since curl does the retries, it finds the previous
+        # connection in the cache and reports that no connects were done
+        assert r.stats[0]['num_connects'] == 0, f'{r}'
+
+    # Get, retry on 502 in parallel mode
+    def test_05_07_retry_502_parallel(self, env: Env, httpd, nghttpx):
+        proto = 'http/1.1'
+        curl = CurlClient(env=env)
+        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/tweak?status=502'
+        r = curl.http_download(urls=[url], alpn_proto=proto, extra_args=[
+            '--retry', '2', '--retry-all-errors', '--retry-delay', '1', '--parallel'
+        ])
+        r.check_response(http_status=502)
+        assert r.stats[0]['num_retries'] == 2, f'{r}'
+
+    # Get, retry on 401, not happening
+    def test_05_08_retry_401(self, env: Env, httpd, nghttpx):
+        proto = 'http/1.1'
+        curl = CurlClient(env=env)
+        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/tweak?status=401'
+        r = curl.http_download(urls=[url], alpn_proto=proto, extra_args=[
+            '--retry', '2', '--retry-all-errors', '--retry-delay', '1'
+        ])
+        r.check_response(http_status=401)
+        # No retries on a 401
+        assert r.stats[0]['num_retries'] == 0, f'{r}'
+
+    # Server closes the connection immediately after accept,
+    def test_05_09_handshake_eof(self, env: Env, httpd, nghttpx):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+            server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            server.bind(('127.0.0.1', 0))
+            server.listen(1)
+            port = server.getsockname()[1]
+
+            # accept one connection and immediately close it
+            def accept_and_close():
+                try:
+                    conn, _ = server.accept()
+                    conn.close()
+                except Exception:
+                    pass
+
+            t = threading.Thread(target=accept_and_close)
+            t.start()
+
+            curl = CurlClient(env=env, timeout=5)
+            url = f'https://127.0.0.1:{port}/'
+            r = curl.run_direct(args=[url, '--insecure'])
+
+            t.join(timeout=2)
+
+        # We expect an error code, not success (0) and not timeout (-1)
+        # Expected error code is:
+        # - CURLE_SSL_CONNECT_ERROR (35) - common for handshake failures
+        assert r.exit_code == 35, \
+            f'Expected error 35, got {r.exit_code}\n{r.dump_logs()}'
