@@ -491,6 +491,24 @@ static void conn_report_connect_stats(struct Curl_cfilter *cf,
   }
 }
 
+static void conn_remove_setup_filters(struct Curl_easy *data,
+                                      int sockindex)
+{
+  struct Curl_cfilter **anchor = &data->conn->cfilter[sockindex];
+  while(*anchor) {
+    struct Curl_cfilter *cf = *anchor;
+    if(cf->connected && (cf->cft->flags & CF_TYPE_SETUP)) {
+      *anchor = cf->next;
+      cf->next = NULL;
+      CURL_TRC_CF(data, cf, "removing connected setup filter");
+      cf->cft->destroy(cf, data);
+      curlx_free(cf);
+    }
+    else
+      anchor = &cf->next;
+  }
+}
+
 CURLcode Curl_conn_connect(struct Curl_easy *data,
                            int sockindex,
                            bool blocking,
@@ -544,6 +562,7 @@ CURLcode Curl_conn_connect(struct Curl_easy *data,
       conn_report_connect_stats(cf, data);
       data->conn->keepalive = *Curl_pgrs_now(data);
       VERBOSE(result = cf_verboseconnect(data, cf));
+      conn_remove_setup_filters(data, sockindex);
       goto out;
     }
     else if(result) {
@@ -657,14 +676,16 @@ bool Curl_conn_is_ssl(struct connectdata *conn, int sockindex)
 
 bool Curl_conn_get_ssl_info(struct Curl_easy *data,
                             struct connectdata *conn, int sockindex,
+                            int query,
                             struct curl_tlssessioninfo *info)
 {
   if(!CONN_SOCK_IDX_VALID(sockindex))
     return FALSE;
   if(Curl_conn_is_ssl(conn, sockindex)) {
     struct Curl_cfilter *cf = conn->cfilter[sockindex];
-    CURLcode result = cf ? cf->cft->query(cf, data, CF_QUERY_SSL_INFO,
-                               NULL, (void *)info) : CURLE_UNKNOWN_OPTION;
+    CURLcode result = cf ?
+      cf->cft->query(cf, data, query, NULL, (void *)info) :
+      CURLE_UNKNOWN_OPTION;
     return !result;
   }
   return FALSE;
@@ -832,12 +853,19 @@ CURLcode Curl_conn_adjust_pollset(struct Curl_easy *data,
   return result;
 }
 
+/*
+ * Return values:
+ *   -1 = error
+ *    0 = timeout
+ *    N = number of structures with non zero revent fields
+ */
 int Curl_conn_cf_poll(struct Curl_cfilter *cf,
                       struct Curl_easy *data,
                       timediff_t timeout_ms)
 {
   struct easy_pollset ps;
-  int result;
+  int rc;
+  CURLcode result;
 
   DEBUGASSERT(cf);
   DEBUGASSERT(data);
@@ -846,9 +874,11 @@ int Curl_conn_cf_poll(struct Curl_cfilter *cf,
 
   result = Curl_conn_cf_adjust_pollset(cf, data, &ps);
   if(!result)
-    result = Curl_pollset_poll(data, &ps, timeout_ms);
+    rc = Curl_pollset_poll(data, &ps, timeout_ms);
+  else
+    rc = -1;
   Curl_pollset_cleanup(&ps);
-  return result;
+  return rc;
 }
 
 void Curl_conn_get_current_host(struct Curl_easy *data, int sockindex,

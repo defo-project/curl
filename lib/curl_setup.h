@@ -767,7 +767,7 @@
   defined(USE_GNUTLS) ||                                                \
   (defined(USE_MBEDTLS) && defined(HAVE_MBEDTLS_DES_CRYPT_ECB)) ||      \
   defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO) ||              \
-  (defined(USE_WOLFSSL) && defined(HAVE_WOLFSSL_DES_ECB_ENCRYPT))
+  (defined(USE_WOLFSSL) && defined(HAVE_WC_DES_ECBENCRYPT))
 #    define USE_CURL_NTLM_CORE
 #  endif
 #  if defined(USE_CURL_NTLM_CORE) || defined(USE_WINDOWS_SSPI)
@@ -1522,9 +1522,7 @@ int getpwuid_r(uid_t uid, struct passwd *pwd, char *buf,
 #define USE_HTTP2
 #endif
 
-#if (defined(USE_NGTCP2) && defined(USE_NGHTTP3)) || \
-  (defined(USE_OPENSSL_QUIC) && defined(USE_NGHTTP3)) || \
-  defined(USE_QUICHE)
+#if (defined(USE_NGTCP2) && defined(USE_NGHTTP3)) || defined(USE_QUICHE)
 
 #ifdef CURL_WITH_MULTI_SSL
 #error "MultiSSL combined with QUIC is not supported"

@@ -1135,9 +1135,10 @@ static CURLcode cr_connect(struct Curl_cfilter *cf, struct Curl_easy *data,
     (struct rustls_ssl_backend_data *)connssl->backend;
   const struct rustls_connection *rconn = NULL;
   CURLcode tmperr = CURLE_OK;
-  int result;
+  CURLcode result;
   bool wants_read;
   bool wants_write;
+  ssize_t nread;
 
   DEBUGASSERT(backend);
 
@@ -1155,12 +1156,12 @@ static CURLcode cr_connect(struct Curl_cfilter *cf, struct Curl_easy *data,
 #endif /* USE_ECH */
 
   if(!backend->conn) {
-    result = cr_init_backend(cf, data,
-               (struct rustls_ssl_backend_data *)connssl->backend);
+    result =
+      cr_init_backend(cf, data,
+                      (struct rustls_ssl_backend_data *)connssl->backend);
     CURL_TRC_CF(data, cf, "cr_connect, init backend -> %d", result);
-    if(result != CURLE_OK) {
+    if(result)
       return result;
-    }
     connssl->state = ssl_connection_negotiating;
   }
   rconn = backend->conn;
@@ -1280,7 +1281,13 @@ static CURLcode cr_connect(struct Curl_cfilter *cf, struct Curl_easy *data,
 
     if(wants_read) {
       CURL_TRC_CF(data, cf, "rustls_connection wants us to read_tls.");
-      if(tls_recv_more(cf, data, &tmperr) < 0) {
+      nread = tls_recv_more(cf, data, &tmperr);
+      if(nread == 0) {
+        connssl->peer_closed = TRUE;
+        failf(data, "TLS connect error: Connection closed abruptly");
+        return CURLE_SSL_CONNECT_ERROR;
+      }
+      if(nread < 0) {
         if(tmperr == CURLE_AGAIN) {
           CURL_TRC_CF(data, cf, "reading would block");
           connssl->io_need = CURL_SSL_IO_NEED_RECV;

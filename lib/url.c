@@ -426,6 +426,7 @@ void Curl_init_userdefined(struct Curl_easy *data)
   set->sep_headers = TRUE; /* separated header lists by default */
   set->buffer_size = READBUFFER_SIZE;
   set->upload_buffer_size = UPLOADBUFFER_DEFAULT;
+  set->upload_flags = CURLULFLAG_SEEN;
   set->happy_eyeballs_timeout = CURL_HET_DEFAULT;
   set->upkeep_interval_ms = CURL_UPKEEP_INTERVAL_DEFAULT;
   set->maxconnects = DEFAULT_CONNCACHE_SIZE; /* for easy handles */
@@ -1266,10 +1267,9 @@ static bool url_match_conn(struct connectdata *conn, void *userdata)
   return TRUE;
 }
 
-static bool url_match_result(bool result, void *userdata)
+static bool url_match_result(void *userdata)
 {
   struct url_conn_match *match = userdata;
-  (void)result;
   if(match->found) {
     /* Attach it now while still under lock, so the connection does
      * no longer appear idle and can be reaped. */
@@ -1305,7 +1305,7 @@ static bool url_attach_existing(struct Curl_easy *data,
                                 bool *waitpipe)
 {
   struct url_conn_match match;
-  bool result;
+  bool success;
 
   DEBUGASSERT(!data->conn);
   memset(&match, 0, sizeof(match));
@@ -1340,13 +1340,13 @@ static bool url_attach_existing(struct Curl_easy *data,
 
   /* Find a connection in the pool that matches what "data + needle"
    * requires. If a suitable candidate is found, it is attached to "data". */
-  result = Curl_cpool_find(data, needle->destination,
-                           url_match_conn, url_match_result, &match);
+  success = Curl_cpool_find(data, needle->destination,
+                            url_match_conn, url_match_result, &match);
 
   /* wait_pipe is TRUE if we encounter a bundle that is undecided. There
    * is no matching connection then, yet. */
   *waitpipe = (bool)match.wait_pipe;
-  return result;
+  return success;
 }
 
 /*

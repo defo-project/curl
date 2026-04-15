@@ -199,12 +199,15 @@ typedef CURLcode Curl_cft_query(struct Curl_cfilter *cf,
  * CF_TYPE_MULTIPLEX:  provides multiplexing of easy handles
  * CF_TYPE_PROXY       provides proxying
  * CF_TYPE_HTTP        implement a version of the HTTP protocol
+ * CF_TYPE_SETUP       filter is only needed for connection setup and
+ *                     can be removed once connected
  */
 #define CF_TYPE_IP_CONNECT  (1 << 0)
 #define CF_TYPE_SSL         (1 << 1)
 #define CF_TYPE_MULTIPLEX   (1 << 2)
 #define CF_TYPE_PROXY       (1 << 3)
 #define CF_TYPE_HTTP        (1 << 4)
+#define CF_TYPE_SETUP       (1 << 5)
 
 /* A connection filter type, e.g. specific implementation. */
 struct Curl_cftype {
@@ -391,12 +394,13 @@ bool Curl_conn_is_ip_connected(struct Curl_easy *data, int sockindex);
 bool Curl_conn_is_ssl(struct connectdata *conn, int sockindex);
 
 /*
- * Fill `info` with information about the TLS instance securing
- * the connection when available, otherwise e.g. when
- * Curl_conn_is_ssl() is FALSE, return FALSE.
+ * Fill `info` with information about the TLS instance securing the connection
+ * when available, otherwise e.g. when Curl_conn_is_ssl() is FALSE, return
+ * FALSE. 'query' should be CF_QUERY_SSL_INFO or CF_QUERY_SSL_CTX_INFO.
  */
 bool Curl_conn_get_ssl_info(struct Curl_easy *data,
                             struct connectdata *conn, int sockindex,
+                            int query,
                             struct curl_tlssessioninfo *info);
 
 CURLcode Curl_conn_get_ip_info(struct Curl_easy *data,
