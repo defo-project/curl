@@ -506,6 +506,7 @@ class Httpd:
         return [
             '    <Proxy "*">',
             '      Require ip 127.0.0.1',
+            '      Require ip ::1',
             '    </Proxy>',
         ]
 
@@ -533,6 +534,9 @@ class Httpd:
                 '    </Location>',
                 '    <Location /curltest/echo>',
                 '      SetHandler curltest-echo',
+                '    </Location>',
+                '    <Location /curltest/limit>',
+                '      SetHandler curltest-limit',
                 '    </Location>',
                 '    <Location /curltest/put>',
                 '      SetHandler curltest-put',

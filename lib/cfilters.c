@@ -34,11 +34,9 @@
 #include "curlx/strparse.h"
 
 #ifdef UNITTESTS
-/* used by unit2600.c */
-UNITTEST void Curl_cf_def_close(struct Curl_cfilter *cf,
-                                struct Curl_easy *data);
-UNITTEST void Curl_cf_def_close(struct Curl_cfilter *cf,
-                                struct Curl_easy *data)
+/* @unittest 2600 */
+UNITTEST void cf_def_close(struct Curl_cfilter *cf, struct Curl_easy *data);
+UNITTEST void cf_def_close(struct Curl_cfilter *cf, struct Curl_easy *data)
 {
   cf->connected = FALSE;
   if(cf->next)
@@ -748,6 +746,17 @@ int Curl_protocol_for_transport(uint8_t transport)
   default: /* UDP and QUIC */
     return IPPROTO_UDP;
   }
+}
+
+bool Curl_conn_cf_wants_httpsrr(struct Curl_cfilter *cf,
+                                struct Curl_easy *data)
+{
+  (void)data;
+  for(; cf; cf = cf->next) {
+    if(cf->cft->flags & CF_TYPE_HTTPSRR)
+      return TRUE;
+  }
+  return FALSE;
 }
 
 const char *Curl_conn_get_alpn_negotiated(struct Curl_easy *data,

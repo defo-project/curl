@@ -279,7 +279,7 @@ static CURLcode get_pkey_rsa(struct Curl_easy *data,
 #else
   RSA_get0_key(rsa, &n, &e, NULL);
 #endif /* HAVE_EVP_PKEY_GET_PARAMS */
-  BIO_printf(mem, "%d", n ? BN_num_bits(n) : 0);
+  BIO_printf(mem, "%d", (int)(n ? BN_num_bits(n) : 0));
   result = push_certinfo(data, mem, "RSA Public Key", i);
   if(!result) {
     result = print_pubkey_BN(rsa, n, i);
@@ -384,7 +384,7 @@ static CURLcode ossl_certchain(struct Curl_easy *data, SSL *ssl)
 
   numcerts = sk_X509_num(sk);
   if(numcerts > MAX_ALLOWED_CERT_AMOUNT) {
-    failf(data, "%d certificates is more than allowed (%u)", (int)numcerts,
+    failf(data, "%d certificates is more than allowed (%d)", (int)numcerts,
           MAX_ALLOWED_CERT_AMOUNT);
     return CURLE_SSL_CONNECT_ERROR;
   }
@@ -2946,7 +2946,7 @@ static CURLcode ossl_windows_load_anchors(struct Curl_cfilter *cf,
   /* Import certificates from the Windows root certificate store if
      requested.
      https://stackoverflow.com/questions/9507184/
-     https://github.com/d3x0r/SACK/blob/master/src/netlib/ssl_layer.c#L1037
+     https://github.com/d3x0r/SACK/blob/ff15424d3c581b86d40f818532e5a400c516d39d/src/netlib/ssl_layer.c#L1410
      https://datatracker.ietf.org/doc/html/rfc5280 */
   const char *win_stores[] = {
     "ROOT",   /* Trusted Root Certification Authorities */
@@ -4051,8 +4051,8 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
 
 #ifdef HAVE_SSL_SET1_ECH_CONFIG_LIST
 /* If we have retry configs, then trace those out */
-static void ossl_trace_ech_retry_configs(struct Curl_easy *data, SSL *ssl,
-                                         int reason)
+static int ossl_trace_ech_retry_configs(struct Curl_easy *data, SSL *ssl,
+                                        int reason)
 {
   CURLcode result = CURLE_OK;
   size_t rcl = 0;
@@ -4068,10 +4068,11 @@ static void ossl_trace_ech_retry_configs(struct Curl_easy *data, SSL *ssl,
   size_t out_name_len = 0;
   int servername_type = 0;
 #endif
+  NOVERBOSE((void)reason);
 
   /* nothing to trace if not doing ECH */
   if(!CURLECH_ENABLED(data))
-    return;
+    return rv;
 #ifndef HAVE_BORINGSSL_LIKE
   rv = SSL_ech_get1_retry_config(ssl, &rcs, &rcl);
 #else
@@ -4108,7 +4109,7 @@ static void ossl_trace_ech_retry_configs(struct Curl_easy *data, SSL *ssl,
   OPENSSL_free(rcs);
   OPENSSL_free(outer);
 #endif
-  return;
+  return rv;
 }
 
 #endif
@@ -4276,49 +4277,50 @@ static CURLcode ossl_connect_step2(struct Curl_cfilter *cf,
 #if defined(HAVE_SSL_SET1_ECH_CONFIG_LIST) && !defined(HAVE_BORINGSSL_LIKE)
     if(CURLECH_ENABLED(data)) {
       char *inner = NULL, *outer = NULL;
-      const char *status = NULL;
       int rv;
+      VERBOSE(const char *status);
 
       rv = SSL_ech_get1_status(octx->ssl, &inner, &outer);
       switch(rv) {
       case SSL_ECH_STATUS_SUCCESS:
-        status = "succeeded";
+        VERBOSE(status = "succeeded");
         break;
       case SSL_ECH_STATUS_GREASE_ECH:
-        status = "sent GREASE, got retry-configs";
+        VERBOSE(status = "sent GREASE, got retry-configs");
         break;
       case SSL_ECH_STATUS_GREASE:
-        status = "sent GREASE";
+        VERBOSE(status = "sent GREASE");
         break;
       case SSL_ECH_STATUS_NOT_TRIED:
-        status = "not attempted";
+        VERBOSE(status = "not attempted");
         break;
       case SSL_ECH_STATUS_NOT_CONFIGURED:
-        status = "not configured";
+        VERBOSE(status = "not configured");
         break;
       case SSL_ECH_STATUS_BACKEND:
-        status = "backend (unexpected)";
+        VERBOSE(status = "backend (unexpected)");
         break;
       case SSL_ECH_STATUS_FAILED:
-        status = "failed";
+        VERBOSE(status = "failed");
         break;
       case SSL_ECH_STATUS_BAD_CALL:
-        status = "bad call (unexpected)";
+        VERBOSE(status = "bad call (unexpected)");
         break;
       case SSL_ECH_STATUS_BAD_NAME: {
         struct ssl_primary_config *conn_config =
           Curl_ssl_cf_get_primary_config(cf);
         if(!conn_config->verifypeer && !conn_config->verifyhost &&
            inner && !strcmp(inner, connssl->peer.hostname)) {
-          status = "bad name (tolerated without peer verification)";
+          VERBOSE(status = "bad name (tolerated without peer verification)");
           rv = SSL_ECH_STATUS_SUCCESS;
         }
-        else
-          status = "bad name (unexpected)";
+        else {
+          VERBOSE(status = "bad name (unexpected)");
+        }
         break;
       }
       default:
-        status = "unexpected status";
+        VERBOSE(status = "unexpected status");
         infof(data, "ECH: unexpected status %d", rv);
       }
       infof(data, "ECH: result: status is %s, inner is %s, outer is %s",

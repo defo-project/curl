@@ -23812,7 +23812,7 @@ struct SocketIFace *ISocket = NULL;
 #  else
 struct Library *SocketBase = NULL;
 #  endif
-#  define select(a,b,c,d,e) WaitSelect(a,b,c,d,e,0)
+#  define select(a, b, c, d, e)  WaitSelect(a, b, c, d, e, 0)
 #endif
 /* includes end */"
   ac_fn_c_check_header_compile "$LINENO" "proto/bsdsocket.h" "ac_cv_header_proto_bsdsocket_h" "$curl_includes_bsdsocket
