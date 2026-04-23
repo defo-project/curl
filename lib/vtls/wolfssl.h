@@ -29,6 +29,8 @@
 
 #include "urldata.h"
 
+#include <wolfssl/options.h>
+
 struct alpn_spec;
 struct ssl_peer;
 struct Curl_ssl_session;
@@ -65,7 +67,7 @@ CURLcode Curl_wssl_ctx_init(struct wssl_ctx *wctx,
                             struct Curl_cfilter *cf,
                             struct Curl_easy *data,
                             struct ssl_peer *peer,
-                            const struct alpn_spec *alpns,
+                            const struct alpn_spec *alpns_requested,
                             Curl_wssl_ctx_setup_cb *cb_setup,
                             void *cb_user_data,
                             void *ssl_user_data,

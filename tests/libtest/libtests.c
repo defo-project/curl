@@ -250,6 +250,9 @@
 #include "lib2404.c"
 #include "lib2405.c"
 #include "lib2502.c"
+#include "lib2504.c"
+#include "lib2505.c"
+#include "lib2506.c"
 #include "lib2700.c"
 #include "lib3010.c"
 #include "lib3025.c"
@@ -500,6 +503,9 @@ const struct entry_s s_entries[] = {
   {"lib2404", test_lib2404},
   {"lib2405", test_lib2405},
   {"lib2502", test_lib2502},
+  {"lib2504", test_lib2504},
+  {"lib2505", test_lib2505},
+  {"lib2506", test_lib2506},
   {"lib2700", test_lib2700},
   {"lib3010", test_lib3010},
   {"lib3025", test_lib3025},
