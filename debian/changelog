@@ -1,4 +1,4 @@
-curl (8.20.0~rc3-1) UNRELEASED; urgency=medium
+curl (8.20.0~rc3-1) unstable; urgency=medium
 
   * New upstream version 8.20.0~rc3
 
