@@ -1,1 +1,1 @@
-libcurl3t64-gnutls: package-name-doesnt-match-sonames libcurl-gnutls4
+libcurl4-gnutls: package-name-doesnt-match-sonames libcurl-gnutls4
