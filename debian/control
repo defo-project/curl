@@ -90,8 +90,8 @@ Description: easy-to-use client-side URL transfer library (OpenSSL flavour)
  SSL support is provided by OpenSSL.
 
 Package: libcurl4-gnutls
-Breaks: libcurl3t64-gnutls (<< 8.20.0-2~)
-Replaces: libcurl3t64-gnutls (<< 8.20.0-2~)
+Breaks: libcurl3t64-gnutls (<< 8.20.0-3~)
+Replaces: libcurl3t64-gnutls (<< 8.20.0-3~)
 Architecture: any
 Section: libs
 Depends: libnghttp3-9 (>= 1.11.0~),
