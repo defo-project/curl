@@ -16,8 +16,9 @@ curl (8.20.0-3) unstable; urgency=medium
     future programs to link against this version specifically, not
     previous libcurl3t64-gnutls versions.
   * d/libcurl4-gnutls.lintian-overrides: Adjust for new package name.
+  * d/copyright: Update file.
 
- -- Sergio Durigan Junior <sergiodj@debian.org>  Sun, 24 May 2026 17:14:05 -0400
+ -- Sergio Durigan Junior <sergiodj@debian.org>  Fri, 29 May 2026 17:19:53 -0400
 
 curl (8.20.0-2) unstable; urgency=medium
 
