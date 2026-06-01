@@ -80,27 +80,27 @@ Forwarded: not-needed
 ---
  configure.ac               |   1 +
  lib/Makefile.am            |   2 +-
- lib/curl_share.c           |  18 ++++++
- lib/easy.c                 | 102 ++++++++++++++++++++++++++++++++
- lib/easygetopt.c           |  36 ++++++++++++
- lib/escape.c               |  30 ++++++++++
- lib/formdata.c             |  36 ++++++++++++
+ lib/curl_share.c           |  21 ++++++
+ lib/easy.c                 | 118 +++++++++++++++++++++++++++++++++
+ lib/easygetopt.c           |  50 ++++++++++++++
+ lib/escape.c               |  32 +++++++++
+ lib/formdata.c             |  36 +++++++++++
  lib/getenv.c               |   6 ++
- lib/headers.c              |  24 ++++++++
- lib/http2.c                |  24 ++++++++
- lib/libcurl-gnutls.vers.in | 111 ++++++++++++++++++++++++++++++++++
- lib/mime.c                 | 144 +++++++++++++++++++++++++++++++++++++++++++++
- lib/mprintf.c              |  60 +++++++++++++++++++
- lib/multi.c                | 126 +++++++++++++++++++++++++++++++++++++++
+ lib/headers.c              |  28 ++++++++
+ lib/http2.c                |  32 +++++++++
+ lib/libcurl-gnutls.vers.in | 111 +++++++++++++++++++++++++++++++
+ lib/mime.c                 | 158 +++++++++++++++++++++++++++++++++++++++++++++
+ lib/mprintf.c              |  61 +++++++++++++++++
+ lib/multi.c                | 158 +++++++++++++++++++++++++++++++++++++++++++++
  lib/parsedate.c            |   6 ++
- lib/setopt.c               |   6 ++
- lib/slist.c                |  12 ++++
+ lib/setopt.c               |   7 ++
+ lib/slist.c                |  14 ++++
  lib/strequal.c             |  12 ++++
- lib/strerror.c             |  24 ++++++++
- lib/urlapi.c               |  30 ++++++++++
- lib/version.c              |  12 ++++
- lib/ws.c                   |  48 +++++++++++++++
- 22 files changed, 869 insertions(+), 1 deletion(-)
+ lib/strerror.c             |  28 ++++++++
+ lib/urlapi.c               |  31 +++++++++
+ lib/version.c              |  13 ++++
+ lib/ws.c                   |  50 ++++++++++++++
+ 22 files changed, 974 insertions(+), 1 deletion(-)
  create mode 100644 lib/libcurl-gnutls.vers.in
 
 diff --git a/configure.ac b/configure.ac
@@ -129,10 +129,10 @@ index 1107c2c..41445b8 100644
  libcurl_la_LDFLAGS_EXTRA += -Wl,--version-script=libcurl.vers
  endif
 diff --git a/lib/curl_share.c b/lib/curl_share.c
-index 386a2b5..3181f1d 100644
+index 386a2b5..8110abe 100644
 --- a/lib/curl_share.c
 +++ b/lib/curl_share.c
-@@ -91,6 +91,12 @@ CURLSH *curl_share_init(void)
+@@ -91,6 +91,13 @@ CURLSH *curl_share_init(void)
    }
    return share;
  }
@@ -140,12 +140,13 @@ index 386a2b5..3181f1d 100644
 +__asm__(".symver curl_share_init, curl_share_init@@@CURL_GNUTLS_4");
 +extern __typeof(curl_share_init) __curl_compat_curl_share_init
 +    __attribute__((alias("curl_share_init"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_share_init, curl_share_init@CURL_GNUTLS_3");
 +#endif
  
  static uint32_t share_ref_inc(struct Curl_share *share)
  {
-@@ -352,6 +358,12 @@ CURLSHcode curl_share_setopt(CURLSH *sh, CURLSHoption option, ...)
+@@ -352,6 +359,13 @@ CURLSHcode curl_share_setopt(CURLSH *sh, CURLSHoption option, ...)
  
    return res;
  }
@@ -153,12 +154,13 @@ index 386a2b5..3181f1d 100644
 +__asm__(".symver curl_share_setopt, curl_share_setopt@@@CURL_GNUTLS_4");
 +extern __typeof(curl_share_setopt) __curl_compat_curl_share_setopt
 +    __attribute__((alias("curl_share_setopt"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_share_setopt, curl_share_setopt@CURL_GNUTLS_3");
 +#endif
  
  CURLSHcode curl_share_cleanup(CURLSH *sh)
  {
-@@ -367,6 +379,12 @@ CURLSHcode curl_share_cleanup(CURLSH *sh)
+@@ -367,6 +381,13 @@ CURLSHcode curl_share_cleanup(CURLSH *sh)
    share_unlink(&share, NULL, locked);
    return CURLSHE_OK;
  }
@@ -166,16 +168,17 @@ index 386a2b5..3181f1d 100644
 +__asm__(".symver curl_share_cleanup, curl_share_cleanup@@@CURL_GNUTLS_4");
 +extern __typeof(curl_share_cleanup) __curl_compat_curl_share_cleanup
 +    __attribute__((alias("curl_share_cleanup"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_share_cleanup, curl_share_cleanup@CURL_GNUTLS_3");
 +#endif
  
  CURLSHcode Curl_share_lock(struct Curl_easy *data, curl_lock_data type,
                             curl_lock_access accesstype)
 diff --git a/lib/easy.c b/lib/easy.c
-index a472d6d..d2d4d7d 100644
+index a472d6d..a9fd619 100644
 --- a/lib/easy.c
 +++ b/lib/easy.c
-@@ -205,6 +205,12 @@ CURLcode curl_global_init(long flags)
+@@ -205,6 +205,13 @@ CURLcode curl_global_init(long flags)
  
    return result;
  }
@@ -183,12 +186,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_global_init, curl_global_init@@@CURL_GNUTLS_4");
 +extern __typeof(curl_global_init) __curl_compat_curl_global_init
 +    __attribute__((alias("curl_global_init"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_global_init, curl_global_init@CURL_GNUTLS_3");
 +#endif
  
  /*
   * curl_global_init_mem() globally initializes curl and also registers the
-@@ -246,6 +252,12 @@ CURLcode curl_global_init_mem(long flags, curl_malloc_callback m,
+@@ -246,6 +253,13 @@ CURLcode curl_global_init_mem(long flags, curl_malloc_callback m,
  
    return result;
  }
@@ -196,12 +200,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_global_init_mem, curl_global_init_mem@@@CURL_GNUTLS_4");
 +extern __typeof(curl_global_init_mem) __curl_compat_curl_global_init_mem
 +    __attribute__((alias("curl_global_init_mem"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_global_init_mem, curl_global_init_mem@CURL_GNUTLS_3");
 +#endif
  
  /**
   * curl_global_cleanup() globally cleanups curl, uses the value of
-@@ -285,6 +297,12 @@ void curl_global_cleanup(void)
+@@ -285,6 +299,13 @@ void curl_global_cleanup(void)
  
    global_init_unlock();
  }
@@ -209,12 +214,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_global_cleanup, curl_global_cleanup@@@CURL_GNUTLS_4");
 +extern __typeof(curl_global_cleanup) __curl_compat_curl_global_cleanup
 +    __attribute__((alias("curl_global_cleanup"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_global_cleanup, curl_global_cleanup@CURL_GNUTLS_3");
 +#endif
  
  /**
   * curl_global_trace() globally initializes curl logging.
-@@ -305,6 +323,12 @@ CURLcode curl_global_trace(const char *config)
+@@ -305,6 +326,13 @@ CURLcode curl_global_trace(const char *config)
    return CURLE_OK;
  #endif
  }
@@ -222,12 +228,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_global_trace, curl_global_trace@@@CURL_GNUTLS_4");
 +extern __typeof(curl_global_trace) __curl_compat_curl_global_trace
 +    __attribute__((alias("curl_global_trace"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_global_trace, curl_global_trace@CURL_GNUTLS_3");
 +#endif
  
  /*
   * curl_global_sslset() globally initializes the SSL backend to use.
-@@ -322,6 +346,12 @@ CURLsslset curl_global_sslset(curl_sslbackend id, const char *name,
+@@ -322,6 +350,13 @@ CURLsslset curl_global_sslset(curl_sslbackend id, const char *name,
  
    return rc;
  }
@@ -235,12 +242,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_global_sslset, curl_global_sslset@@@CURL_GNUTLS_4");
 +extern __typeof(curl_global_sslset) __curl_compat_curl_global_sslset
 +    __attribute__((alias("curl_global_sslset"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_global_sslset, curl_global_sslset@CURL_GNUTLS_3");
 +#endif
  
  /*
   * curl_easy_init() is the external interface to alloc, setup and init an
-@@ -355,6 +385,12 @@ CURL *curl_easy_init(void)
+@@ -355,6 +390,12 @@ CURL *curl_easy_init(void)
  
    return data;
  }
@@ -253,7 +261,7 @@ index a472d6d..d2d4d7d 100644
  
  #ifdef DEBUGBUILD
  
-@@ -819,6 +855,12 @@ CURLcode curl_easy_perform(CURL *curl)
+@@ -819,6 +860,13 @@ CURLcode curl_easy_perform(CURL *curl)
  {
    return easy_perform(curl, FALSE);
  }
@@ -261,12 +269,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_easy_perform, curl_easy_perform@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_perform) __curl_compat_curl_easy_perform
 +    __attribute__((alias("curl_easy_perform"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_perform, curl_easy_perform@CURL_GNUTLS_3");
 +#endif
  
  #ifdef DEBUGBUILD
  /*
-@@ -845,6 +887,12 @@ void curl_easy_cleanup(CURL *curl)
+@@ -845,6 +893,13 @@ void curl_easy_cleanup(CURL *curl)
      sigpipe_restore(&sigpipe_ctx);
    }
  }
@@ -274,12 +283,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_easy_cleanup, curl_easy_cleanup@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_cleanup) __curl_compat_curl_easy_cleanup
 +    __attribute__((alias("curl_easy_cleanup"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_cleanup, curl_easy_cleanup@CURL_GNUTLS_3");
 +#endif
  
  /*
   * curl_easy_getinfo() is an external interface that allows an app to retrieve
-@@ -869,6 +917,12 @@ CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info, ...)
+@@ -869,6 +924,13 @@ CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info, ...)
    va_end(arg);
    return result;
  }
@@ -287,12 +297,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_easy_getinfo, curl_easy_getinfo@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_getinfo) __curl_compat_curl_easy_getinfo
 +    __attribute__((alias("curl_easy_getinfo"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_getinfo, curl_easy_getinfo@CURL_GNUTLS_3");
 +#endif
  
  static CURLcode dupset(struct Curl_easy *dst, struct Curl_easy *src)
  {
-@@ -1076,6 +1130,12 @@ fail:
+@@ -1076,6 +1138,13 @@ fail:
  
    return NULL;
  }
@@ -300,12 +311,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_easy_duphandle, curl_easy_duphandle@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_duphandle) __curl_compat_curl_easy_duphandle
 +    __attribute__((alias("curl_easy_duphandle"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_duphandle, curl_easy_duphandle@CURL_GNUTLS_3");
 +#endif
  
  /*
   * curl_easy_reset() is an external interface that allows an app to re-
-@@ -1116,6 +1176,12 @@ void curl_easy_reset(CURL *curl)
+@@ -1116,6 +1185,13 @@ void curl_easy_reset(CURL *curl)
  #endif
    data->master_mid = UINT32_MAX;
  }
@@ -313,12 +325,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_easy_reset, curl_easy_reset@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_reset) __curl_compat_curl_easy_reset
 +    __attribute__((alias("curl_easy_reset"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_reset, curl_easy_reset@CURL_GNUTLS_3");
 +#endif
  
  /*
   * curl_easy_pause() allows an application to pause or unpause a specific
-@@ -1190,6 +1256,12 @@ CURLcode curl_easy_pause(CURL *curl, int action)
+@@ -1190,6 +1266,13 @@ CURLcode curl_easy_pause(CURL *curl, int action)
  
    return result;
  }
@@ -326,12 +339,13 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_easy_pause, curl_easy_pause@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_pause) __curl_compat_curl_easy_pause
 +    __attribute__((alias("curl_easy_pause"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_pause, curl_easy_pause@CURL_GNUTLS_3");
 +#endif
  
  static CURLcode easy_connection(struct Curl_easy *data,
                                  struct connectdata **connp)
-@@ -1243,6 +1315,12 @@ CURLcode curl_easy_recv(CURL *curl, void *buffer, size_t buflen, size_t *n)
+@@ -1243,6 +1326,12 @@ CURLcode curl_easy_recv(CURL *curl, void *buffer, size_t buflen, size_t *n)
    *n = 0;
    return Curl_conn_recv(data, FIRSTSOCKET, buffer, buflen, n);
  }
@@ -344,7 +358,7 @@ index a472d6d..d2d4d7d 100644
  
  #ifndef CURL_DISABLE_WEBSOCKETS
  CURLcode Curl_connect_only_attach(struct Curl_easy *data)
-@@ -1313,6 +1391,12 @@ CURLcode curl_easy_send(CURL *curl, const void *buffer, size_t buflen,
+@@ -1313,6 +1402,12 @@ CURLcode curl_easy_send(CURL *curl, const void *buffer, size_t buflen,
    *n = written;
    return result;
  }
@@ -357,7 +371,7 @@ index a472d6d..d2d4d7d 100644
  
  /*
   * Performs connection upkeep for the given session handle.
-@@ -1330,6 +1414,12 @@ CURLcode curl_easy_upkeep(CURL *curl)
+@@ -1330,6 +1425,13 @@ CURLcode curl_easy_upkeep(CURL *curl)
    /* Use the common function to keep connections alive. */
    return Curl_cpool_upkeep(data);
  }
@@ -365,49 +379,57 @@ index a472d6d..d2d4d7d 100644
 +__asm__(".symver curl_easy_upkeep, curl_easy_upkeep@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_upkeep) __curl_compat_curl_easy_upkeep
 +    __attribute__((alias("curl_easy_upkeep"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_upkeep, curl_easy_upkeep@CURL_GNUTLS_3");
 +#endif
  
  CURLcode curl_easy_ssls_import(CURL *curl, const char *session_key,
                                 const unsigned char *shmac, size_t shmac_len,
-@@ -1353,6 +1443,12 @@ CURLcode curl_easy_ssls_import(CURL *curl, const char *session_key,
+@@ -1353,6 +1455,14 @@ CURLcode curl_easy_ssls_import(CURL *curl, const char *session_key,
    return CURLE_NOT_BUILT_IN;
  #endif
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_easy_ssls_import, curl_easy_ssls_import@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_ssls_import) __curl_compat_curl_easy_ssls_import
 +    __attribute__((alias("curl_easy_ssls_import"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_ssls_import, curl_easy_ssls_import@CURL_GNUTLS_3");
 +#endif
  
  CURLcode curl_easy_ssls_export(CURL *curl,
                                 curl_ssls_export_cb *export_fn,
-@@ -1372,6 +1468,12 @@ CURLcode curl_easy_ssls_export(CURL *curl,
+@@ -1372,6 +1482,14 @@ CURLcode curl_easy_ssls_export(CURL *curl,
    return CURLE_NOT_BUILT_IN;
  #endif
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_easy_ssls_export, curl_easy_ssls_export@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_ssls_export) __curl_compat_curl_easy_ssls_export
 +    __attribute__((alias("curl_easy_ssls_export"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_ssls_export, curl_easy_ssls_export@CURL_GNUTLS_3");
 +#endif
  
  CURLcode Curl_meta_set(struct Curl_easy *data, const char *key,
                         void *meta_data, Curl_meta_dtor *meta_dtor)
 diff --git a/lib/easygetopt.c b/lib/easygetopt.c
-index 533d7e3..ad9b9f0 100644
+index 533d7e3..e44e367 100644
 --- a/lib/easygetopt.c
 +++ b/lib/easygetopt.c
-@@ -55,11 +55,23 @@ const struct curl_easyoption *curl_easy_option_by_name(const char *name)
+@@ -55,11 +55,28 @@ const struct curl_easyoption *curl_easy_option_by_name(const char *name)
    /* when name is used, the id argument is ignored */
    return lookup(name, CURLOPT_LASTENTRY);
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_easy_option_by_name, curl_easy_option_by_name@@@CURL_GNUTLS_4");
++/* !checksrc! disable LONGLINE */
 +extern __typeof(curl_easy_option_by_name) __curl_compat_curl_easy_option_by_name
 +    __attribute__((alias("curl_easy_option_by_name"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_option_by_name, curl_easy_option_by_name@CURL_GNUTLS_3");
 +#endif
  
@@ -416,35 +438,42 @@ index 533d7e3..ad9b9f0 100644
    return lookup(NULL, id);
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_easy_option_by_id, curl_easy_option_by_id@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_option_by_id) __curl_compat_curl_easy_option_by_id
 +    __attribute__((alias("curl_easy_option_by_id"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_option_by_id, curl_easy_option_by_id@CURL_GNUTLS_3");
 +#endif
  
  /* Iterates over available options */
  const struct curl_easyoption *curl_easy_option_next(
-@@ -74,6 +86,12 @@ const struct curl_easyoption *curl_easy_option_next(
+@@ -74,6 +91,14 @@ const struct curl_easyoption *curl_easy_option_next(
      return &Curl_easyopts[0];
    return NULL;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_easy_option_next, curl_easy_option_next@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_option_next) __curl_compat_curl_easy_option_next
 +    __attribute__((alias("curl_easy_option_next"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_option_next, curl_easy_option_next@CURL_GNUTLS_3");
 +#endif
  
  #else
  const struct curl_easyoption *curl_easy_option_by_name(const char *name)
-@@ -81,12 +99,24 @@ const struct curl_easyoption *curl_easy_option_by_name(const char *name)
+@@ -81,12 +106,29 @@ const struct curl_easyoption *curl_easy_option_by_name(const char *name)
    (void)name;
    return NULL;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_easy_option_by_name, curl_easy_option_by_name@@@CURL_GNUTLS_4");
++/* !checksrc! disable LONGLINE */
 +extern __typeof(curl_easy_option_by_name) __curl_compat_curl_easy_option_by_name
 +    __attribute__((alias("curl_easy_option_by_name"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_option_by_name, curl_easy_option_by_name@CURL_GNUTLS_3");
 +#endif
  
@@ -454,27 +483,31 @@ index 533d7e3..ad9b9f0 100644
    return NULL;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_easy_option_by_id, curl_easy_option_by_id@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_option_by_id) __curl_compat_curl_easy_option_by_id
 +    __attribute__((alias("curl_easy_option_by_id"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_option_by_id, curl_easy_option_by_id@CURL_GNUTLS_3");
 +#endif
  
  const struct curl_easyoption *curl_easy_option_next(
    const struct curl_easyoption *prev)
-@@ -94,4 +124,10 @@ const struct curl_easyoption *curl_easy_option_next(
+@@ -94,4 +136,12 @@ const struct curl_easyoption *curl_easy_option_next(
    (void)prev;
    return NULL;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_easy_option_next, curl_easy_option_next@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_option_next) __curl_compat_curl_easy_option_next
 +    __attribute__((alias("curl_easy_option_next"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_option_next, curl_easy_option_next@CURL_GNUTLS_3");
 +#endif
  #endif
 diff --git a/lib/escape.c b/lib/escape.c
-index 4aff583..34b1abe 100644
+index 4aff583..c40af4b 100644
 --- a/lib/escape.c
 +++ b/lib/escape.c
 @@ -37,12 +37,24 @@ char *curl_escape(const char *string, int length)
@@ -502,7 +535,7 @@ index 4aff583..34b1abe 100644
  
  /* Escapes for URL the given unescaped string of given length.
   * 'data' is ignored since 7.82.0.
-@@ -85,6 +97,12 @@ char *curl_easy_escape(CURL *curl, const char *string, int length)
+@@ -85,6 +97,13 @@ char *curl_easy_escape(CURL *curl, const char *string, int length)
  
    return curlx_dyn_ptr(&d);
  }
@@ -510,12 +543,13 @@ index 4aff583..34b1abe 100644
 +__asm__(".symver curl_easy_escape, curl_easy_escape@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_escape) __curl_compat_curl_easy_escape
 +    __attribute__((alias("curl_easy_escape"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_escape, curl_easy_escape@CURL_GNUTLS_3");
 +#endif
  
  /*
   * Curl_urldecode() URL decodes the given string.
-@@ -183,6 +201,12 @@ char *curl_easy_unescape(CURL *curl, const char *string, int inlength,
+@@ -183,6 +202,13 @@ char *curl_easy_unescape(CURL *curl, const char *string, int inlength,
    }
    return str;
  }
@@ -523,12 +557,13 @@ index 4aff583..34b1abe 100644
 +__asm__(".symver curl_easy_unescape, curl_easy_unescape@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_unescape) __curl_compat_curl_easy_unescape
 +    __attribute__((alias("curl_easy_unescape"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_unescape, curl_easy_unescape@CURL_GNUTLS_3");
 +#endif
  
  /* For operating systems/environments that use different malloc/free
     systems for the app and for this library, we provide a free that uses
-@@ -191,6 +215,12 @@ void curl_free(void *p)
+@@ -191,6 +217,12 @@ void curl_free(void *p)
  {
    curlx_free(p);
  }
@@ -636,10 +671,10 @@ index a957e6e..3894388 100644
 +__asm__(".symver __curl_compat_curl_getenv, curl_getenv@CURL_GNUTLS_3");
 +#endif
 diff --git a/lib/headers.c b/lib/headers.c
-index 195e12b..08d1851 100644
+index 195e12b..1b23b4c 100644
 --- a/lib/headers.c
 +++ b/lib/headers.c
-@@ -116,6 +116,12 @@ CURLHcode curl_easy_header(CURL *curl,
+@@ -116,6 +116,13 @@ CURLHcode curl_easy_header(CURL *curl,
    *hout = &data->state.headerout[0];
    return CURLHE_OK;
  }
@@ -647,12 +682,13 @@ index 195e12b..08d1851 100644
 +__asm__(".symver curl_easy_header, curl_easy_header@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_header) __curl_compat_curl_easy_header
 +    __attribute__((alias("curl_easy_header"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_header, curl_easy_header@CURL_GNUTLS_3");
 +#endif
  
  /* public API */
  struct curl_header *curl_easy_nextheader(CURL *curl,
-@@ -177,6 +183,12 @@ struct curl_header *curl_easy_nextheader(CURL *curl,
+@@ -177,6 +184,13 @@ struct curl_header *curl_easy_nextheader(CURL *curl,
                         &data->state.headerout[1]);
    return &data->state.headerout[1];
  }
@@ -660,12 +696,13 @@ index 195e12b..08d1851 100644
 +__asm__(".symver curl_easy_nextheader, curl_easy_nextheader@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_nextheader) __curl_compat_curl_easy_nextheader
 +    __attribute__((alias("curl_easy_nextheader"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_nextheader, curl_easy_nextheader@CURL_GNUTLS_3");
 +#endif
  
  static CURLcode namevalue(char *header, size_t hlen, unsigned int type,
                            char **name, char **value)
-@@ -379,6 +391,12 @@ CURLHcode curl_easy_header(CURL *easy,
+@@ -379,6 +393,13 @@ CURLHcode curl_easy_header(CURL *easy,
    (void)hout;
    return CURLHE_NOT_BUILT_IN;
  }
@@ -673,12 +710,13 @@ index 195e12b..08d1851 100644
 +__asm__(".symver curl_easy_header, curl_easy_header@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_header) __curl_compat_curl_easy_header
 +    __attribute__((alias("curl_easy_header"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_header, curl_easy_header@CURL_GNUTLS_3");
 +#endif
  
  struct curl_header *curl_easy_nextheader(CURL *easy,
                                           unsigned int type,
-@@ -391,4 +409,10 @@ struct curl_header *curl_easy_nextheader(CURL *easy,
+@@ -391,4 +412,11 @@ struct curl_header *curl_easy_nextheader(CURL *easy,
    (void)prev;
    return NULL;
  }
@@ -686,60 +724,69 @@ index 195e12b..08d1851 100644
 +__asm__(".symver curl_easy_nextheader, curl_easy_nextheader@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_nextheader) __curl_compat_curl_easy_nextheader
 +    __attribute__((alias("curl_easy_nextheader"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_nextheader, curl_easy_nextheader@CURL_GNUTLS_3");
 +#endif
  #endif
 diff --git a/lib/http2.c b/lib/http2.c
-index 7be5abd..b1f9706 100644
+index 7be5abd..ca7c20f 100644
 --- a/lib/http2.c
 +++ b/lib/http2.c
-@@ -671,6 +671,12 @@ char *curl_pushheader_bynum(struct curl_pushheaders *h, size_t num)
+@@ -671,6 +671,14 @@ char *curl_pushheader_bynum(struct curl_pushheaders *h, size_t num)
    }
    return NULL;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_pushheader_bynum, curl_pushheader_bynum@@@CURL_GNUTLS_4");
 +extern __typeof(curl_pushheader_bynum) __curl_compat_curl_pushheader_bynum
 +    __attribute__((alias("curl_pushheader_bynum"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_pushheader_bynum, curl_pushheader_bynum@CURL_GNUTLS_3");
 +#endif
  
  /*
   * push header access function. Only to be used from within the push callback
-@@ -705,6 +711,12 @@ char *curl_pushheader_byname(struct curl_pushheaders *h, const char *name)
+@@ -705,6 +713,14 @@ char *curl_pushheader_byname(struct curl_pushheaders *h, const char *name)
    }
    return NULL;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_pushheader_byname, curl_pushheader_byname@@@CURL_GNUTLS_4");
 +extern __typeof(curl_pushheader_byname) __curl_compat_curl_pushheader_byname
 +    __attribute__((alias("curl_pushheader_byname"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_pushheader_byname, curl_pushheader_byname@CURL_GNUTLS_3");
 +#endif
  
  static struct Curl_easy *h2_duphandle(struct Curl_cfilter *cf,
                                        struct Curl_easy *data)
-@@ -3018,6 +3030,12 @@ char *curl_pushheader_bynum(struct curl_pushheaders *h, size_t num)
+@@ -3018,6 +3034,14 @@ char *curl_pushheader_bynum(struct curl_pushheaders *h, size_t num)
    (void)num;
    return NULL;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_pushheader_bynum, curl_pushheader_bynum@@@CURL_GNUTLS_4");
 +extern __typeof(curl_pushheader_bynum) __curl_compat_curl_pushheader_bynum
 +    __attribute__((alias("curl_pushheader_bynum"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_pushheader_bynum, curl_pushheader_bynum@CURL_GNUTLS_3");
 +#endif
  
  char *curl_pushheader_byname(struct curl_pushheaders *h, const char *name)
  {
-@@ -3025,5 +3043,11 @@ char *curl_pushheader_byname(struct curl_pushheaders *h, const char *name)
+@@ -3025,5 +3049,13 @@ char *curl_pushheader_byname(struct curl_pushheaders *h, const char *name)
    (void)name;
    return NULL;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_pushheader_byname, curl_pushheader_byname@@@CURL_GNUTLS_4");
 +extern __typeof(curl_pushheader_byname) __curl_compat_curl_pushheader_byname
 +    __attribute__((alias("curl_pushheader_byname"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_pushheader_byname, curl_pushheader_byname@CURL_GNUTLS_3");
 +#endif
  
@@ -862,7 +909,7 @@ index 0000000..e12aa2d
 +  local: *;
 +} CURL_@CURL_LIBCURL_VERSIONED_SYMBOLS_PREFIX@3;
 diff --git a/lib/mime.c b/lib/mime.c
-index b7e51aa..1c98a6c 100644
+index b7e51aa..0021845 100644
 --- a/lib/mime.c
 +++ b/lib/mime.c
 @@ -1116,6 +1116,12 @@ void curl_mime_free(curl_mime *mime)
@@ -891,7 +938,7 @@ index b7e51aa..1c98a6c 100644
  
  /* Initialize a mime part. */
  void Curl_mime_initpart(curl_mimepart *part)
-@@ -1256,6 +1268,12 @@ curl_mimepart *curl_mime_addpart(curl_mime *mime)
+@@ -1256,6 +1268,13 @@ curl_mimepart *curl_mime_addpart(curl_mime *mime)
  
    return part;
  }
@@ -899,12 +946,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_addpart, curl_mime_addpart@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_addpart) __curl_compat_curl_mime_addpart
 +    __attribute__((alias("curl_mime_addpart"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_addpart, curl_mime_addpart@CURL_GNUTLS_3");
 +#endif
  
  /* Set mime part name. */
  CURLcode curl_mime_name(curl_mimepart *part, const char *name)
-@@ -1273,6 +1291,12 @@ CURLcode curl_mime_name(curl_mimepart *part, const char *name)
+@@ -1273,6 +1292,12 @@ CURLcode curl_mime_name(curl_mimepart *part, const char *name)
  
    return CURLE_OK;
  }
@@ -917,7 +965,7 @@ index b7e51aa..1c98a6c 100644
  
  /* Set mime part remote filename. */
  CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
-@@ -1290,6 +1314,12 @@ CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
+@@ -1290,6 +1315,13 @@ CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
  
    return CURLE_OK;
  }
@@ -925,12 +973,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_filename, curl_mime_filename@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_filename) __curl_compat_curl_mime_filename
 +    __attribute__((alias("curl_mime_filename"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_filename, curl_mime_filename@CURL_GNUTLS_3");
 +#endif
  
  /* Set mime part content from memory data. */
  CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
-@@ -1317,6 +1347,12 @@ CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
+@@ -1317,6 +1349,12 @@ CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
  
    return CURLE_OK;
  }
@@ -943,7 +992,7 @@ index b7e51aa..1c98a6c 100644
  
  /* Set mime part content from named local file. */
  CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
-@@ -1365,6 +1401,12 @@ CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
+@@ -1365,6 +1403,13 @@ CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
    }
    return result;
  }
@@ -951,12 +1000,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_filedata, curl_mime_filedata@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_filedata) __curl_compat_curl_mime_filedata
 +    __attribute__((alias("curl_mime_filedata"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_filedata, curl_mime_filedata@CURL_GNUTLS_3");
 +#endif
  
  /* Set mime part type. */
  CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
-@@ -1382,6 +1424,12 @@ CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
+@@ -1382,6 +1427,12 @@ CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
  
    return CURLE_OK;
  }
@@ -969,7 +1019,7 @@ index b7e51aa..1c98a6c 100644
  
  static const struct mime_encoder encoders[] = {
    { "binary", encoder_nop_read, encoder_nop_size },
-@@ -1414,6 +1462,12 @@ CURLcode curl_mime_encoder(curl_mimepart *part, const char *encoding)
+@@ -1414,6 +1465,13 @@ CURLcode curl_mime_encoder(curl_mimepart *part, const char *encoding)
  
    return result;
  }
@@ -977,12 +1027,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_encoder, curl_mime_encoder@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_encoder) __curl_compat_curl_mime_encoder
 +    __attribute__((alias("curl_mime_encoder"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_encoder, curl_mime_encoder@CURL_GNUTLS_3");
 +#endif
  
  /* Set mime part headers. */
  CURLcode curl_mime_headers(curl_mimepart *part,
-@@ -1432,6 +1486,12 @@ CURLcode curl_mime_headers(curl_mimepart *part,
+@@ -1432,6 +1490,13 @@ CURLcode curl_mime_headers(curl_mimepart *part,
      part->flags |= MIME_USERHEADERS_OWNER;
    return CURLE_OK;
  }
@@ -990,12 +1041,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_headers, curl_mime_headers@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_headers) __curl_compat_curl_mime_headers
 +    __attribute__((alias("curl_mime_headers"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_headers, curl_mime_headers@CURL_GNUTLS_3");
 +#endif
  
  /* Set mime part content from callback. */
  CURLcode curl_mime_data_cb(curl_mimepart *part, curl_off_t datasize,
-@@ -1455,6 +1515,12 @@ CURLcode curl_mime_data_cb(curl_mimepart *part, curl_off_t datasize,
+@@ -1455,6 +1520,13 @@ CURLcode curl_mime_data_cb(curl_mimepart *part, curl_off_t datasize,
  
    return CURLE_OK;
  }
@@ -1003,12 +1055,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_data_cb, curl_mime_data_cb@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_data_cb) __curl_compat_curl_mime_data_cb
 +    __attribute__((alias("curl_mime_data_cb"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_data_cb, curl_mime_data_cb@CURL_GNUTLS_3");
 +#endif
  
  /* Set mime part content from subparts. */
  CURLcode Curl_mime_set_subparts(curl_mimepart *part,
-@@ -1512,6 +1578,12 @@ CURLcode curl_mime_subparts(curl_mimepart *part, curl_mime *subparts)
+@@ -1512,6 +1584,13 @@ CURLcode curl_mime_subparts(curl_mimepart *part, curl_mime *subparts)
  {
    return Curl_mime_set_subparts(part, subparts, TRUE);
  }
@@ -1016,12 +1069,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_subparts, curl_mime_subparts@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_subparts) __curl_compat_curl_mime_subparts
 +    __attribute__((alias("curl_mime_subparts"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_subparts, curl_mime_subparts@CURL_GNUTLS_3");
 +#endif
  
  /* Readback from top mime. */
  /* Argument is the dummy top part. */
-@@ -2154,17 +2226,35 @@ curl_mime *curl_mime_init(CURL *easy)
+@@ -2154,17 +2233,36 @@ curl_mime *curl_mime_init(CURL *easy)
    (void)easy;
    return NULL;
  }
@@ -1052,12 +1106,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_addpart, curl_mime_addpart@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_addpart) __curl_compat_curl_mime_addpart
 +    __attribute__((alias("curl_mime_addpart"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_addpart, curl_mime_addpart@CURL_GNUTLS_3");
 +#endif
  
  CURLcode curl_mime_name(curl_mimepart *part, const char *name)
  {
-@@ -2172,6 +2262,12 @@ CURLcode curl_mime_name(curl_mimepart *part, const char *name)
+@@ -2172,6 +2270,12 @@ CURLcode curl_mime_name(curl_mimepart *part, const char *name)
    (void)name;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1070,7 +1125,7 @@ index b7e51aa..1c98a6c 100644
  
  CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
  {
-@@ -2179,6 +2275,12 @@ CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
+@@ -2179,6 +2283,13 @@ CURLcode curl_mime_filename(curl_mimepart *part, const char *filename)
    (void)filename;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1078,12 +1133,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_filename, curl_mime_filename@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_filename) __curl_compat_curl_mime_filename
 +    __attribute__((alias("curl_mime_filename"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_filename, curl_mime_filename@CURL_GNUTLS_3");
 +#endif
  
  CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
  {
-@@ -2186,6 +2288,12 @@ CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
+@@ -2186,6 +2297,12 @@ CURLcode curl_mime_type(curl_mimepart *part, const char *mimetype)
    (void)mimetype;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1096,7 +1152,7 @@ index b7e51aa..1c98a6c 100644
  
  CURLcode curl_mime_encoder(curl_mimepart *part, const char *encoding)
  {
-@@ -2193,6 +2301,12 @@ CURLcode curl_mime_encoder(curl_mimepart *part, const char *encoding)
+@@ -2193,6 +2310,13 @@ CURLcode curl_mime_encoder(curl_mimepart *part, const char *encoding)
    (void)encoding;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1104,12 +1160,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_encoder, curl_mime_encoder@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_encoder) __curl_compat_curl_mime_encoder
 +    __attribute__((alias("curl_mime_encoder"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_encoder, curl_mime_encoder@CURL_GNUTLS_3");
 +#endif
  
  CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
  {
-@@ -2201,6 +2315,12 @@ CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
+@@ -2201,6 +2325,12 @@ CURLcode curl_mime_data(curl_mimepart *part, const char *data, size_t datasize)
    (void)datasize;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1122,7 +1179,7 @@ index b7e51aa..1c98a6c 100644
  
  CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
  {
-@@ -2208,6 +2328,12 @@ CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
+@@ -2208,6 +2338,13 @@ CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
    (void)filename;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1130,12 +1187,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_filedata, curl_mime_filedata@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_filedata) __curl_compat_curl_mime_filedata
 +    __attribute__((alias("curl_mime_filedata"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_filedata, curl_mime_filedata@CURL_GNUTLS_3");
 +#endif
  
  CURLcode curl_mime_data_cb(curl_mimepart *part, curl_off_t datasize,
                             curl_read_callback readfunc,
-@@ -2223,6 +2349,12 @@ CURLcode curl_mime_data_cb(curl_mimepart *part, curl_off_t datasize,
+@@ -2223,6 +2360,13 @@ CURLcode curl_mime_data_cb(curl_mimepart *part, curl_off_t datasize,
    (void)arg;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1143,12 +1201,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_data_cb, curl_mime_data_cb@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_data_cb) __curl_compat_curl_mime_data_cb
 +    __attribute__((alias("curl_mime_data_cb"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_data_cb, curl_mime_data_cb@CURL_GNUTLS_3");
 +#endif
  
  CURLcode curl_mime_subparts(curl_mimepart *part, curl_mime *subparts)
  {
-@@ -2230,6 +2362,12 @@ CURLcode curl_mime_subparts(curl_mimepart *part, curl_mime *subparts)
+@@ -2230,6 +2374,13 @@ CURLcode curl_mime_subparts(curl_mimepart *part, curl_mime *subparts)
    (void)subparts;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1156,12 +1215,13 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_subparts, curl_mime_subparts@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_subparts) __curl_compat_curl_mime_subparts
 +    __attribute__((alias("curl_mime_subparts"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_subparts, curl_mime_subparts@CURL_GNUTLS_3");
 +#endif
  
  CURLcode curl_mime_headers(curl_mimepart *part,
                             struct curl_slist *headers, int take_ownership)
-@@ -2239,6 +2377,12 @@ CURLcode curl_mime_headers(curl_mimepart *part,
+@@ -2239,6 +2390,13 @@ CURLcode curl_mime_headers(curl_mimepart *part,
    (void)take_ownership;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1169,16 +1229,17 @@ index b7e51aa..1c98a6c 100644
 +__asm__(".symver curl_mime_headers, curl_mime_headers@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mime_headers) __curl_compat_curl_mime_headers
 +    __attribute__((alias("curl_mime_headers"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mime_headers, curl_mime_headers@CURL_GNUTLS_3");
 +#endif
  
  CURLcode Curl_mime_add_header(struct curl_slist **slp, const char *fmt, ...)
  {
 diff --git a/lib/mprintf.c b/lib/mprintf.c
-index 6eaea66..6562c9b 100644
+index 6eaea66..8a613664 100644
 --- a/lib/mprintf.c
 +++ b/lib/mprintf.c
-@@ -1128,6 +1128,12 @@ int curl_mvsnprintf(char *buffer, size_t maxlength, const char *format,
+@@ -1128,6 +1128,13 @@ int curl_mvsnprintf(char *buffer, size_t maxlength, const char *format,
    }
    return retcode;
  }
@@ -1186,12 +1247,13 @@ index 6eaea66..6562c9b 100644
 +__asm__(".symver curl_mvsnprintf, curl_mvsnprintf@@@CURL_GNUTLS_4");
 +extern __typeof(curl_mvsnprintf) __curl_compat_curl_mvsnprintf
 +    __attribute__((alias("curl_mvsnprintf"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_mvsnprintf, curl_mvsnprintf@CURL_GNUTLS_3");
 +#endif
  
  int curl_msnprintf(char *buffer, size_t maxlength, const char *format, ...)
  {
-@@ -1138,6 +1144,12 @@ int curl_msnprintf(char *buffer, size_t maxlength, const char *format, ...)
+@@ -1138,6 +1145,12 @@ int curl_msnprintf(char *buffer, size_t maxlength, const char *format, ...)
    va_end(args);
    return retcode;
  }
@@ -1204,7 +1266,7 @@ index 6eaea66..6562c9b 100644
  
  /* fputc() look-alike */
  static int alloc_addbyter(unsigned char outc, void *f)
-@@ -1183,6 +1195,12 @@ char *curl_mvaprintf(const char *format, va_list args)
+@@ -1183,6 +1196,12 @@ char *curl_mvaprintf(const char *format, va_list args)
      return curlx_dyn_ptr(info.b);
    return curlx_strdup("");
  }
@@ -1217,7 +1279,7 @@ index 6eaea66..6562c9b 100644
  
  char *curl_maprintf(const char *format, ...)
  {
-@@ -1193,6 +1211,12 @@ char *curl_maprintf(const char *format, ...)
+@@ -1193,6 +1212,12 @@ char *curl_maprintf(const char *format, ...)
    va_end(args);
    return s;
  }
@@ -1230,7 +1292,7 @@ index 6eaea66..6562c9b 100644
  
  static int storebuffer(unsigned char outc, void *f)
  {
-@@ -1212,6 +1236,12 @@ int curl_msprintf(char *buffer, const char *format, ...)
+@@ -1212,6 +1237,12 @@ int curl_msprintf(char *buffer, const char *format, ...)
    *buffer = 0; /* we terminate this with a zero byte */
    return retcode;
  }
@@ -1243,7 +1305,7 @@ index 6eaea66..6562c9b 100644
  
  static int fputc_wrapper(unsigned char outc, void *f)
  {
-@@ -1230,6 +1260,12 @@ int curl_mprintf(const char *format, ...)
+@@ -1230,6 +1261,12 @@ int curl_mprintf(const char *format, ...)
    va_end(args);
    return retcode;
  }
@@ -1256,7 +1318,7 @@ index 6eaea66..6562c9b 100644
  
  int curl_mfprintf(FILE *fd, const char *format, ...)
  {
-@@ -1240,6 +1276,12 @@ int curl_mfprintf(FILE *fd, const char *format, ...)
+@@ -1240,6 +1277,12 @@ int curl_mfprintf(FILE *fd, const char *format, ...)
    va_end(args);
    return retcode;
  }
@@ -1269,7 +1331,7 @@ index 6eaea66..6562c9b 100644
  
  int curl_mvsprintf(char *buffer, const char *format, va_list args)
  {
-@@ -1247,13 +1289,31 @@ int curl_mvsprintf(char *buffer, const char *format, va_list args)
+@@ -1247,13 +1290,31 @@ int curl_mvsprintf(char *buffer, const char *format, va_list args)
    *buffer = 0; /* we terminate this with a zero byte */
    return retcode;
  }
@@ -1302,10 +1364,10 @@ index 6eaea66..6562c9b 100644
 +__asm__(".symver __curl_compat_curl_mvfprintf, curl_mvfprintf@CURL_GNUTLS_3");
 +#endif
 diff --git a/lib/multi.c b/lib/multi.c
-index 7520253..b829502 100644
+index a0012d8..de6b750 100644
 --- a/lib/multi.c
 +++ b/lib/multi.c
-@@ -361,6 +361,12 @@ CURLM *curl_multi_init(void)
+@@ -361,6 +361,13 @@ CURLM *curl_multi_init(void)
                             CURL_DNS_HASH_SIZE,
                             CURL_TLS_SESSION_SIZE);
  }
@@ -1313,38 +1375,44 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_init, curl_multi_init@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_init) __curl_compat_curl_multi_init
 +    __attribute__((alias("curl_multi_init"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_init, curl_multi_init@CURL_GNUTLS_3");
 +#endif
  
  #if defined(DEBUGBUILD) && defined(CURLVERBOSE)
  static void multi_warn_debug(struct Curl_multi *multi, struct Curl_easy *data)
-@@ -569,6 +575,12 @@ CURLMcode curl_multi_add_handle(CURLM *m, CURL *curl)
+@@ -569,6 +576,14 @@ CURLMcode curl_multi_add_handle(CURLM *m, CURL *curl)
               Curl_uint32_tbl_count(&multi->xfers));
    return CURLM_OK;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_multi_add_handle, curl_multi_add_handle@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_add_handle) __curl_compat_curl_multi_add_handle
 +    __attribute__((alias("curl_multi_add_handle"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_add_handle, curl_multi_add_handle@CURL_GNUTLS_3");
 +#endif
  
  #if 0
  /* Debug-function, used like this:
-@@ -922,6 +934,12 @@ CURLMcode curl_multi_remove_handle(CURLM *m, CURL *curl)
+@@ -922,6 +937,15 @@ CURLMcode curl_multi_remove_handle(CURLM *m, CURL *curl)
               Curl_uint32_tbl_count(&multi->xfers));
    return CURLM_OK;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_multi_remove_handle, curl_multi_remove_handle@@@CURL_GNUTLS_4");
++/* !checksrc! disable LONGLINE */
 +extern __typeof(curl_multi_remove_handle) __curl_compat_curl_multi_remove_handle
 +    __attribute__((alias("curl_multi_remove_handle"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_remove_handle, curl_multi_remove_handle@CURL_GNUTLS_3");
 +#endif
  
  /* Return TRUE if the application asked for multiplexing */
  bool Curl_multiplex_wanted(const struct Curl_multi *multi)
-@@ -1297,6 +1315,12 @@ CURLMcode curl_multi_fdset(CURLM *m,
+@@ -1297,6 +1321,13 @@ CURLMcode curl_multi_fdset(CURLM *m,
  
    return CURLM_OK;
  }
@@ -1352,12 +1420,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_fdset, curl_multi_fdset@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_fdset) __curl_compat_curl_multi_fdset
 +    __attribute__((alias("curl_multi_fdset"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_fdset, curl_multi_fdset@CURL_GNUTLS_3");
 +#endif
  
  CURLMcode curl_multi_waitfds(CURLM *m,
                               struct curl_waitfd *ufds,
-@@ -1345,6 +1369,12 @@ CURLMcode curl_multi_waitfds(CURLM *m,
+@@ -1345,6 +1376,13 @@ CURLMcode curl_multi_waitfds(CURLM *m,
    Curl_pollset_cleanup(&ps);
    return mresult;
  }
@@ -1365,12 +1434,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_waitfds, curl_multi_waitfds@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_waitfds) __curl_compat_curl_multi_waitfds
 +    __attribute__((alias("curl_multi_waitfds"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_waitfds, curl_multi_waitfds@CURL_GNUTLS_3");
 +#endif
  
  #ifdef USE_WINSOCK
  /* Reset FD_WRITE for TCP sockets. Nothing is actually sent. UDP sockets cannot
-@@ -1661,6 +1691,12 @@ CURLMcode curl_multi_wait(CURLM *m,
+@@ -1661,6 +1699,13 @@ CURLMcode curl_multi_wait(CURLM *m,
  {
    return multi_wait(m, extra_fds, extra_nfds, timeout_ms, ret, FALSE);
  }
@@ -1378,12 +1448,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_wait, curl_multi_wait@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_wait) __curl_compat_curl_multi_wait
 +    __attribute__((alias("curl_multi_wait"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_wait, curl_multi_wait@CURL_GNUTLS_3");
 +#endif
  
  CURLMcode curl_multi_poll(CURLM *m,
                            struct curl_waitfd extra_fds[],
-@@ -1670,6 +1706,12 @@ CURLMcode curl_multi_poll(CURLM *m,
+@@ -1670,6 +1715,13 @@ CURLMcode curl_multi_poll(CURLM *m,
  {
    return multi_wait(m, extra_fds, extra_nfds, timeout_ms, ret, TRUE);
  }
@@ -1391,12 +1462,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_poll, curl_multi_poll@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_poll) __curl_compat_curl_multi_poll
 +    __attribute__((alias("curl_multi_poll"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_poll, curl_multi_poll@CURL_GNUTLS_3");
 +#endif
  
  CURLMcode curl_multi_wakeup(CURLM *m)
  {
-@@ -1696,6 +1738,12 @@ CURLMcode curl_multi_wakeup(CURLM *m)
+@@ -1696,6 +1748,13 @@ CURLMcode curl_multi_wakeup(CURLM *m)
  #endif
    return mresult;
  }
@@ -1404,12 +1476,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_wakeup, curl_multi_wakeup@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_wakeup) __curl_compat_curl_multi_wakeup
 +    __attribute__((alias("curl_multi_wakeup"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_wakeup, curl_multi_wakeup@CURL_GNUTLS_3");
 +#endif
  
  /*
   * multi_ischanged() is called
-@@ -2863,6 +2911,12 @@ CURLMcode curl_multi_perform(CURLM *m, int *running_handles)
+@@ -2868,6 +2927,13 @@ CURLMcode curl_multi_perform(CURLM *m, int *running_handles)
  
    return multi_perform(multi, running_handles);
  }
@@ -1417,12 +1490,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_perform, curl_multi_perform@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_perform) __curl_compat_curl_multi_perform
 +    __attribute__((alias("curl_multi_perform"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_perform, curl_multi_perform@CURL_GNUTLS_3");
 +#endif
  
  CURLMcode curl_multi_cleanup(CURLM *m)
  {
-@@ -2959,6 +3013,12 @@ CURLMcode curl_multi_cleanup(CURLM *m)
+@@ -2964,6 +3030,13 @@ CURLMcode curl_multi_cleanup(CURLM *m)
    }
    return CURLM_BAD_HANDLE;
  }
@@ -1430,12 +1504,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_cleanup, curl_multi_cleanup@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_cleanup) __curl_compat_curl_multi_cleanup
 +    __attribute__((alias("curl_multi_cleanup"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_cleanup, curl_multi_cleanup@CURL_GNUTLS_3");
 +#endif
  
  /*
   * curl_multi_info_read()
-@@ -2997,6 +3057,12 @@ CURLMsg *curl_multi_info_read(CURLM *m, int *msgs_in_queue)
+@@ -3002,6 +3075,13 @@ CURLMsg *curl_multi_info_read(CURLM *m, int *msgs_in_queue)
    }
    return NULL;
  }
@@ -1443,12 +1518,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_info_read, curl_multi_info_read@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_info_read) __curl_compat_curl_multi_info_read
 +    __attribute__((alias("curl_multi_info_read"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_info_read, curl_multi_info_read@CURL_GNUTLS_3");
 +#endif
  
  void Curl_multi_will_close(struct Curl_easy *data, curl_socket_t s)
  {
-@@ -3345,6 +3411,12 @@ CURLMcode curl_multi_setopt(CURLM *m, CURLMoption option, ...)
+@@ -3350,6 +3430,13 @@ CURLMcode curl_multi_setopt(CURLM *m, CURLMoption option, ...)
    va_end(param);
    return mresult;
  }
@@ -1456,12 +1532,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_setopt, curl_multi_setopt@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_setopt) __curl_compat_curl_multi_setopt
 +    __attribute__((alias("curl_multi_setopt"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_setopt, curl_multi_setopt@CURL_GNUTLS_3");
 +#endif
  
  /* we define curl_multi_socket() in the public multi.h header */
  #undef curl_multi_socket
-@@ -3358,6 +3430,12 @@ CURLMcode curl_multi_socket(CURLM *m, curl_socket_t s, int *running_handles)
+@@ -3363,6 +3450,13 @@ CURLMcode curl_multi_socket(CURLM *m, curl_socket_t s, int *running_handles)
      return CURLM_RECURSIVE_API_CALL;
    return multi_socket(multi, FALSE, s, 0, running_handles);
  }
@@ -1469,38 +1546,44 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_socket, curl_multi_socket@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_socket) __curl_compat_curl_multi_socket
 +    __attribute__((alias("curl_multi_socket"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_socket, curl_multi_socket@CURL_GNUTLS_3");
 +#endif
  
  CURLMcode curl_multi_socket_action(CURLM *m, curl_socket_t s,
                                     int ev_bitmask, int *running_handles)
-@@ -3369,6 +3447,12 @@ CURLMcode curl_multi_socket_action(CURLM *m, curl_socket_t s,
+@@ -3374,6 +3468,15 @@ CURLMcode curl_multi_socket_action(CURLM *m, curl_socket_t s,
      return CURLM_RECURSIVE_API_CALL;
    return multi_socket(multi, FALSE, s, ev_bitmask, running_handles);
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_multi_socket_action, curl_multi_socket_action@@@CURL_GNUTLS_4");
++/* !checksrc! disable LONGLINE */
 +extern __typeof(curl_multi_socket_action) __curl_compat_curl_multi_socket_action
 +    __attribute__((alias("curl_multi_socket_action"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_socket_action, curl_multi_socket_action@CURL_GNUTLS_3");
 +#endif
  
  CURLMcode curl_multi_socket_all(CURLM *m, int *running_handles)
  {
-@@ -3379,6 +3463,12 @@ CURLMcode curl_multi_socket_all(CURLM *m, int *running_handles)
+@@ -3384,6 +3487,14 @@ CURLMcode curl_multi_socket_all(CURLM *m, int *running_handles)
      return CURLM_RECURSIVE_API_CALL;
    return multi_socket(multi, TRUE, CURL_SOCKET_BAD, 0, running_handles);
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_multi_socket_all, curl_multi_socket_all@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_socket_all) __curl_compat_curl_multi_socket_all
 +    __attribute__((alias("curl_multi_socket_all"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_socket_all, curl_multi_socket_all@CURL_GNUTLS_3");
 +#endif
  
  static bool multi_has_dirties(struct Curl_multi *multi)
  {
-@@ -3478,6 +3568,12 @@ CURLMcode curl_multi_timeout(CURLM *m,
+@@ -3483,6 +3594,13 @@ CURLMcode curl_multi_timeout(CURLM *m,
    multi_timeout(multi, &expire_time, timeout_ms);
    return CURLM_OK;
  }
@@ -1508,12 +1591,13 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_timeout, curl_multi_timeout@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_timeout) __curl_compat_curl_multi_timeout
 +    __attribute__((alias("curl_multi_timeout"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_timeout, curl_multi_timeout@CURL_GNUTLS_3");
 +#endif
  
  /*
   * Tell the application it should update its timers, if it subscribes to the
-@@ -3730,6 +3826,12 @@ CURLMcode curl_multi_assign(CURLM *m, curl_socket_t sockfd,
+@@ -3735,6 +3853,13 @@ CURLMcode curl_multi_assign(CURLM *m, curl_socket_t sockfd,
  
    return Curl_multi_ev_assign(multi, sockfd, sockp);
  }
@@ -1521,25 +1605,28 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_assign, curl_multi_assign@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_assign) __curl_compat_curl_multi_assign
 +    __attribute__((alias("curl_multi_assign"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_assign, curl_multi_assign@CURL_GNUTLS_3");
 +#endif
  
  static void move_pending_to_connect(struct Curl_multi *multi,
                                      struct Curl_easy *data)
-@@ -3833,6 +3935,12 @@ CURL **curl_multi_get_handles(CURLM *m)
+@@ -3838,6 +3963,14 @@ CURL **curl_multi_get_handles(CURLM *m)
    }
    return a;
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_multi_get_handles, curl_multi_get_handles@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_get_handles) __curl_compat_curl_multi_get_handles
 +    __attribute__((alias("curl_multi_get_handles"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_get_handles, curl_multi_get_handles@CURL_GNUTLS_3");
 +#endif
  
  CURLMcode curl_multi_get_offt(CURLM *m,
                                CURLMinfo_offt info,
-@@ -3873,6 +3981,12 @@ CURLMcode curl_multi_get_offt(CURLM *m,
+@@ -3878,6 +4011,13 @@ CURLMcode curl_multi_get_offt(CURLM *m,
      return CURLM_UNKNOWN_OPTION;
    }
  }
@@ -1547,32 +1634,39 @@ index 7520253..b829502 100644
 +__asm__(".symver curl_multi_get_offt, curl_multi_get_offt@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_get_offt) __curl_compat_curl_multi_get_offt
 +    __attribute__((alias("curl_multi_get_offt"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_get_offt, curl_multi_get_offt@CURL_GNUTLS_3");
 +#endif
  
  CURLcode Curl_multi_xfer_buf_borrow(struct Curl_easy *data,
                                      char **pbuf, size_t *pbuflen)
-@@ -4077,6 +4191,12 @@ CURLMcode curl_multi_notify_enable(CURLM *m, unsigned int notification)
+@@ -4082,6 +4222,15 @@ CURLMcode curl_multi_notify_enable(CURLM *m, unsigned int notification)
      return CURLM_BAD_HANDLE;
    return Curl_mntfy_enable(multi, notification);
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_multi_notify_enable, curl_multi_notify_enable@@@CURL_GNUTLS_4");
++/* !checksrc! disable LONGLINE */
 +extern __typeof(curl_multi_notify_enable) __curl_compat_curl_multi_notify_enable
 +    __attribute__((alias("curl_multi_notify_enable"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_notify_enable, curl_multi_notify_enable@CURL_GNUTLS_3");
 +#endif
  
  CURLMcode curl_multi_notify_disable(CURLM *m, unsigned int notification)
  {
-@@ -4086,6 +4206,12 @@ CURLMcode curl_multi_notify_disable(CURLM *m, unsigned int notification)
+@@ -4091,6 +4240,15 @@ CURLMcode curl_multi_notify_disable(CURLM *m, unsigned int notification)
      return CURLM_BAD_HANDLE;
    return Curl_mntfy_disable(multi, notification);
  }
 +#if !defined(CURL_STATICLIB) && defined(USE_GNUTLS)
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver curl_multi_notify_disable, curl_multi_notify_disable@@@CURL_GNUTLS_4");
++/* !checksrc! disable LONGLINE */
 +extern __typeof(curl_multi_notify_disable) __curl_compat_curl_multi_notify_disable
 +    __attribute__((alias("curl_multi_notify_disable"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_notify_disable, curl_multi_notify_disable@CURL_GNUTLS_3");
 +#endif
  
@@ -1596,10 +1690,10 @@ index ce358bd..f445593 100644
  /* Curl_getdate_capped() differs from curl_getdate() in that this will return
     TIME_T_MAX in case the parsed time value was too big, instead of an
 diff --git a/lib/setopt.c b/lib/setopt.c
-index b8a6327..2fbf5ef 100644
+index b8a6327..d52b122 100644
 --- a/lib/setopt.c
 +++ b/lib/setopt.c
-@@ -2931,3 +2931,9 @@ CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...)
+@@ -2931,3 +2931,10 @@ CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...)
      failf(data, "setopt 0x%x got bad argument", option);
    return result;
  }
@@ -1607,13 +1701,14 @@ index b8a6327..2fbf5ef 100644
 +__asm__(".symver curl_easy_setopt, curl_easy_setopt@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_setopt) __curl_compat_curl_easy_setopt
 +    __attribute__((alias("curl_easy_setopt"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_setopt, curl_easy_setopt@CURL_GNUTLS_3");
 +#endif
 diff --git a/lib/slist.c b/lib/slist.c
-index 83fd291..b69567a 100644
+index 83fd291..18a2344 100644
 --- a/lib/slist.c
 +++ b/lib/slist.c
-@@ -95,6 +95,12 @@ struct curl_slist *curl_slist_append(struct curl_slist *list, const char *data)
+@@ -95,6 +95,13 @@ struct curl_slist *curl_slist_append(struct curl_slist *list, const char *data)
  
    return list;
  }
@@ -1621,12 +1716,13 @@ index 83fd291..b69567a 100644
 +__asm__(".symver curl_slist_append, curl_slist_append@@@CURL_GNUTLS_4");
 +extern __typeof(curl_slist_append) __curl_compat_curl_slist_append
 +    __attribute__((alias("curl_slist_append"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_slist_append, curl_slist_append@CURL_GNUTLS_3");
 +#endif
  
  /*
   * Curl_slist_duplicate() duplicates a linked list. It always returns the
-@@ -137,3 +143,9 @@ void curl_slist_free_all(struct curl_slist *list)
+@@ -137,3 +144,10 @@ void curl_slist_free_all(struct curl_slist *list)
      item = next;
    } while(next);
  }
@@ -1634,6 +1730,7 @@ index 83fd291..b69567a 100644
 +__asm__(".symver curl_slist_free_all, curl_slist_free_all@@@CURL_GNUTLS_4");
 +extern __typeof(curl_slist_free_all) __curl_compat_curl_slist_free_all
 +    __attribute__((alias("curl_slist_free_all"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_slist_free_all, curl_slist_free_all@CURL_GNUTLS_3");
 +#endif
 diff --git a/lib/strequal.c b/lib/strequal.c
@@ -1664,10 +1761,10 @@ index a352fda..9cc8972 100644
 +__asm__(".symver __curl_compat_curl_strnequal, curl_strnequal@CURL_GNUTLS_3");
 +#endif
 diff --git a/lib/strerror.c b/lib/strerror.c
-index 1e97c28..28ca46c 100644
+index 1e97c28..126c61f 100644
 --- a/lib/strerror.c
 +++ b/lib/strerror.c
-@@ -322,6 +322,12 @@ const char *curl_easy_strerror(CURLcode error)
+@@ -322,6 +322,13 @@ const char *curl_easy_strerror(CURLcode error)
      return "Error";
  #endif
  }
@@ -1675,12 +1772,13 @@ index 1e97c28..28ca46c 100644
 +__asm__(".symver curl_easy_strerror, curl_easy_strerror@@@CURL_GNUTLS_4");
 +extern __typeof(curl_easy_strerror) __curl_compat_curl_easy_strerror
 +    __attribute__((alias("curl_easy_strerror"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_easy_strerror, curl_easy_strerror@CURL_GNUTLS_3");
 +#endif
  
  const char *curl_multi_strerror(CURLMcode error)
  {
-@@ -381,6 +387,12 @@ const char *curl_multi_strerror(CURLMcode error)
+@@ -381,6 +388,13 @@ const char *curl_multi_strerror(CURLMcode error)
      return "Error";
  #endif
  }
@@ -1688,12 +1786,13 @@ index 1e97c28..28ca46c 100644
 +__asm__(".symver curl_multi_strerror, curl_multi_strerror@@@CURL_GNUTLS_4");
 +extern __typeof(curl_multi_strerror) __curl_compat_curl_multi_strerror
 +    __attribute__((alias("curl_multi_strerror"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_multi_strerror, curl_multi_strerror@CURL_GNUTLS_3");
 +#endif
  
  const char *curl_share_strerror(CURLSHcode error)
  {
-@@ -416,6 +428,12 @@ const char *curl_share_strerror(CURLSHcode error)
+@@ -416,6 +430,13 @@ const char *curl_share_strerror(CURLSHcode error)
      return "Error";
  #endif
  }
@@ -1701,12 +1800,13 @@ index 1e97c28..28ca46c 100644
 +__asm__(".symver curl_share_strerror, curl_share_strerror@@@CURL_GNUTLS_4");
 +extern __typeof(curl_share_strerror) __curl_compat_curl_share_strerror
 +    __attribute__((alias("curl_share_strerror"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_share_strerror, curl_share_strerror@CURL_GNUTLS_3");
 +#endif
  
  const char *curl_url_strerror(CURLUcode error)
  {
-@@ -529,6 +547,12 @@ const char *curl_url_strerror(CURLUcode error)
+@@ -529,6 +550,13 @@ const char *curl_url_strerror(CURLUcode error)
      return "Error";
  #endif
  }
@@ -1714,13 +1814,14 @@ index 1e97c28..28ca46c 100644
 +__asm__(".symver curl_url_strerror, curl_url_strerror@@@CURL_GNUTLS_4");
 +extern __typeof(curl_url_strerror) __curl_compat_curl_url_strerror
 +    __attribute__((alias("curl_url_strerror"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_url_strerror, curl_url_strerror@CURL_GNUTLS_3");
 +#endif
  
  #ifdef USE_WINDOWS_SSPI
  /*
 diff --git a/lib/urlapi.c b/lib/urlapi.c
-index 103e0a6..4e0efc3 100644
+index 103e0a6..268e681 100644
 --- a/lib/urlapi.c
 +++ b/lib/urlapi.c
 @@ -1282,6 +1282,12 @@ CURLU *curl_url(void)
@@ -1736,7 +1837,7 @@ index 103e0a6..4e0efc3 100644
  
  void curl_url_cleanup(CURLU *u)
  {
-@@ -1290,6 +1296,12 @@ void curl_url_cleanup(CURLU *u)
+@@ -1290,6 +1296,13 @@ void curl_url_cleanup(CURLU *u)
      curlx_free(u);
    }
  }
@@ -1744,12 +1845,13 @@ index 103e0a6..4e0efc3 100644
 +__asm__(".symver curl_url_cleanup, curl_url_cleanup@@@CURL_GNUTLS_4");
 +extern __typeof(curl_url_cleanup) __curl_compat_curl_url_cleanup
 +    __attribute__((alias("curl_url_cleanup"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_url_cleanup, curl_url_cleanup@CURL_GNUTLS_3");
 +#endif
  
  #define DUP(dest, src, name)                    \
    do {                                          \
-@@ -1323,6 +1335,12 @@ fail:
+@@ -1323,6 +1336,12 @@ fail:
    curl_url_cleanup(u);
    return NULL;
  }
@@ -1762,7 +1864,7 @@ index 103e0a6..4e0efc3 100644
  
  #ifndef USE_IDN
  #define host_decode(x, y) CURLUE_LACKS_IDN
-@@ -1623,6 +1641,12 @@ CURLUcode curl_url_get(const CURLU *u, CURLUPart what,
+@@ -1623,6 +1642,12 @@ CURLUcode curl_url_get(const CURLU *u, CURLUPart what,
  
    return ifmissing;
  }
@@ -1775,7 +1877,7 @@ index 103e0a6..4e0efc3 100644
  
  static CURLUcode set_url_scheme(CURLU *u, const char *scheme,
                                  unsigned int flags)
-@@ -1988,6 +2012,12 @@ nomem:
+@@ -1988,6 +2013,12 @@ nomem:
    }
    return CURLUE_OK;
  }
@@ -1789,7 +1891,7 @@ index 103e0a6..4e0efc3 100644
  bool Curl_url_same_origin(CURLU *base, CURLU *href)
  {
 diff --git a/lib/version.c b/lib/version.c
-index b3b0a46..a9017ef 100644
+index b3b0a46..5001d64 100644
 --- a/lib/version.c
 +++ b/lib/version.c
 @@ -278,6 +278,12 @@ char *curl_version(void)
@@ -1805,7 +1907,7 @@ index b3b0a46..a9017ef 100644
  
  /* data for curl_version_info
  
-@@ -674,3 +680,9 @@ curl_version_info_data *curl_version_info(CURLversion stamp)
+@@ -674,3 +680,10 @@ curl_version_info_data *curl_version_info(CURLversion stamp)
  
    return &version_info;
  }
@@ -1813,10 +1915,11 @@ index b3b0a46..a9017ef 100644
 +__asm__(".symver curl_version_info, curl_version_info@@@CURL_GNUTLS_4");
 +extern __typeof(curl_version_info) __curl_compat_curl_version_info
 +    __attribute__((alias("curl_version_info"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_version_info, curl_version_info@CURL_GNUTLS_3");
 +#endif
 diff --git a/lib/ws.c b/lib/ws.c
-index d7840f1..a2d2b38 100644
+index d7840f1..b8924be 100644
 --- a/lib/ws.c
 +++ b/lib/ws.c
 @@ -1623,6 +1623,12 @@ CURLcode curl_ws_recv(CURL *curl, void *buffer,
@@ -1858,7 +1961,7 @@ index d7840f1..a2d2b38 100644
  
  CURL_EXTERN CURLcode curl_ws_start_frame(CURL *curl,
                                           unsigned int flags,
-@@ -1914,6 +1932,12 @@ CURL_EXTERN CURLcode curl_ws_start_frame(CURL *curl,
+@@ -1914,6 +1932,13 @@ CURL_EXTERN CURLcode curl_ws_start_frame(CURL *curl,
  out:
    return result;
  }
@@ -1866,12 +1969,13 @@ index d7840f1..a2d2b38 100644
 +__asm__(".symver curl_ws_start_frame, curl_ws_start_frame@@@CURL_GNUTLS_4");
 +extern __typeof(curl_ws_start_frame) __curl_compat_curl_ws_start_frame
 +    __attribute__((alias("curl_ws_start_frame"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_ws_start_frame, curl_ws_start_frame@CURL_GNUTLS_3");
 +#endif
  
  const struct Curl_protocol Curl_protocol_ws = {
    ws_setup_conn,                        /* setup_connection */
-@@ -1948,6 +1972,12 @@ CURLcode curl_ws_recv(CURL *curl, void *buffer, size_t buflen,
+@@ -1948,6 +1973,12 @@ CURLcode curl_ws_recv(CURL *curl, void *buffer, size_t buflen,
    (void)metap;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1884,7 +1988,7 @@ index d7840f1..a2d2b38 100644
  
  CURLcode curl_ws_send(CURL *curl, const void *buffer,
                        size_t buflen, size_t *sent,
-@@ -1962,12 +1992,24 @@ CURLcode curl_ws_send(CURL *curl, const void *buffer,
+@@ -1962,12 +1993,24 @@ CURLcode curl_ws_send(CURL *curl, const void *buffer,
    (void)flags;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1909,7 +2013,7 @@ index d7840f1..a2d2b38 100644
  
  CURL_EXTERN CURLcode curl_ws_start_frame(CURL *curl,
                                           unsigned int flags,
-@@ -1978,5 +2020,11 @@ CURL_EXTERN CURLcode curl_ws_start_frame(CURL *curl,
+@@ -1978,5 +2021,12 @@ CURL_EXTERN CURLcode curl_ws_start_frame(CURL *curl,
    (void)frame_len;
    return CURLE_NOT_BUILT_IN;
  }
@@ -1917,6 +2021,7 @@ index d7840f1..a2d2b38 100644
 +__asm__(".symver curl_ws_start_frame, curl_ws_start_frame@@@CURL_GNUTLS_4");
 +extern __typeof(curl_ws_start_frame) __curl_compat_curl_ws_start_frame
 +    __attribute__((alias("curl_ws_start_frame"), visibility("default")));
++/* !checksrc! disable LONGLINE */
 +__asm__(".symver __curl_compat_curl_ws_start_frame, curl_ws_start_frame@CURL_GNUTLS_3");
 +#endif
  
