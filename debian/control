@@ -120,7 +120,8 @@ Description: easy-to-use client-side URL transfer library (GnuTLS flavour)
 Package: libcurl3t64-gnutls
 Provides: ${t64:Provides},
 X-Time64-Compat: libcurl3-gnutls
-Architecture: all
+Architecture: any
+Multi-Arch: same
 Priority: optional
 Section: oldlibs
 Depends: libcurl4-gnutls (>= ${source:Version}), ${misc:Depends},
