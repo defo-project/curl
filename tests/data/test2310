@@ -2,21 +2,25 @@
 <testcase>
 <info>
 <keywords>
-HTTP
-cookies
+variables
 </keywords>
 </info>
 
 # Server-side
 <reply>
-<data crlf="headers" nocheck="yes">
+<data crlf="headers">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
-Server: server.example.com
-Content-Length: 47
-Set-Cookie: sid=SECRET123; Path=/
+Server: test-server/fake
+Last-Modified: Tue, 13 Jun 2000 12:10:00 GMT
+ETag: "21025-dc7-39462498"
+Accept-Ranges: bytes
+Content-Length: 6
+Connection: something-close, close-something, close
+Content-Type: text/html
+Funny-head: yesyes
 
-file contents should appear once for each file
+-foo-
 </data>
 </reply>
 
@@ -25,29 +29,20 @@ file contents should appear once for each file
 <server>
 http
 </server>
-<tool>
-lib%TESTNUMBER
-</tool>
 <name>
-custom Host with cookie, handle reuse, no custom Host:
+variable decode and trim
 </name>
 <command>
-http://%HOSTIP:%HTTPPORT
+--variable 'VAR=IA==' --expand-url 'http://%HOSTIP:%HTTPPORT/{{VAR:64dec:trim}}'
 </command>
-<features>
-cookies
-</features>
 </client>
 
 # Verify data after the test has been "shot"
 <verify>
 <protocol crlf="headers">
 GET / HTTP/1.1
-Host: victim.internal
-Accept: */*
-
-GET / HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
+User-Agent: curl/%VERSION
 Accept: */*
 
 </protocol>

@@ -3,38 +3,21 @@
 <info>
 <keywords>
 HTTP
-HTTP HEAD
-HTTP/0.9
+HTTP GET
 </keywords>
 </info>
 
 # Server-side
 <reply>
-<data>
-No headers at all, only data swsclose
+<data crlf="headers" nocheck="yes">
+HTTP/1.1 200 OK
+Date: Tue, 09 Nov 2010 14:49:00 GMT
+Server: test-server/%CRfake
+Content-Length: 6
+Funny-head: yesyes
 
-Let's get
-
-a little
-
-so that
-
-we
-
-have
-
-some
-
-test
-
-data to
-
-verify
+-foo-
 </data>
-# make sure no data is written
-<datacheck nonewline="yes">
-
-</datacheck>
 </reply>
 
 # Client-side
@@ -43,17 +26,17 @@ verify
 http
 </server>
 <name>
-HTTP HEAD, receive no headers only body
+HTTP with spurious CR in received header
 </name>
 <command>
--I http://%HOSTIP:%HTTPPORT/%TESTNUMBER --http0.9
+http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 </command>
 </client>
 
 # Verify data after the test has been "shot"
 <verify>
 <protocol crlf="headers">
-HEAD /%TESTNUMBER HTTP/1.1
+GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*

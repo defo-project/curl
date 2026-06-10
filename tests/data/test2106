@@ -4,28 +4,23 @@
 <keywords>
 HTTP
 HTTP GET
+chunked Transfer-Encoding
 </keywords>
 </info>
+
 # Server-side
 <reply>
 <data nocheck="yes">
-HTTP/1.1 200 funky chunky!%CR
-Server: fakeit/0.9 fakeitbad/1.0%CR
+HTTP/1.1 200 OK%CR
+Server: test%CR
 Transfer-Encoding: chunked%CR
 Trailer: chunky-trailer%CR
-Connection: mooo%CR
-ETag: "asdf"%CR
 %CR
-40
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-30
-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-21;heresatest=moooo
-cccccccccccccccccccccccccccccccc
-
-0
-chunky-trailer: header data
-
+6%CR
+-foo-%CR
+0%CR
+chunky-trailer: he%hex[%00]hex%llo%CR
+%CR
 </data>
 </reply>
 
@@ -35,10 +30,10 @@ chunky-trailer: header data
 http
 </server>
 <name>
-A non existing file with --etag-compare is a blank
+HTTP chunked response with a nul byte in the trailer
 </name>
 <command>
-http://%HOSTIP:%HTTPPORT/%TESTNUMBER --etag-compare %LOGDIR/etag%TESTNUMBER
+http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 </command>
 </client>
 
@@ -49,9 +44,10 @@ GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
-If-None-Match: ""
 
 </protocol>
+<errorcode>
+8
+</errorcode>
 </verify>
-
 </testcase>
