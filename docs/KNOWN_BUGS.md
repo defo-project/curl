@@ -25,14 +25,6 @@ instead seems to trigger a crash.
 
 See [curl issue 17626](https://github.com/curl/curl/issues/17626)
 
-## Client cert handling with Issuer `DN` differs between backends
-
-When the specified client certificate does not match any of the
-server-specified `DN` fields, the OpenSSL and GnuTLS backends behave
-differently. The GitHub discussion may contain a solution.
-
-See [curl issue 1411](https://github.com/curl/curl/issues/1411)
-
 ## Client cert (MTLS) issues with Schannel
 
 See [curl issue 3145](https://github.com/curl/curl/issues/3145)
@@ -44,10 +36,6 @@ implementation likely has a bug that can rarely cause the key exchange to
 fail, resulting in error SEC_E_BUFFER_TOO_SMALL or SEC_E_MESSAGE_ALTERED.
 
 [curl issue 5488](https://github.com/curl/curl/issues/5488)
-
-## `CURLOPT_CERTINFO` results in `CURLE_OUT_OF_MEMORY` with Schannel
-
-[curl issue 8741](https://github.com/curl/curl/issues/8741)
 
 ## mbedTLS and CURLE_AGAIN handling
 
@@ -219,9 +207,19 @@ https://curl.se/mail/lib-2012-07/0073.html
 
 # Authentication
 
+## `--aws-sigv4` does not handle multipart/form-data correctly
+
+[curl issue 13351](https://github.com/curl/curl/issues/13351)
+
 ## Digest `auth-int` for PUT/POST
 
 We do not support auth-int for Digest using PUT or POST
+
+## Digest does not care for `domain`
+
+libcurl ignores the `domain` directive in Digest authentication challenges
+(`WWW-Authenticate:`). RFC 7616 defines it as a quoted, space-separated list
+of URIs that define the protection space.
 
 ## MIT Kerberos for Windows build
 
@@ -422,7 +420,7 @@ See [curl issue 13350](https://github.com/curl/curl/issues/13350)
 ## `CURLOPT_CONNECT_TO` does not work for HTTPS proxy
 
 It is unclear if the same option should even cover the proxy connection or if
-if requires a separate option.
+it requires a separate option.
 
 See [curl issue 14481](https://github.com/curl/curl/issues/14481)
 
@@ -498,10 +496,6 @@ Something in the SONAME generation seems to be wrong in the cmake build.
 
 [curl issue 11158](https://github.com/curl/curl/issues/11158)
 
-## uses `-lpthread` instead of `Threads::Threads`
-
-See [curl issue 6166](https://github.com/curl/curl/issues/6166)
-
 ## generated `.pc` file contains strange entries
 
 The `Libs.private` field of the generated `.pc` file contains `-lgcc -lgcc_s
@@ -519,12 +513,6 @@ that involve compilation are doomed from that point, the configured tree
 cannot be built.
 
 [curl issue 6904](https://github.com/curl/curl/issues/6904)
-
-# Authentication
-
-## `--aws-sigv4` does not handle multipart/form-data correctly
-
-[curl issue 13351](https://github.com/curl/curl/issues/13351)
 
 # HTTP/2
 

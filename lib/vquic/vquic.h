@@ -39,13 +39,34 @@ CURLcode Curl_qlogdir(struct Curl_easy *data,
                       size_t scidlen,
                       int *qlogfdp);
 
+CURLcode Curl_cf_quic_insert_after(struct Curl_cfilter *cf_at);
+
 CURLcode Curl_cf_quic_create(struct Curl_cfilter **pcf,
                              struct Curl_easy *data,
                              struct connectdata *conn,
                              struct Curl_sockaddr_ex *addr,
-                             uint8_t transport);
+                             uint8_t transport_in,
+                             uint8_t transport_out);
 
 extern struct Curl_cftype Curl_cft_http3;
+
+#if !defined(CURL_DISABLE_PROXY) && defined(USE_PROXY_HTTP3)
+
+CURLcode Curl_cf_h3_proxy_insert_after(struct Curl_cfilter *cf_at,
+                                       struct Curl_easy *data,
+                                       struct Curl_peer *dest,
+                                       bool udp_tunnel);
+
+CURLcode Curl_cf_h3_proxy_create(struct Curl_cfilter **pcf,
+                                 struct Curl_easy *data,
+                                 struct connectdata *conn,
+                                 struct Curl_sockaddr_ex *addr,
+                                 uint8_t transport_in,
+                                 uint8_t transport_out);
+
+extern struct Curl_cftype Curl_cft_h3_proxy;
+
+#endif /* !CURL_DISABLE_PROXY && USE_PROXY_HTTP3 */
 
 #else
 #define Curl_vquic_init() 1

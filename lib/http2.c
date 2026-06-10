@@ -189,6 +189,8 @@ static void cf_h2_ctx_init(struct cf_h2_ctx *ctx, bool via_h1_upgrade)
 static void cf_h2_ctx_free(struct cf_h2_ctx *ctx)
 {
   if(ctx && ctx->initialized) {
+    if(ctx->h2)
+      nghttp2_session_del(ctx->h2);
     Curl_bufq_free(&ctx->inbufq);
     Curl_bufq_free(&ctx->outbufq);
     Curl_bufcp_free(&ctx->stream_bufcp);
@@ -197,14 +199,6 @@ static void cf_h2_ctx_free(struct cf_h2_ctx *ctx)
     memset(ctx, 0, sizeof(*ctx));
   }
   curlx_free(ctx);
-}
-
-static void cf_h2_ctx_close(struct cf_h2_ctx *ctx)
-{
-  if(ctx->h2) {
-    nghttp2_session_del(ctx->h2);
-    ctx->h2 = NULL;
-  }
 }
 
 static uint32_t cf_h2_initial_win_size(struct Curl_easy *data)
@@ -1438,14 +1432,14 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
        !strncmp(HTTP_PSEUDO_AUTHORITY, (const char *)name, namelen)) {
       /* pseudo headers are lower case */
       int rc = 0;
-      char *check = curl_maprintf("%s:%d", cf->conn->host.name,
-                                  cf->conn->remote_port);
+      char *check = curl_maprintf("%s:%d", cf->conn->origin->hostname,
+                                  cf->conn->origin->port);
       if(!check)
         /* no memory */
         return NGHTTP2_ERR_CALLBACK_FAILURE;
       if(!curl_strequal(check, (const char *)value) &&
-         ((cf->conn->remote_port != cf->conn->given->defport) ||
-          !curl_strequal(cf->conn->host.name, (const char *)value))) {
+         ((cf->conn->origin->port != cf->conn->given->defport) ||
+          !curl_strequal(cf->conn->origin->hostname, (const char *)value))) {
         /* This is push is not for the same authority that was asked for in
          * the URL. RFC 7540 section 8.2 says: "A client MUST treat a
          * PUSH_PROMISE for which the server is not authoritative as a stream
@@ -1701,12 +1695,12 @@ static CURLcode http2_handle_stream_close(struct Curl_cfilter *cf,
       return CURLE_RECV_ERROR; /* trigger Curl_retry_request() later */
     }
     else if(stream->resp_hds_complete && data->req.no_body) {
-        CURL_TRC_CF(data, cf, "[%d] error after response headers, but we did "
-                    "not want a body anyway, ignore: %s (err %u)",
-                    stream->id, nghttp2_http2_strerror(stream->error),
-                    stream->error);
-        stream->close_handled = TRUE;
-        return CURLE_OK;
+      CURL_TRC_CF(data, cf, "[%d] error after response headers, but we did "
+                  "not want a body anyway, ignore: %s (err %u)",
+                  stream->id, nghttp2_http2_strerror(stream->error),
+                  stream->error);
+      stream->close_handled = TRUE;
+      return CURLE_OK;
     }
     failf(data, "HTTP/2 stream %d reset by %s (error 0x%x %s)",
           stream->id, stream->reset_by_server ? "server" : "curl",
@@ -1778,16 +1772,12 @@ static int sweight_in_effect(const struct Curl_easy *data)
  * struct.
  */
 
-static void h2_pri_spec(struct cf_h2_ctx *ctx,
-                        struct Curl_easy *data,
+static void h2_pri_spec(struct Curl_easy *data,
                         nghttp2_priority_spec *pri_spec)
 {
   struct Curl_data_priority *prio = &data->set.priority;
-  struct h2_stream_ctx *depstream = H2_STREAM_CTX(ctx, prio->parent);
-  int32_t depstream_id = depstream ? depstream->id : 0;
-  nghttp2_priority_spec_init(pri_spec, depstream_id,
-                             sweight_wanted(data),
-                             data->set.priority.exclusive);
+  nghttp2_priority_spec_init(pri_spec, 0,
+                             sweight_wanted(data), FALSE);
   data->state.priority = *prio;
 }
 
@@ -1805,13 +1795,11 @@ static CURLcode h2_progress_egress(struct Curl_cfilter *cf,
   int rv = 0;
 
   if(stream && stream->id > 0 &&
-     ((sweight_wanted(data) != sweight_in_effect(data)) ||
-      (data->set.priority.exclusive != data->state.priority.exclusive) ||
-      (data->set.priority.parent != data->state.priority.parent))) {
+     (sweight_wanted(data) != sweight_in_effect(data))) {
     /* send new weight and/or dependency */
     nghttp2_priority_spec pri_spec;
 
-    h2_pri_spec(ctx, data, &pri_spec);
+    h2_pri_spec(data, &pri_spec);
     CURL_TRC_CF(data, cf, "[%d] Queuing PRIORITY", stream->id);
     DEBUGASSERT(stream->id != -1);
     rv = nghttp2_submit_priority(ctx->h2, NGHTTP2_FLAG_NONE,
@@ -2123,7 +2111,7 @@ static CURLcode h2_submit(struct h2_stream_ctx **pstream,
     goto out;
   }
 
-  h2_pri_spec(ctx, data, &pri_spec);
+  h2_pri_spec(data, &pri_spec);
   if(!nghttp2_session_check_request_allowed(ctx->h2))
     CURL_TRC_CF(data, cf, "send request NOT allowed (via nghttp2)");
 
@@ -2556,22 +2544,6 @@ out:
   return result;
 }
 
-static void cf_h2_close(struct Curl_cfilter *cf, struct Curl_easy *data)
-{
-  struct cf_h2_ctx *ctx = cf->ctx;
-
-  if(ctx) {
-    struct cf_call_data save;
-
-    CF_DATA_SAVE(save, cf, data);
-    cf_h2_ctx_close(ctx);
-    CF_DATA_RESTORE(cf, save);
-    cf->connected = FALSE;
-  }
-  if(cf->next)
-    cf->next->cft->do_close(cf->next, data);
-}
-
 static void cf_h2_destroy(struct Curl_cfilter *cf, struct Curl_easy *data)
 {
   struct cf_h2_ctx *ctx = cf->ctx;
@@ -2794,7 +2766,6 @@ struct Curl_cftype Curl_cft_nghttp2 = {
   CURL_LOG_LVL_NONE,
   cf_h2_destroy,
   cf_h2_connect,
-  cf_h2_close,
   cf_h2_shutdown,
   cf_h2_adjust_pollset,
   cf_h2_data_pending,

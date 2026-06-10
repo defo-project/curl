@@ -102,7 +102,7 @@ static CURLcode test_lib2302(const char *URL)
   global_init(CURL_GLOBAL_ALL);
 
   memset(&ws_data, 0, sizeof(ws_data));
-  ws_data.buf = (char *)curlx_calloc(LIB2302_BUFSIZE, 1);
+  ws_data.buf = curlx_calloc(LIB2302_BUFSIZE, 1);
   if(ws_data.buf) {
     curl = curl_easy_init();
     if(curl) {
@@ -125,6 +125,8 @@ static CURLcode test_lib2302(const char *URL)
   curl_global_cleanup();
   return result;
 #else
-  NO_SUPPORT_BUILT_IN
+  (void)URL;
+  curl_mfprintf(stderr, "Missing support\n");
+  return CURLE_UNSUPPORTED_PROTOCOL;
 #endif
 }

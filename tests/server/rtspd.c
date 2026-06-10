@@ -76,7 +76,7 @@ struct rtspd_httprequest {
                      - skip bytes. */
   int rcmd;       /* doing a special command, see defines above */
   reqprot_t protocol; /* request protocol, HTTP or RTSP */
-  int prot_version;   /* HTTP or RTSP version (major*10 + minor) */
+  int prot_version;   /* HTTP or RTSP version (major * 10 + minor) */
   bool pipelining;    /* true if request is pipelined */
   char *rtp_buffer;
   size_t rtp_buffersize;
@@ -97,7 +97,7 @@ struct rtspd_httprequest {
 #define CMD_AUTH_REQUIRED "auth_required"
 
 /* 'idle' means that it will accept the request fine but never respond
-   any data. Just keep the connection alive. */
+   any data. Keep the connection alive. */
 #define CMD_IDLE "idle"
 
 /* 'stream' means to send a never-ending stream of data */
@@ -890,7 +890,7 @@ static int rtspd_send_doc(curl_socket_t sock, struct rtspd_httprequest *req)
 
   responsesize = count;
   do {
-    /* Ok, we send no more than 200 bytes at a time, just to make sure that
+    /* Ok, we send no more than 200 bytes at a time, to make sure that
        larger chunks are split up so that the client will need to do multiple
        recv() calls to get it and thus we exercise that code better */
     size_t num = count;

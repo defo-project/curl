@@ -64,13 +64,13 @@ class TestVsFTPD:
             os.makedirs(vsftpd.docs_dir)
         self._make_docs_file(docs_dir=vsftpd.docs_dir, fname='data-0k', fsize=0)
         self._make_docs_file(docs_dir=vsftpd.docs_dir, fname='data-1k', fsize=1024)
-        self._make_docs_file(docs_dir=vsftpd.docs_dir, fname='data-10k', fsize=10*1024)
-        self._make_docs_file(docs_dir=vsftpd.docs_dir, fname='data-1m', fsize=1024*1024)
-        self._make_docs_file(docs_dir=vsftpd.docs_dir, fname='data-10m', fsize=10*1024*1024)
+        self._make_docs_file(docs_dir=vsftpd.docs_dir, fname='data-10k', fsize=10 * 1024)
+        self._make_docs_file(docs_dir=vsftpd.docs_dir, fname='data-1m', fsize=1024 * 1024)
+        self._make_docs_file(docs_dir=vsftpd.docs_dir, fname='data-10m', fsize=10 * 1024 * 1024)
         env.make_data_file(indir=env.gen_dir, fname="upload-0k", fsize=0)
         env.make_data_file(indir=env.gen_dir, fname="upload-1k", fsize=1024)
-        env.make_data_file(indir=env.gen_dir, fname="upload-100k", fsize=100*1024)
-        env.make_data_file(indir=env.gen_dir, fname="upload-1m", fsize=1024*1024)
+        env.make_data_file(indir=env.gen_dir, fname="upload-100k", fsize=100 * 1024)
+        env.make_data_file(indir=env.gen_dir, fname="upload-1m", fsize=1024 * 1024)
 
     def test_30_01_list_dir(self, env: Env, vsftpd: VsFTPD):
         curl = CurlClient(env=env)
@@ -148,7 +148,7 @@ class TestVsFTPD:
     @pytest.mark.skipif(condition=not Env.tcpdump(), reason="tcpdump not available")
     @pytest.mark.skipif(condition=not Env.curl_is_debug(), reason="needs curl debug")
     @pytest.mark.skipif(condition=not Env.curl_is_verbose(), reason="needs curl verbose strings")
-    def test_30_06_shutdownh_download(self, env: Env, vsftpd: VsFTPD):
+    def test_30_06_shutdown_download(self, env: Env, vsftpd: VsFTPD):
         docname = 'data-1k'
         curl = CurlClient(env=env)
         count = 1
@@ -166,7 +166,7 @@ class TestVsFTPD:
     @pytest.mark.skipif(condition=not Env.tcpdump(), reason="tcpdump not available")
     @pytest.mark.skipif(condition=not Env.curl_is_debug(), reason="needs curl debug")
     @pytest.mark.skipif(condition=not Env.curl_is_verbose(), reason="needs curl verbose strings")
-    def test_30_07_shutdownh_upload(self, env: Env, vsftpd: VsFTPD):
+    def test_30_07_shutdown_upload(self, env: Env, vsftpd: VsFTPD):
         docname = 'upload-1k'
         curl = CurlClient(env=env)
         srcfile = os.path.join(env.gen_dir, docname)

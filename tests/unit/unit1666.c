@@ -35,7 +35,7 @@ struct test_1666 {
   CURLcode result_exp;
 };
 
-/* the size of the object needs to deduct the null terminator */
+/* the size of the object needs to deduct the null-terminator */
 #define OID(x) x, sizeof(x) - 1
 
 static bool test1666(const struct test_1666 *spec, size_t i,
@@ -146,7 +146,7 @@ static CURLcode test_unit1666(const char *arg)
           "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
           "\x01\x01\x01\x01\x01\x01\x01\x01"),
       "", CURLE_TOO_LARGE },
-    /* one byte shorter than the previous is just below the limit: */
+    /* one byte shorter than the previous is below the limit: */
     { OID("\x2b\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
           "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
           "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
@@ -189,8 +189,6 @@ static CURLcode test_unit1666(const char *arg)
 
   UNITTEST_END_SIMPLE
 }
-
-#undef OID
 
 #else
 

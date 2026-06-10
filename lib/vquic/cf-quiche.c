@@ -44,7 +44,7 @@
 #include "vquic/vquic.h"
 #include "vquic/vquic_int.h"
 #include "vquic/vquic-tls.h"
-#include "vquic/curl_quiche.h"
+#include "vquic/cf-quiche.h"
 #include "transfer.h"
 #include "url.h"
 #include "bufref.h"
@@ -156,6 +156,7 @@ static void cf_quiche_ctx_close(struct cf_quiche_ctx *ctx)
     quiche_config_free(ctx->cfg);
     ctx->cfg = NULL;
   }
+  Curl_ssl_peer_cleanup(&ctx->peer);
 }
 
 static CURLcode cf_flush_egress(struct Curl_cfilter *cf,
@@ -1498,16 +1499,6 @@ out:
   return result;
 }
 
-static void cf_quiche_close(struct Curl_cfilter *cf, struct Curl_easy *data)
-{
-  if(cf->ctx) {
-    bool done;
-    (void)cf_quiche_shutdown(cf, data, &done);
-    cf_quiche_ctx_close(cf->ctx);
-    cf->connected = FALSE;
-  }
-}
-
 static void cf_quiche_destroy(struct Curl_cfilter *cf, struct Curl_easy *data)
 {
   (void)data;
@@ -1625,7 +1616,6 @@ struct Curl_cftype Curl_cft_http3 = {
   0,
   cf_quiche_destroy,
   cf_quiche_connect,
-  cf_quiche_close,
   cf_quiche_shutdown,
   cf_quiche_adjust_pollset,
   Curl_cf_def_data_pending,
@@ -1658,7 +1648,8 @@ CURLcode Curl_cf_quiche_create(struct Curl_cfilter **pcf,
     goto out;
   cf->conn = conn;
 
-  result = Curl_cf_udp_create(&cf->next, data, conn, addr, TRNSPRT_QUIC);
+  result = Curl_cf_udp_create(&cf->next, data, conn, addr,
+                              TRNSPRT_QUIC, TRNSPRT_QUIC);
   if(result)
     goto out;
   cf->next->conn = cf->conn;

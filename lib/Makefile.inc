@@ -96,6 +96,7 @@ LIB_VTLS_CFILES =           \
   vtls/schannel.c           \
   vtls/schannel_verify.c    \
   vtls/vtls.c               \
+  vtls/vtls_config.c        \
   vtls/vtls_scache.c        \
   vtls/vtls_spack.c         \
   vtls/wolfssl.c            \
@@ -113,23 +114,30 @@ LIB_VTLS_HFILES =           \
   vtls/schannel.h           \
   vtls/schannel_int.h       \
   vtls/vtls.h               \
+  vtls/vtls_config.h        \
   vtls/vtls_int.h           \
   vtls/vtls_scache.h        \
   vtls/vtls_spack.h         \
   vtls/wolfssl.h            \
   vtls/x509asn1.h
 
-LIB_VQUIC_CFILES =      \
-  vquic/curl_ngtcp2.c   \
-  vquic/curl_quiche.c   \
-  vquic/vquic.c         \
+LIB_VQUIC_CFILES =          \
+  vquic/capsule.c           \
+  vquic/cf-capsule.c        \
+  vquic/cf-ngtcp2.c         \
+  vquic/cf-ngtcp2-proxy.c   \
+  vquic/cf-quiche.c         \
+  vquic/vquic.c             \
   vquic/vquic-tls.c
 
-LIB_VQUIC_HFILES =      \
-  vquic/curl_ngtcp2.h   \
-  vquic/curl_quiche.h   \
-  vquic/vquic.h         \
-  vquic/vquic_int.h     \
+LIB_VQUIC_HFILES =          \
+  vquic/capsule.h           \
+  vquic/cf-capsule.h        \
+  vquic/cf-ngtcp2.h         \
+  vquic/cf-ngtcp2-proxy.h   \
+  vquic/cf-quiche.h         \
+  vquic/vquic.h             \
+  vquic/vquic_int.h         \
   vquic/vquic-tls.h
 
 LIB_VSSH_CFILES =    \
@@ -161,6 +169,7 @@ LIB_CFILES =         \
   connect.c          \
   content_encoding.c \
   cookie.c           \
+  creds.c            \
   cshutdn.c          \
   curl_addrinfo.c    \
   curl_endian.c      \
@@ -233,6 +242,7 @@ LIB_CFILES =         \
   noproxy.c          \
   openldap.c         \
   parsedate.c        \
+  peer.c             \
   pingpong.c         \
   pop3.c             \
   progress.c         \
@@ -292,6 +302,7 @@ LIB_HFILES =         \
   connect.h          \
   content_encoding.h \
   cookie.h           \
+  creds.h            \
   curl_addrinfo.h    \
   curl_ctype.h       \
   curl_endian.h      \
@@ -364,6 +375,7 @@ LIB_HFILES =         \
   netrc.h            \
   noproxy.h          \
   parsedate.h        \
+  peer.h             \
   pingpong.h         \
   pop3.h             \
   progress.h         \

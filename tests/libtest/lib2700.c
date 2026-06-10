@@ -50,7 +50,7 @@ static CURLcode send_header(CURL *curl, int flags, size_t size)
 
 retry:
   result = curl_ws_send(curl, NULL, 0, &nsent, (curl_off_t)size,
-                     flags | CURLWS_OFFSET);
+                        flags | CURLWS_OFFSET);
   if(result == CURLE_AGAIN) {
     assert(nsent == 0);
     goto retry;
@@ -249,6 +249,8 @@ test_cleanup:
   curl_global_cleanup();
   return result;
 #else
-  NO_SUPPORT_BUILT_IN
+  (void)URL;
+  curl_mfprintf(stderr, "Missing support\n");
+  return CURLE_UNSUPPORTED_PROTOCOL;
 #endif
 }

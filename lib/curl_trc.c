@@ -579,6 +579,9 @@ static struct trc_cft_def trc_cfts[] = {
 #ifdef USE_NGHTTP2
   { &Curl_cft_h2_proxy,       TRC_CT_PROXY },
 #endif
+#if defined(USE_PROXY_HTTP3) && defined(USE_NGHTTP3)
+  { &Curl_cft_h3_proxy,       TRC_CT_PROXY },
+#endif
   { &Curl_cft_http_proxy,     TRC_CT_PROXY },
 #endif /* !CURL_DISABLE_HTTP */
   { &Curl_cft_haproxy,        TRC_CT_PROXY },

@@ -127,7 +127,7 @@ my %PORT = (nolisten => 47); # port we use for a local non-listening service
 my $server_response_maxtime=13;
 my $httptlssrv = find_httptlssrv();
 my %run;          # running server
-my %runcert;      # cert file currently in use by an ssl running server
+my %runcert;      # cert file currently in use by an SSL running server
 my $CLIENTIP="127.0.0.1";  # address which curl uses for incoming connections
 my $CLIENT6IP="[::1]";     # address which curl uses for incoming connections
 my $posix_pwd = build_sys_abs_path($pwd);  # current working directory in POSIX format
@@ -265,7 +265,7 @@ sub init_serverpidfile_hash {
 }
 
 #######################################################################
-# Check if a given child process has just died. Reaps it if so.
+# Check if a given child process has died. Reaps it if so.
 #
 sub checkdied {
     my $pid = $_[0];
@@ -354,7 +354,7 @@ sub startnew {
         exec("exec $cmd") || die "Cannot exec() $cmd: $!";
 
         # exec() should never return back here to this process. We protect
-        # ourselves by calling die() just in case something goes really bad.
+        # ourselves by calling die() in case something goes really bad.
         die "error: exec() has returned";
     }
 
@@ -382,17 +382,17 @@ sub startnew {
         $pid2 = pidfromfile($pidfile, 0);
         if(($pid2 > 0) && pidexists($pid2)) {
             # if $pid2 is valid, then make sure this pid is alive, as
-            # otherwise it is just likely to be the _previous_ pidfile or
+            # otherwise it is likely to be the _previous_ pidfile or
             # similar!
             last;
         }
         if(checkdied($child)) {
             logmsg "startnew: child process has died, server might start up\n"
                 if($verbose);
-            # We cannot just abort waiting for the server with a
+            # We cannot abort waiting for the server with a
             # return (-1,-1);
             # because the server might have forked and could still start
-            # up normally. Instead, just reduce the amount of time we remain
+            # up normally. Instead, reduce the amount of time we remain
             # waiting.
             $count >>= 2;
         }
@@ -435,11 +435,11 @@ sub stopserver {
     #
     my @killservers;
     if($server =~ /^(ftp|http|imap|pop3|smtp)s((\d*)(-ipv6|-unix|))$/) {
-        # given a stunnel based ssl server, also kill non-ssl underlying one
+        # given a stunnel based SSL server, also kill non-SSL underlying one
         push @killservers, "${1}${2}";
     }
     elsif($server =~ /^(ftp|http|imap|pop3|smtp)((\d*)(-ipv6|-unix|))$/) {
-        # given a non-ssl server, also kill stunnel based ssl piggybacking one
+        # given a non-SSL server, also kill stunnel based SSL piggybacking one
         push @killservers, "${1}s${2}";
     }
     elsif($server =~ /^(socks)((\d*)(-ipv6|))$/) {
@@ -1012,7 +1012,7 @@ sub verifytelnet {
 # particular can take a long time to start if it needs to generate
 # keys on a slow or loaded host.
 #
-# Just for convenience, test harness uses 'https' and 'httptls' literals
+# For convenience, test harness uses 'https' and 'httptls' literals
 # as values for 'proto' variable in order to differentiate different
 # servers. 'https' literal is used for stunnel based https test servers,
 # and 'httptls' is used for non-stunnel https test servers.
@@ -1348,7 +1348,7 @@ sub runhttpsserver {
 
     if($httpspid <= 0 || !pidexists($httpspid)) {
         # it is NOT alive
-        # do not call stopserver since that will also kill the dependent
+        # do not call stopserver since that also kills the dependent
         # server that has already been started properly
         $doesntrun{$pidfile} = 1;
         $httpspid = $pid2 = 0;
@@ -1552,7 +1552,7 @@ sub runsecureserver {
 
     if($protospid <= 0 || !pidexists($protospid)) {
         # it is NOT alive
-        # do not call stopserver since that will also kill the dependent
+        # do not call stopserver since that also kills the dependent
         # server that has already been started properly
         $doesntrun{$pidfile} = 1;
         $protospid = $pid2 = 0;

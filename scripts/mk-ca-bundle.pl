@@ -153,7 +153,7 @@ sub warning_message() {
         print "  3. certdata.txt file format may change, lag time to update this script\n";
         print "  4. Generally unwise to blindly trust CAs without manual review & verification\n";
         print "  5. Mozilla apps use additional security checks are not represented in certdata\n";
-        print "  6. Use of this script will make a security engineer grind his teeth and\n";
+        print "  6. Use of this script makes a security engineer grind his teeth and\n";
         print "     swear at you.  ;)\n";
         exit;
     } else { # Short Form Warning
@@ -228,7 +228,7 @@ sub parse_csv_param($$@) {
 
     if(scalar(@invalid) > 0) {
         # Tell the user which parameters were invalid and print the standard help
-        # message which will exit
+        # message which also exits
         print "Error: Invalid ", $description, scalar(@invalid) == 1 ? ": " : "s: ", join(", ", map { "\"$_\"" } @invalid), "\n";
         HELP_MESSAGE();
     }
@@ -421,7 +421,7 @@ print CRT <<EOT;
 ## It contains the certificates in ${format}PEM format and therefore
 ## can be directly used with curl / libcurl / php_curl, or with
 ## an Apache+mod_ssl webserver for SSL client authentication.
-## Just configure this file as the SSLCACertificateFile.
+## Configure this file as the SSLCACertificateFile.
 ##
 ## Conversion done with mk-ca-bundle.pl version $version.
 ## SHA256: $newhash
@@ -493,7 +493,7 @@ while(<TXT>) {
     #
     # The latter is for certificates that have already been removed and are not
     # included. Not all explicitly distrusted certificates are ignored at this
-    # point, just those without an actual certificate.
+    # point, only those without an actual certificate.
     elsif(!$main_block && !$trust_block) {
         next;
     }

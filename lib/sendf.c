@@ -183,7 +183,8 @@ static CURLcode cw_download_write(struct Curl_easy *data,
   bool is_connect = !!(type & CLIENTWRITE_CONNECT);
 
   if(!ctx->started_response &&
-     !(type & (CLIENTWRITE_INFO | CLIENTWRITE_CONNECT))) {
+     !(type & CLIENTWRITE_CONNECT) &&
+     (!(type & CLIENTWRITE_INFO) || data->req.upload_done)) {
     Curl_pgrsTime(data, TIMER_STARTTRANSFER);
     ctx->started_response = TRUE;
   }
@@ -697,7 +698,7 @@ static CURLcode cr_in_read(struct Curl_easy *data,
   case CURL_READFUNC_PAUSE:
     if(data->conn->scheme->flags & PROTOPT_NONETWORK) {
       /* protocols that work without network cannot be paused. This is
-         actually only FILE:// now, and it cannot pause since the transfer
+         actually only file:// now, and it cannot pause since the transfer
          is not done using the "normal" procedure. */
       failf(data, "Read callback asked for PAUSE when not supported");
       result = CURLE_READ_ERROR;

@@ -55,6 +55,7 @@ int select_wrapper(int nfds, fd_set *rd, fd_set *wr, fd_set *exc,
 const char *libtest_arg2 = NULL;
 const char *libtest_arg3 = NULL;
 const char *libtest_arg4 = NULL;
+const char *libtest_arg5 = NULL;
 int test_argc;
 const char **test_argv;
 int testnum;
@@ -200,7 +201,7 @@ CURLcode ws_recv_pong(CURL *curl, const char *expected_payload)
   return CURLE_RECV_ERROR;
 }
 
-/* just close the connection */
+/* close the connection */
 void ws_close(CURL *curl)
 {
   size_t sent;
@@ -271,6 +272,9 @@ int main(int argc, const char **argv)
 
   if(argc > 5)
     libtest_arg4 = argv[5];
+
+  if(argc > 6)
+    libtest_arg5 = argv[6];
 
   testnum = 0;
   env = getenv("CURL_TESTNUM");
