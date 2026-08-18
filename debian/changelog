@@ -1,3 +1,25 @@
+curl (8.22.0~rc2-1) unstable; urgency=medium
+
+  * New upstream version 8.22.0~rc2
+  * d/p/tests-fix-type-promotion-on-32-bit-arches.patch: Drop patch applied
+    upstream
+  * Refresh patches:
+    - build-Divide-mit-krb5-gssapi-link-flags-between-LDFLAGS-a.patch
+    - Implement-symbol-versioning-for-CURL_GNUTLS_3.patch
+    - ZZZgnutls-build.patch
+    - disable-strictmodes-in-test-sshd.patch
+  * d/p/tests-fix-test2064-content-length-mismatch.patch: add patch. Upstream's
+    test2064 declares Content-Length: 26 but sends a 27 byte body, which makes
+    curl 8.22.0~rc2 fail the digest retry on the reused connection with
+    "Invalid status line". The test passed on 8.21.0.
+  * d/libcurl4-doc.docs: docs/INTERNALS.md is gone upstream, its content moved
+    to docs/DEPENDENCIES.md.
+  * d/tests/control: add openssh-client to the pytest http tests. openssh-server
+    1:10.4p1 no longer depends on it, so /usr/bin/scp was missing from the
+    testbed and the six test_50_scp.py cases failed while sftp kept working.
+
+ -- Samuel Henrique <samueloph@debian.org>  Mon, 17 Aug 2026 20:53:25 -0700
+
 curl (8.21.0-2) unstable; urgency=medium
 
   * d/p/tests-fix-type-promotion-on-32-bit-arches.patch: add patch.
