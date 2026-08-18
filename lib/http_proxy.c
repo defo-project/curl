@@ -129,6 +129,9 @@ static CURLcode dynhds_add_custom(struct Curl_easy *data,
         continue;
 
       DEBUGASSERT(curlx_strlen(&name) && value);
+      /* trim surrounding whitespace so a padded field name (e.g.
+         `Authorization :`) cannot slip past the Authorization/Cookie check */
+      curlx_str_trimblanks(&name);
       if(data->state.aptr.host &&
          /* a Host: header was sent already, do not pass on any custom Host:
             header as that will produce *two* in the same request! */
@@ -212,7 +215,7 @@ static CURLcode http_proxy_create_CONNECT(struct httpreq **preq,
     goto out;
   }
 
-  result = Curl_http_req_make(&req, "CONNECT", sizeof("CONNECT") - 1,
+  result = Curl_http_req_make(&req, "CONNECT", CURL_CSTRLEN("CONNECT"),
                               NULL, 0, authority, strlen(authority),
                               NULL, 0);
   if(result)
@@ -337,7 +340,7 @@ static CURLcode http_proxy_create_CONNECTUDP(struct httpreq **preq,
   }
 
   if(ver == PROXY_HTTP_V1) {
-    result = Curl_http_req_make(&req, "GET", sizeof("GET")-1,
+    result = Curl_http_req_make(&req, "GET", CURL_CSTRLEN("GET"),
                                 proxy_scheme, strlen(proxy_scheme),
                                 authority, strlen(authority),
                                 path, strlen(path));
@@ -345,7 +348,7 @@ static CURLcode http_proxy_create_CONNECTUDP(struct httpreq **preq,
       goto out;
   }
   else if(ver == PROXY_HTTP_V2 || ver == PROXY_HTTP_V3) {
-    result = Curl_http_req_make(&req, "CONNECT", sizeof("CONNECT") - 1,
+    result = Curl_http_req_make(&req, "CONNECT", CURL_CSTRLEN("CONNECT"),
                                 proxy_scheme, strlen(proxy_scheme),
                                 authority, strlen(authority),
                                 path, strlen(path));
@@ -449,10 +452,10 @@ CURLcode Curl_http_proxy_create_tunnel_request(
     return result;
 
   if(udp_tunnel)
-    infof(data, "Establishing %s proxy UDP tunnel to %s:%s",
+    infof(data, "Establishing %s proxy UDP tunnel to %s:%u",
           (ver == PROXY_HTTP_V2) ? "HTTP/2" :
           (ver == PROXY_HTTP_V3) ? "HTTP/3" : "HTTP",
-          data->state.up.hostname, data->state.up.port);
+          dest->user_hostname, dest->port);
   else
     infof(data, "Establishing %s proxy tunnel to %s",
           (ver == PROXY_HTTP_V2) ? "HTTP/2" :
