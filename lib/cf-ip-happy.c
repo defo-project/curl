@@ -49,7 +49,6 @@
 #include "urldata.h"
 #include "connect.h"
 #include "cfilters.h"
-#include "cf-dns.h"
 #include "cf-ip-happy.h"
 #include "curl_addrinfo.h"
 #include "curl_trc.h"
@@ -57,6 +56,7 @@
 #include "progress.h"
 #include "select.h"
 #include "sockaddr.h"
+#include "vdns/cf-dns.h"
 #include "vquic/vquic.h" /* for quic cfilters */
 
 
@@ -568,8 +568,7 @@ out:
     next_expire_ms = Curl_timeleft_ms(data);
     if(next_expire_ms < 0) {
       failf(data, "Connection timeout after %" FMT_OFF_T " ms",
-            curlx_ptimediff_ms(Curl_pgrs_now(data),
-                               &data->progress.t_startsingle));
+            Curl_pgrs_since_ms(data, NULL, TIMER_STARTSINGLE));
       return CURLE_OPERATION_TIMEDOUT;
     }
 
@@ -741,8 +740,7 @@ static CURLcode is_connected(struct Curl_cfilter *cf,
           proxy_peer ? "over proxy " : "",
           proxy_peer ? proxy_peer->hostname : "",
           proxy_peer ? " " : "",
-          curlx_ptimediff_ms(Curl_pgrs_now(data),
-                             &data->progress.t_startsingle),
+          Curl_pgrs_since_ms(data, NULL, TIMER_STARTSINGLE),
           curl_easy_strerror(result));
 
 #ifdef SOCKETIMEDOUT
@@ -857,7 +855,8 @@ static CURLcode cf_ip_happy_connect(struct Curl_cfilter *cf,
   *done = FALSE;
 
   if(!ctx->dns_resolved) {
-    result = Curl_conn_dns_result(cf->conn, cf->sockindex, ctx->ballers.peer);
+    result = Curl_conn_dns_addr_result(cf->conn, cf->sockindex,
+                                       ctx->ballers.peer);
     if(!result)
       ctx->dns_resolved = TRUE;
     else if(result == CURLE_AGAIN) {
@@ -888,10 +887,6 @@ static CURLcode cf_ip_happy_connect(struct Curl_cfilter *cf,
       cf->connected = TRUE;
       cf->next = ctx->ballers.winner->cf;
       ctx->ballers.winner->cf = NULL;
-      cf_ip_happy_ctx_clear(ctx, data);
-      Curl_expire_done(data, EXPIRE_HAPPY_EYEBALLS);
-      /* whatever errors were reported by ballers, clear our errorbuf */
-      Curl_reset_fail(data);
 
       if(cf->conn->scheme->protocol & PROTO_FAMILY_SSH)
         Curl_pgrsTime(data, TIMER_APPCONNECT); /* we are connected already */
@@ -900,13 +895,16 @@ static CURLcode cf_ip_happy_connect(struct Curl_cfilter *cf,
         struct ip_quadruple ipquad;
         bool is_ipv6;
         if(!Curl_conn_cf_get_ip_info(cf->next, data, &is_ipv6, &ipquad)) {
-          const char *host;
-          Curl_conn_get_current_host(data, cf->sockindex, &host, NULL);
           CURL_TRC_CF(data, cf, "Connected to %s (%s) port %u",
-                      host, ipquad.remote_ip, ipquad.remote_port);
+                      ctx->ballers.peer->hostname,
+                      ipquad.remote_ip, ipquad.remote_port);
         }
       }
 #endif
+      cf_ip_happy_ctx_clear(ctx, data);
+      Curl_expire_clear(data, EXPIRE_HAPPY_EYEBALLS);
+      /* whatever errors were reported by ballers, clear our errorbuf */
+      Curl_reset_fail(data);
       data->info.numconnects++; /* to track the # of connections made */
     }
     break;
@@ -1031,13 +1029,13 @@ out:
   return result;
 }
 
-CURLcode cf_ip_happy_insert_after(struct Curl_cfilter *cf_at,
-                                  struct Curl_easy *data,
-                                  struct Curl_peer *origin,
-                                  struct Curl_peer *peer,
-                                  uint8_t transport_peer,
-                                  struct Curl_peer *tunnel_peer,
-                                  uint8_t tunnel_transport)
+CURLcode Curl_cf_ip_happy_insert_after(struct Curl_cfilter *cf_at,
+                                       struct Curl_easy *data,
+                                       struct Curl_peer *origin,
+                                       struct Curl_peer *peer,
+                                       uint8_t transport_peer,
+                                       struct Curl_peer *tunnel_peer,
+                                       uint8_t tunnel_transport)
 {
   struct Curl_cfilter *cf;
   CURLcode result;

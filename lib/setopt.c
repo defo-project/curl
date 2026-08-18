@@ -41,7 +41,6 @@
 #include "curl_share.h"
 #include "vtls/vtls.h"
 #include "curl_trc.h"
-#include "hostip.h"
 #include "setopt.h"
 #include "altsvc.h"
 #include "hsts.h"
@@ -154,6 +153,7 @@ static CURLcode setstropt_userpwd(const char *option, char **userp,
   curlx_free(*userp);
   *userp = user;
 
+  curlx_strzero(*passwdp);
   curlx_free(*passwdp);
   *passwdp = passwd;
 
@@ -355,46 +355,10 @@ static CURLcode setopt_RTSP_REQUEST(struct Curl_easy *data, long arg)
    * Set the RTSP request method (OPTIONS, SETUP, PLAY, etc...) Would this be
    * better if the RTSPREQ_* were moved into here?
    */
-  Curl_RtspReq rtspreq = RTSPREQ_NONE;
-  switch(arg) {
-  case CURL_RTSPREQ_OPTIONS:
-    rtspreq = RTSPREQ_OPTIONS;
-    break;
-  case CURL_RTSPREQ_DESCRIBE:
-    rtspreq = RTSPREQ_DESCRIBE;
-    break;
-  case CURL_RTSPREQ_ANNOUNCE:
-    rtspreq = RTSPREQ_ANNOUNCE;
-    break;
-  case CURL_RTSPREQ_SETUP:
-    rtspreq = RTSPREQ_SETUP;
-    break;
-  case CURL_RTSPREQ_PLAY:
-    rtspreq = RTSPREQ_PLAY;
-    break;
-  case CURL_RTSPREQ_PAUSE:
-    rtspreq = RTSPREQ_PAUSE;
-    break;
-  case CURL_RTSPREQ_TEARDOWN:
-    rtspreq = RTSPREQ_TEARDOWN;
-    break;
-  case CURL_RTSPREQ_GET_PARAMETER:
-    rtspreq = RTSPREQ_GET_PARAMETER;
-    break;
-  case CURL_RTSPREQ_SET_PARAMETER:
-    rtspreq = RTSPREQ_SET_PARAMETER;
-    break;
-  case CURL_RTSPREQ_RECORD:
-    rtspreq = RTSPREQ_RECORD;
-    break;
-  case CURL_RTSPREQ_RECEIVE:
-    rtspreq = RTSPREQ_RECEIVE;
-    break;
-  default:
+  if((arg <= CURL_RTSPREQ_NONE) || (arg >= CURL_RTSPREQ_LAST))
     return CURLE_BAD_FUNCTION_ARGUMENT;
-  }
 
-  data->set.rtspreq = rtspreq;
+  data->set.rtspreq = (unsigned char)arg;
   return CURLE_OK;
 }
 #endif /* !CURL_DISABLE_RTSP */
@@ -1098,10 +1062,23 @@ static CURLcode setopt_long_http(struct Curl_easy *data, CURLoption option,
   case CURLOPT_STREAM_WEIGHT:
 #if defined(USE_HTTP2) || defined(USE_HTTP3)
     if((arg >= 1) && (arg <= 256))
-      s->priority.weight = (int)arg;
+      s->weight = (int)arg;
     break;
 #else
     result = CURLE_NOT_BUILT_IN;
+    break;
+#endif
+#ifndef CURL_DISABLE_HTTPSIG
+  case CURLOPT_HTTPSIG_ALGORITHM:
+    if(arg != CURLHTTPSIG_NONE &&
+       arg != CURLHTTPSIG_ED25519 &&
+       arg != CURLHTTPSIG_HMAC_SHA256)
+      return CURLE_BAD_FUNCTION_ARGUMENT;
+    s->httpsig_algorithm = (uint8_t)arg;
+    if(arg)
+      s->httpauth = (uint32_t)CURLAUTH_HTTPSIG;
+    else
+      s->httpauth &= ~(uint32_t)CURLAUTH_HTTPSIG;
     break;
 #endif
   default:
@@ -1449,6 +1426,26 @@ static CURLcode setopt_mimepost(struct Curl_easy *data, curl_mime *mimep)
 #endif /* !CURL_DISABLE_MIME */
 #endif /* !CURL_DISABLE_HTTP || !CURL_DISABLE_SMTP || !CURL_DISABLE_IMAP */
 
+static CURLcode setopt_share(struct Curl_easy *data, struct Curl_share *set)
+{
+  CURLcode result;
+
+  if(data->conn) {
+    /* As this handle already has a connection attached, changing share now
+       would be complicated and error-prone */
+    infof(data, "Cannot change share object while in use");
+    result = CURLE_BAD_FUNCTION_ARGUMENT;
+  }
+  else {
+    /* disconnect from old share, if any and possible */
+    result = Curl_share_easy_unlink(data);
+    if(!result && GOOD_SHARE_HANDLE(set))
+      /* use new share if it set */
+      result = Curl_share_easy_link(data, set);
+  }
+  return result;
+}
+
 /* assorted pointer type arguments */
 static CURLcode setopt_pointers(struct Curl_easy *data, CURLoption option,
                                 va_list param)
@@ -1496,30 +1493,8 @@ static CURLcode setopt_pointers(struct Curl_easy *data, CURLoption option,
     if(!s->err)
       s->err = stderr;
     break;
-  case CURLOPT_SHARE: {
-    struct Curl_share *set = va_arg(param, struct Curl_share *);
-
-    /* disconnect from old share, if any and possible */
-    result = Curl_share_easy_unlink(data);
-    if(result)
-      return result;
-
-    /* use new share if it set */
-    if(GOOD_SHARE_HANDLE(set)) {
-      result = Curl_share_easy_link(data, set);
-      if(result)
-        return result;
-    }
-    break;
-  }
-
-#ifdef USE_HTTP2
-  case CURLOPT_STREAM_DEPENDS:
-  case CURLOPT_STREAM_DEPENDS_E:
-    /* not doing stream dependencies any longer, but accept options
-     * for backward compatibility */
-    break;
-#endif
+  case CURLOPT_SHARE:
+    return setopt_share(data, va_arg(param, struct Curl_share *));
 
   default:
     return CURLE_UNKNOWN_OPTION;
@@ -1552,7 +1527,9 @@ static CURLcode cookielist(struct Curl_easy *data, const char *ptr)
   }
   else if(curl_strequal(ptr, "RELOAD")) {
     /* reload cookies from file */
-    return Curl_cookie_loadfiles(data);
+    return Curl_cookie_loadfiles(data, COOKIE_NOPSL |
+                                 (data->set.cookiesession ?
+                                  COOKIE_NOSESSION : 0));
   }
   else {
     if(!data->cookies) {
@@ -1567,15 +1544,20 @@ static CURLcode cookielist(struct Curl_easy *data, const char *ptr)
     if(strlen(ptr) > CURL_MAX_INPUT_LENGTH)
       return CURLE_BAD_FUNCTION_ARGUMENT;
 
+    /* Adding these cookies without the PSL check, because the PSL is not
+       initialized until *perform() time, and this might be called before
+       that */
     Curl_share_lock(data, CURL_LOCK_DATA_COOKIE, CURL_LOCK_ACCESS_SINGLE);
     if(checkprefix("Set-Cookie:", ptr))
       /* HTTP Header format line */
-      result = Curl_cookie_add(data, data->cookies, TRUE, FALSE, ptr + 11,
-                               NULL, NULL, TRUE);
+      result = Curl_cookie_add(data, data->cookies, ptr + 11,
+                               NULL, NULL,
+                               COOKIE_HTTPHEADER | COOKIE_SECURE |
+                               COOKIE_NOPSL);
     else
       /* Netscape format line */
-      result = Curl_cookie_add(data, data->cookies, FALSE, FALSE, ptr, NULL,
-                               NULL, TRUE);
+      result = Curl_cookie_add(data, data->cookies, ptr, NULL,
+                               NULL, COOKIE_SECURE | COOKIE_NOPSL);
     Curl_share_unlock(data, CURL_LOCK_DATA_COOKIE);
   }
   return result;
@@ -1657,6 +1639,7 @@ static CURLcode setopt_cptr_proxy(struct Curl_easy *data, CURLoption option,
       result = Curl_urldecode(p, 0, &s->str[STRING_PROXYPASSWORD], NULL,
                               REJECT_ZERO);
     curlx_free(u);
+    curlx_strzero(p);
     curlx_free(p);
     break;
   }
@@ -1825,8 +1808,7 @@ static CURLcode setopt_copypostfields(const char *ptr, struct UserDefined *s)
     else {
       /* Allocate even when size == 0. This satisfies the need of possible
          later address compare to detect the COPYPOSTFIELDS mode, and to mark
-         that postfields is used rather than read function or form data.
-      */
+         that postfields is used rather than read function or form data. */
       char *p = curlx_memdup0(ptr, pflen);
       if(!p)
         return CURLE_OUT_OF_MEMORY;
@@ -2056,7 +2038,7 @@ static CURLcode setopt_cptr_http_mqtt(struct Curl_easy *data,
      * If the encoding is set to "" we use an Accept-Encoding header that
      * encompasses all the encodings we support.
      * If the encoding is set to NULL we do not send an Accept-Encoding header
-     * and ignore an received Content-Encoding header.
+     * and ignore any received Content-Encoding header.
      *
      */
     if(ptr && !*ptr) {
@@ -2079,10 +2061,21 @@ static CURLcode setopt_cptr_http_mqtt(struct Curl_easy *data,
      */
     result = Curl_setstropt(&s->str[STRING_AWS_SIGV4], ptr);
     /*
-     * Basic been set by default it need to be unset here
+     * Basic has been set by default; it needs to be unset here.
      */
     if(s->str[STRING_AWS_SIGV4])
       s->httpauth = CURLAUTH_AWS_SIGV4;
+    break;
+#endif
+#ifndef CURL_DISABLE_HTTPSIG
+  case CURLOPT_HTTPSIG_KEY:
+    result = Curl_setstropt(&s->str[STRING_HTTPSIG_KEY], ptr);
+    break;
+  case CURLOPT_HTTPSIG_KEYID:
+    result = Curl_setstropt(&s->str[STRING_HTTPSIG_KEYID], ptr);
+    break;
+  case CURLOPT_HTTPSIG_HEADERS:
+    result = Curl_setstropt(&s->str[STRING_HTTPSIG_HEADERS], ptr);
     break;
 #endif
   case CURLOPT_REFERER:
@@ -2412,26 +2405,13 @@ static CURLcode setopt_cptr_misc(struct Curl_easy *data, CURLoption option,
     s->rtp_out = ptr;
     break;
 #endif /* !CURL_DISABLE_RTSP */
-#ifdef USE_TLS_SRP
   case CURLOPT_TLSAUTH_USERNAME:
-    return Curl_setstropt(&s->str[STRING_TLSAUTH_USERNAME], ptr);
   case CURLOPT_TLSAUTH_PASSWORD:
-    return Curl_setstropt(&s->str[STRING_TLSAUTH_PASSWORD], ptr);
   case CURLOPT_TLSAUTH_TYPE:
-    if(ptr && !curl_strequal(ptr, "SRP"))
-      result = CURLE_BAD_FUNCTION_ARGUMENT;
-    break;
-#ifndef CURL_DISABLE_PROXY
   case CURLOPT_PROXY_TLSAUTH_USERNAME:
-    return Curl_setstropt(&s->str[STRING_TLSAUTH_USERNAME_PROXY], ptr);
   case CURLOPT_PROXY_TLSAUTH_PASSWORD:
-    return Curl_setstropt(&s->str[STRING_TLSAUTH_PASSWORD_PROXY], ptr);
   case CURLOPT_PROXY_TLSAUTH_TYPE:
-    if(ptr && !curl_strequal(ptr, "SRP"))
-      result = CURLE_BAD_FUNCTION_ARGUMENT;
-    break;
-#endif
-#endif
+    return CURLE_NOT_BUILT_IN;
 #ifndef CURL_DISABLE_HSTS
   case CURLOPT_HSTSREADDATA:
     s->hsts_read_userp = ptr;
@@ -2906,10 +2886,11 @@ CURLcode Curl_vsetopt(struct Curl_easy *data, CURLoption option, va_list param)
     case CURLOPT_MIMEPOST:         /* curl_mime * */
     case CURLOPT_STDERR:           /* FILE * */
     case CURLOPT_SHARE:            /* CURLSH * */
-    case CURLOPT_STREAM_DEPENDS:   /* CURL * */
-    case CURLOPT_STREAM_DEPENDS_E: /* CURL * */
     case CURLOPT_CURLU:            /* CURLU * */
       return setopt_pointers(data, option, param);
+    case CURLOPT_STREAM_DEPENDS:   /* CURL * */
+    case CURLOPT_STREAM_DEPENDS_E: /* CURL * */
+      return CURLE_OK;
     default:
       break;
     }
@@ -2930,23 +2911,24 @@ CURLcode Curl_vsetopt(struct Curl_easy *data, CURLoption option, va_list param)
  * NOTE: This is one of few API functions that are allowed to be called from
  * within a callback.
  */
-
 #undef curl_easy_setopt
 CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...)
 {
-  va_list arg;
+  struct Curl_eapi_guard guard;
   CURLcode result;
-  struct Curl_easy *data = curl;
 
-  if(!data)
-    return CURLE_BAD_FUNCTION_ARGUMENT;
+  if(CURL_EAPI_ENTER(&guard, curl, easy_setopt, &result)) {
+    struct Curl_easy *data = curl;
+    va_list arg;
 
-  va_start(arg, option);
+    va_start(arg, option);
 
-  result = Curl_vsetopt(data, option, arg);
+    result = Curl_vsetopt(data, option, arg);
 
-  va_end(arg);
-  if(result == CURLE_BAD_FUNCTION_ARGUMENT)
-    failf(data, "setopt 0x%x got bad argument", (unsigned int)option);
+    va_end(arg);
+    if(result == CURLE_BAD_FUNCTION_ARGUMENT)
+      failf(data, "setopt 0x%x got bad argument", (unsigned int)option);
+  }
+  CURL_EAPI_LEAVE(&guard);
   return result;
 }

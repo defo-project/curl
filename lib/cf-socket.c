@@ -81,7 +81,9 @@
 #include "curlx/version_win32.h"
 #include "curlx/strerr.h"
 #include "curlx/strparse.h"
-
+#ifdef _WIN32
+#include <mstcpip.h> /* for TCP_INITIAL_RTO_PARAMETERS */
+#endif
 
 /* retrieves ip address and port from a sockaddr structure. note it calls
  * curlx_inet_ntop which sets errno on fail, not SOCKERRNO.
@@ -430,11 +432,12 @@ static CURLcode socket_open(struct Curl_easy *data,
      * might have been changed and this 'new' address will actually be used
      * here to connect.
      */
-    Curl_set_in_callback(data, TRUE);
+    struct Curl_mapi_guard guard;
+    CURL_CBAPI_START(&guard, data, easy_fopensocket);
     *sockfd = data->set.fopensocket(data->set.opensocket_client,
                                     CURLSOCKTYPE_IPCXN,
                                     (struct curl_sockaddr *)addr);
-    Curl_set_in_callback(data, FALSE);
+    CURL_CBAPI_END(&guard);
   }
   else {
     /* opensocket callback not set, so create the socket now */
@@ -521,11 +524,12 @@ static int socket_close(struct Curl_easy *data, struct connectdata *conn,
     return 0;
 
   if(use_callback && conn && conn->fclosesocket) {
+    struct Curl_mapi_guard guard;
     int rc;
     Curl_multi_will_close(data, sock);
-    Curl_set_in_callback(data, TRUE);
+    CURL_CBAPI_START(&guard, data, easy_closesocket);
     rc = conn->fclosesocket(conn->closesocket_client, sock);
-    Curl_set_in_callback(data, FALSE);
+    CURL_CBAPI_END(&guard);
     return rc;
   }
 
@@ -1139,6 +1143,51 @@ static int cf_socktype(int x)
   return x;
 }
 
+#ifdef _WIN32
+
+/* Offered by mingw-w64 v10+, MS SDK 8.0/~VS2012+ */
+#ifndef SIO_TCP_INITIAL_RTO
+#define SIO_TCP_INITIAL_RTO _WSAIOW(IOC_VENDOR, 17)
+#define TCP_INITIAL_RTO_DEFAULT_RTT 0
+
+/* !checksrc! disable TYPEDEFSTRUCT 1 */
+typedef struct _TCP_INITIAL_RTO_PARAMETERS {
+  USHORT Rtt;
+  UCHAR MaxSynRetransmissions;
+} TCP_INITIAL_RTO_PARAMETERS;
+#endif
+
+#ifndef TCP_INITIAL_RTO_NO_SYN_RETRANSMISSIONS
+#define TCP_INITIAL_RTO_NO_SYN_RETRANSMISSIONS 0xFE /* -2 */
+#endif
+
+static bool targets_localhost(struct cf_socket_ctx *ctx)
+{
+  return (((ctx->addr.family == AF_INET) &&
+           !strcmp(ctx->ip.remote_ip, "127.0.0.1")) ||
+          ((ctx->addr.family == AF_INET6) &&
+           !strcmp(ctx->ip.remote_ip, "::1")));
+}
+
+/* disable TCP SYN retransmissions for localhost connection on Windows to
+   detect problems faster */
+static void tcplocalhost(struct Curl_cfilter *cf,
+                         curl_socket_t sockfd)
+{
+  if(targets_localhost(cf->ctx)) {
+    TCP_INITIAL_RTO_PARAMETERS rto;
+    DWORD bytes = 0;
+    memset(&rto, 0, sizeof(rto));
+    rto.Rtt = TCP_INITIAL_RTO_DEFAULT_RTT;
+    rto.MaxSynRetransmissions = TCP_INITIAL_RTO_NO_SYN_RETRANSMISSIONS;
+    (void)WSAIoctl(sockfd, SIO_TCP_INITIAL_RTO, &rto, sizeof(rto),
+                   NULL, 0, &bytes, NULL, NULL);
+  }
+}
+#else
+#define tcplocalhost(x, y)
+#endif
+
 static CURLcode cf_socket_open(struct Curl_cfilter *cf,
                                struct Curl_easy *data)
 {
@@ -1212,19 +1261,24 @@ static CURLcode cf_socket_open(struct Curl_cfilter *cf,
   is_tcp = (ctx->addr.family == AF_INET) &&
     cf_socktype(ctx->addr.socktype) == SOCK_STREAM;
 #endif
-  if(is_tcp && data->set.tcp_nodelay)
-    tcpnodelay(cf, data, ctx->sock);
+  if(is_tcp) {
+    if(data->set.tcp_nodelay)
+      tcpnodelay(cf, data, ctx->sock);
 
-  if(is_tcp && data->set.tcp_keepalive)
-    tcpkeepalive(cf, data, ctx->sock);
+    if(data->set.tcp_keepalive)
+      tcpkeepalive(cf, data, ctx->sock);
+
+    tcplocalhost(cf, ctx->sock);
+  }
 
   if(data->set.fsockopt) {
     /* activate callback for setting socket options */
-    Curl_set_in_callback(data, TRUE);
+    struct Curl_mapi_guard guard;
+    CURL_CBAPI_START(&guard, data, easy_fsockopt);
     error = data->set.fsockopt(data->set.sockopt_client,
                                ctx->sock,
                                CURLSOCKTYPE_IPCXN);
-    Curl_set_in_callback(data, FALSE);
+    CURL_CBAPI_END(&guard);
 
     if(error == CURL_SOCKOPT_ALREADY_CONNECTED)
       isconnected = TRUE;
@@ -2231,13 +2285,14 @@ static CURLcode cf_tcp_accept_connect(struct Curl_cfilter *cf,
               ctx->sock, ctx->ip.remote_ip, ctx->ip.remote_port);
 
   if(data->set.fsockopt) {
+    struct Curl_mapi_guard guard;
     int error = 0;
 
     /* activate callback for setting socket options */
-    Curl_set_in_callback(data, TRUE);
+    CURL_CBAPI_START(&guard, data, easy_fsockopt);
     error = data->set.fsockopt(data->set.sockopt_client,
                                ctx->sock, CURLSOCKTYPE_ACCEPT);
-    Curl_set_in_callback(data, FALSE);
+    CURL_CBAPI_END(&guard);
 
     if(error)
       return CURLE_ABORTED_BY_CALLBACK;
@@ -2265,7 +2320,7 @@ struct Curl_cftype Curl_cft_tcp_accept = {
 
 CURLcode Curl_conn_tcp_listen_set(struct Curl_easy *data,
                                   struct connectdata *conn,
-                                  int sockindex, curl_socket_t *s)
+                                  int8_t sockindex, curl_socket_t *s)
 {
   CURLcode result;
   struct Curl_cfilter *cf = NULL;
@@ -2305,7 +2360,7 @@ out:
 }
 
 bool Curl_conn_is_tcp_listen(struct Curl_easy *data,
-                             int sockindex)
+                             int8_t sockindex)
 {
   struct Curl_cfilter *cf = data->conn->cfilter[sockindex];
   while(cf) {
