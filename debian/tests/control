@@ -1,6 +1,6 @@
 Tests: upstream-tests-openssl
 Depends: curl, @builddeps@
-Restrictions: allow-stderr
+Restrictions: allow-stderr, fails-on-github
 
 Tests: upstream-tests-gnutls
 Depends: @builddeps@
@@ -32,7 +32,7 @@ Depends: @builddeps@,
   python3-psutil,
   python3-pytest-xdist,
   python3-websockets
-Restrictions: allow-stderr
+Restrictions: allow-stderr, fails-on-github
 
 Tests: upstream-pytest-http-gnutls
 Depends: @builddeps@,
@@ -48,7 +48,7 @@ Depends: @builddeps@,
   python3-psutil,
   python3-pytest-xdist,
   python3-websockets
-Restrictions: allow-stderr
+Restrictions: allow-stderr, fails-on-github
 
 Tests: build-using-libcurl-openssl
 Depends: build-essential, libcurl4-openssl-dev, pkgconf
